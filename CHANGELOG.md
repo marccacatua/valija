@@ -5,6 +5,16 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.0
+
+- **No más bienvenida repetida**: si ya tenés viajes guardados, abrir la
+  app te lleva directo a "Mis viajes" en vez de mostrar la pantalla de
+  bienvenida/onboarding cada vez. Esa pantalla ahora es solo para la
+  primera vez (0 viajes guardados).
+- **Borrar viajes**: cada tarjeta en "Mis viajes" tiene una × para
+  eliminarla (con confirmación, no tiene deshacer) — así no se acumulan
+  para siempre.
+
 ## v0.8.0
 
 - **Líquidos de higiene con variante de tamaño**: pasta de dientes y

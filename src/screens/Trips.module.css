@@ -69,6 +69,20 @@
   margin-top: 7px;
 }
 
+.deleteBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--cream);
+  color: var(--muted);
+  font: 900 16px/1 'Nunito', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+
 .emptyState {
   margin-top: 24px;
   display: flex;

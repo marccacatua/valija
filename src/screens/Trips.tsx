@@ -10,12 +10,18 @@ import styles from './Trips.module.css';
 
 export function Trips() {
   const navigate = useNavigate();
-  const { trips } = useTrips();
+  const { trips, removeTrip } = useTrips();
   const [, setLastTripId] = useLastTripId();
 
   const openTrip = (id: string) => {
     setLastTripId(id);
     navigate(`/viaje/${id}`);
+  };
+
+  const deleteTrip = (id: string, name: string) => {
+    if (window.confirm(`¿Borrar "${name}"? No se puede deshacer.`)) {
+      removeTrip(id);
+    }
   };
 
   return (
@@ -47,6 +53,17 @@ export function Trips() {
                     {done ? 'Empacado completo' : `${trip.items.filter((i) => i.done).length} de ${trip.items.length} empacado`}
                   </div>
                 </div>
+                <span
+                  role="button"
+                  className={styles.deleteBtn}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteTrip(trip.id, tripTitle(trip.form));
+                  }}
+                  aria-label={`Borrar ${tripTitle(trip.form)}`}
+                >
+                  ×
+                </span>
                 <svg width="9" height="16" viewBox="0 0 9 16" style={{ flex: 'none' }}>
                   <path d="M2 2l5 6-5 6" stroke="#D8C6B7" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
