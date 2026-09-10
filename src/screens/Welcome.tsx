@@ -29,6 +29,8 @@ export function Welcome() {
           Ya tengo viajes guardados
         </Button>
       </div>
+
+      <div className={styles.version}>v{__APP_VERSION__}</div>
     </div>
   );
 }

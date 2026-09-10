@@ -104,19 +104,21 @@ export function TripForm() {
           </div>
         </div>
 
-        <div>
-          <SectionLabel>Tipo de turismo</SectionLabel>
-          <div className={styles.wrap}>
-            {TURISMO_OPTIONS.map((opt) => (
-              <OptionChip
-                key={opt.key}
-                label={opt.label}
-                selected={form.turismo === opt.key}
-                onSelect={() => set('turismo', opt.key)}
-              />
-            ))}
+        {form.motivo !== 'trabajo' && (
+          <div>
+            <SectionLabel>Tipo de turismo</SectionLabel>
+            <div className={styles.wrap}>
+              {TURISMO_OPTIONS.map((opt) => (
+                <OptionChip
+                  key={opt.key}
+                  label={opt.label}
+                  selected={form.turismo === opt.key}
+                  onSelect={() => set('turismo', opt.key)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <SectionLabel>Alojamiento</SectionLabel>

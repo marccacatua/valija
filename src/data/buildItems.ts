@@ -18,6 +18,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   const out: RawItem[] = [];
   const add = (cat: CategoryKey, name: string, qty?: number) =>
     out.push({ cat, name, qty: qty ?? 1 });
+  // "Tipo de turismo" no se le pregunta a quien viaja por trabajo (ver
+  // TripForm.tsx), así que sus reglas no deben depender de un valor de
+  // turismo que el usuario nunca eligió.
+  const leisure = f.motivo !== 'trabajo';
 
   add('ropa', 'Remeras', cap(d, 8));
   add('ropa', 'Ropa interior', cap(d + 1, 10));
@@ -40,8 +44,8 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Gorra o sombrero');
   }
   if (f.dest === 'playa') add('ropa', 'Ojotas o sandalias');
-  if (f.dest === 'montana' || f.turismo === 'aventura') add('ropa', 'Zapatillas de trekking');
-  if (f.turismo === 'aventura') {
+  if (f.dest === 'montana' || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
+  if (leisure && f.turismo === 'aventura') {
     add('ropa', 'Remeras deportivas', 2);
     add('ropa', 'Short o pantalón de trekking');
   }
@@ -51,7 +55,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Saco o blazer');
     add('ropa', 'Zapatos de vestir');
   }
-  if (f.turismo === 'fiesta') {
+  if (leisure && f.turismo === 'fiesta') {
     add('ropa', 'Outfit para salir', 2);
     add('ropa', 'Calzado para salir');
   }
@@ -64,7 +68,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('higiene', 'Afeitadora, pinza y corta uñas');
   add('higiene', 'Botiquín básico');
   if (f.dest === 'playa' || f.clima === 'calor') add('higiene', 'Protector solar');
-  if (f.turismo === 'aventura' || f.dest === 'playa') add('higiene', 'Repelente');
+  if ((leisure && f.turismo === 'aventura') || f.dest === 'playa') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
   if (f.maleta === 'carry') add('higiene', 'Líquidos en envases de 100 ml');
 
@@ -86,7 +90,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('tech', 'Cable extra', 2);
   if (f.transporte === 'avion') add('tech', 'Adaptador de enchufe');
   if (f.motivo === 'trabajo') add('tech', 'Notebook y cargador');
-  if (f.turismo === 'cultura' || f.turismo === 'aventura') add('tech', 'Cámara y memoria');
+  if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) add('tech', 'Cámara y memoria');
 
   add('extras', 'Bolsa para ropa sucia');
   add('extras', 'Bolsas ziploc');
@@ -100,10 +104,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('extras', 'Mate y termo');
     add('extras', 'Snacks para el camino');
   }
-  if (f.turismo === 'aventura' || f.turismo === 'cultura') add('extras', 'Riñonera o bolso cruzado');
+  if (leisure && (f.turismo === 'aventura' || f.turismo === 'cultura')) add('extras', 'Riñonera o bolso cruzado');
   if (f.clima === 'lluvia') add('extras', 'Paraguas plegable');
   if (f.dest === 'playa') add('extras', 'Toallón de playa');
-  if (f.turismo === 'relax') add('extras', 'Libro o e-reader');
+  if (leisure && f.turismo === 'relax') add('extras', 'Libro o e-reader');
 
   return out;
 }

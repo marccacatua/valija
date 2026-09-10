@@ -58,3 +58,12 @@
   position: relative;
   z-index: 2;
 }
+
+.version {
+  margin-top: 10px;
+  font: 800 11px/1 'Nunito', sans-serif;
+  color: rgba(255, 253, 248, 0.55);
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
