@@ -5,6 +5,13 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.2
+
+- Botón "Borrar todos los viajes" al final de "Mis viajes" (solo visible
+  si hay al menos uno). Pide **dos** confirmaciones seguidas, la segunda
+  aclarando explícitamente que es irreversible — cancelar en cualquiera
+  de las dos no borra nada.
+
 ## v0.9.1
 
 - Revertido el redirect automático de v0.9.0: la bienvenida vuelve a

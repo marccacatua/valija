@@ -96,7 +96,11 @@ export function useTrips() {
     [setTrips],
   );
 
+  const removeAllTrips = useCallback(() => {
+    setTrips(() => []);
+  }, [setTrips]);
+
   const getTrip = useCallback((id: string | undefined) => trips.find((t) => t.id === id), [trips]);
 
-  return { trips, addTrip, updateTrip, toggleItem, bumpItem, addCustomItem, removeItem, removeTrip, getTrip };
+  return { trips, addTrip, updateTrip, toggleItem, bumpItem, addCustomItem, removeItem, removeTrip, removeAllTrips, getTrip };
 }

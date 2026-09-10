@@ -10,7 +10,7 @@ import styles from './Trips.module.css';
 
 export function Trips() {
   const navigate = useNavigate();
-  const { trips, removeTrip } = useTrips();
+  const { trips, removeTrip, removeAllTrips } = useTrips();
   const [, setLastTripId] = useLastTripId();
 
   const openTrip = (id: string) => {
@@ -22,6 +22,16 @@ export function Trips() {
     if (window.confirm(`¿Borrar "${name}"? No se puede deshacer.`)) {
       removeTrip(id);
     }
+  };
+
+  const deleteAllTrips = () => {
+    const first = window.confirm(
+      `¿Borrar los ${trips.length} viajes guardados? Vas a perder todo el progreso de empacado. Esto no se puede deshacer.`,
+    );
+    if (!first) return;
+    const second = window.confirm('Última confirmación: se van a borrar TODOS tus viajes para siempre. ¿Continuar?');
+    if (!second) return;
+    removeAllTrips();
   };
 
   return (
@@ -84,6 +94,12 @@ export function Trips() {
             <Mascot size={46} />
             <div className={styles.tipText}>Tip de Valu: guardá la valija del último viaje de trabajo y la reusás en 2 toques.</div>
           </div>
+        )}
+
+        {trips.length > 0 && (
+          <button type="button" className={styles.deleteAllBtn} onClick={deleteAllTrips}>
+            Borrar todos los viajes
+          </button>
         )}
         <div style={{ height: 20 }} />
       </div>

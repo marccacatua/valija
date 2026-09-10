@@ -124,3 +124,13 @@
   font: 800 14px/1.35 'Nunito', sans-serif;
   color: #6b5a1e;
 }
+
+.deleteAllBtn {
+  margin-top: 10px;
+  padding: 12px;
+  text-align: center;
+  font: 800 13px/1 'Nunito', sans-serif;
+  color: #b3413a;
+  background: none;
+  cursor: pointer;
+}
