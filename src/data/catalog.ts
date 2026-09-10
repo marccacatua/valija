@@ -78,3 +78,7 @@ export const CATEGORY_ORDER: CategoryKey[] = ['ropa', 'higiene', 'docs', 'tech',
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';
 }
+
+export function labelForMany<K extends string>(options: CatalogOption<K>[], keys: K[]): string {
+  return keys.map((k) => labelFor(options, k)).join(' + ');
+}

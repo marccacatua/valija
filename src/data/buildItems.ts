@@ -115,7 +115,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.dest === 'playa' || f.clima === 'calor') add('higiene', 'Protector solar');
   if ((leisure && f.turismo === 'aventura') || f.dest === 'playa') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
-  if (f.maleta === 'carry') add('higiene', 'Líquidos en envases de 100 ml');
+  if (f.maletas.includes('carry')) add('higiene', 'Líquidos en envases de 100 ml');
 
   add('docs', 'DNI y pasaporte');
   add('docs', 'Pasajes / boarding pass');
@@ -140,7 +140,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('extras', 'Bolsa para ropa sucia');
   add('extras', 'Bolsas ziploc');
   add('extras', 'Botella reutilizable');
-  if (f.aloj === 'hostel' || f.maleta === 'mochila') add('extras', 'Candado');
+  if (f.aloj === 'hostel' || f.maletas.includes('mochila')) add('extras', 'Candado');
   if (f.transporte === 'avion' || f.transporte === 'bus') {
     add('extras', 'Antifaz y tapones');
     add('extras', 'Almohada de viaje');

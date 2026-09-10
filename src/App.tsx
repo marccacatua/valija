@@ -4,6 +4,7 @@ import { Welcome } from './screens/Welcome';
 import { Intro } from './screens/Intro';
 import { TripForm } from './screens/TripForm';
 import { Checklist } from './screens/Checklist';
+import { Distribution } from './screens/Distribution';
 import { Trips } from './screens/Trips';
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
           <Route path="/intro" element={<Intro />} />
           <Route path="/nuevo" element={<TripForm />} />
           <Route path="/viaje/:tripId" element={<Checklist />} />
+          <Route path="/viaje/:tripId/distribucion" element={<Distribution />} />
           <Route path="/viajes" element={<Trips />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -5,6 +5,22 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.7.0
+
+- **Múltiples maletas por viaje**: "Tipo de maleta" pasa de selección
+  única a multi-selección (podés viajar con carry-on + mochila, bodega +
+  mochila, las 3, etc). El dato viejo (`form.maleta`, una sola) se migra
+  solo a `form.maletas` (array) al leer viajes guardados de antes — no
+  rompe nada de lo que ya tenían guardado los usuarios.
+- **Pantalla nueva "Cómo repartir tu equipaje"**: si el viaje tiene más
+  de una maleta, aparece un botón en la checklist que lleva a una
+  recomendación de qué va en cada una. Reglas: documentos y electrónica
+  van en la maleta que llevás con vos (mochila > carry-on > bodega);
+  ítems con más de una unidad se reparten entre la maleta principal y
+  otra, para no perder todo de una categoría si una maleta se pierde o
+  se demora. Es una vista de solo lectura derivada de la checklist — no
+  cambia los ítems reales ni lo que ya tildaste.
+
 ## v0.6.0
 
 - **Vestuario neutral**: nuevo toggle "Sumar vestidos / pollera" en el

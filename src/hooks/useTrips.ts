@@ -1,9 +1,21 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { buildItems } from '../data/buildItems';
 import type { CategoryKey, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
 const STORAGE_KEY = 'valija:trips';
+
+/**
+ * Viajes guardados antes de la v0.7.0 tienen `form.maleta` (una sola)
+ * en vez de `form.maletas` (array). Se migra en lectura, sin tocar lo
+ * que ya está en localStorage — así no hace falta un paso de migración
+ * explícito ni arriesgarse a corromper datos viejos.
+ */
+function migrateTrip(t: Trip): Trip {
+  const form = t.form as TripFormState & { maleta?: string };
+  if (Array.isArray(form.maletas)) return t;
+  return { ...t, form: { ...form, maletas: form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry'] } };
+}
 
 /**
  * Única fuente de verdad de los viajes guardados. Reemplaza el array SEED
@@ -12,7 +24,8 @@ const STORAGE_KEY = 'valija:trips';
  * localStorage.
  */
 export function useTrips() {
-  const [trips, setTrips] = useLocalStorage<Trip[]>(STORAGE_KEY, []);
+  const [rawTrips, setTrips] = useLocalStorage<Trip[]>(STORAGE_KEY, []);
+  const trips = useMemo(() => rawTrips.map(migrateTrip), [rawTrips]);
 
   const addTrip = useCallback(
     (form: TripFormState): Trip => {
@@ -30,9 +43,11 @@ export function useTrips() {
 
   const updateTrip = useCallback(
     (id: string, updater: (t: Trip) => Trip) => {
-      setTrips((prev) => prev.map((t) => (t.id === id ? updater(t) : t)));
+      // Mapea sobre `trips` (ya migrado) en vez de lo crudo de localStorage,
+      // así cualquier update de paso "cura" un viaje viejo con forma vieja.
+      setTrips(() => trips.map((t) => (t.id === id ? updater(t) : t)));
     },
-    [setTrips],
+    [setTrips, trips],
   );
 
   const toggleItem = useCallback(

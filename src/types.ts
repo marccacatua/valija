@@ -19,7 +19,8 @@ export interface TripFormState {
   turismo: TurismoKey;
   aloj: AlojKey;
   transporte: TransporteKey;
-  maleta: MaletaKey;
+  /** Array porque se puede viajar con más de una: carry-on + mochila, bodega + mochila, etc. */
+  maletas: MaletaKey[];
   dias: number;
   /** Sumar vestidos/pollera a la checklist. Independiente de todo lo demás:
    * no le preguntamos género a nadie, es una preferencia de vestuario. */

@@ -31,6 +31,14 @@ export function TripForm() {
   const set = <K extends keyof TripFormState>(key: K, value: TripFormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const toggleMaleta = (key: TripFormState['maletas'][number]) =>
+    setForm((prev) => {
+      const has = prev.maletas.includes(key);
+      if (has && prev.maletas.length === 1) return prev; // siempre al menos una
+      const maletas = has ? prev.maletas.filter((m) => m !== key) : [...prev.maletas, key];
+      return { ...prev, maletas };
+    });
+
   const handleGenerate = () => {
     const trip = addTrip(form);
     setLastTripId(trip.id);
@@ -155,15 +163,15 @@ export function TripForm() {
         </div>
 
         <div>
-          <SectionLabel>Tipo de maleta</SectionLabel>
+          <SectionLabel hint="elegí una o varias">Tipo de maleta</SectionLabel>
           <div className={styles.grid3}>
             {MALETA_OPTIONS.map((opt) => (
               <OptionCard
                 key={opt.key}
                 label={opt.label}
                 icon={MaletaIcons[opt.key]}
-                selected={form.maleta === opt.key}
-                onSelect={() => set('maleta', opt.key)}
+                selected={form.maletas.includes(opt.key)}
+                onSelect={() => toggleMaleta(opt.key)}
               />
             ))}
           </div>

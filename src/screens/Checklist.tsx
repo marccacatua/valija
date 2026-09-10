@@ -134,6 +134,9 @@ export function Checklist() {
       <div className={styles.groups}>
         {groups.map((g) => grouped(g.key, g.list))}
 
+        {trip.form.maletas.length > 1 && (
+          <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>
+        )}
         <Button variant="teal" className={styles.saveButton} onClick={() => navigate('/viajes')}>
           Ver mis viajes
         </Button>

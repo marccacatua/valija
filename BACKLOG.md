@@ -54,10 +54,12 @@ por si sirve de referencia al priorizar, no todo es para hacer ya.
 - **Filtrar/buscar ítems** dentro de la checklist (packed/sin empacar, por
   categoría, o buscar por nombre). Útil cuando la lista crece con ítems
   a mano. Bajo esfuerzo, todo el estado ya está en `trip.items`.
-- **Asignar ítems a una valija/bolso específico** (Packr) — pensado para
-  viajes con más de una maleta o en familia. Implica sumar un concepto de
-  "bolso" (`bagId`) a `PackingItem` y un selector en la UI. Tiene sentido
-  recién si primero resolvemos "viaje en familia".
+- ~~Asignar ítems a una valija/bolso específico~~ ✅ v0.7.0, como
+  recomendación de solo lectura (`src/data/distribute.ts` + pantalla
+  `Distribution.tsx`), no como asignación persistida por ítem. Si más
+  adelante se quiere dejar editable a mano (mover un ítem puntual de una
+  maleta a otra), ahí sí hace falta sumar `bagId` a `PackingItem` como
+  estaba pensado acá originalmente.
 - **Clima real del destino en vez de una categoría** (PackPoint es la
   referencia: pide destino + fechas y trae el pronóstico real, ajusta la
   lista día a día). Mejora grande sobre nuestro selector actual de

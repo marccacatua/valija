@@ -7,6 +7,7 @@ import {
   TRANSPORTE_OPTIONS,
   TURISMO_OPTIONS,
   labelFor,
+  labelForMany,
 } from './catalog';
 import type { PackingItem, Trip, TripFormState } from '../types';
 
@@ -18,7 +19,7 @@ export const DEFAULT_FORM: TripFormState = {
   turismo: 'relax',
   aloj: 'depto',
   transporte: 'avion',
-  maleta: 'carry',
+  maletas: ['carry'],
   dias: 5,
   vestidos: false,
 };
@@ -32,7 +33,7 @@ export function tripMetaLine(form: TripFormState): string {
     labelFor(DEST_OPTIONS, form.dest),
     labelFor(MOTIVO_OPTIONS, form.motivo),
     `${form.dias} días`,
-    labelFor(MALETA_OPTIONS, form.maleta),
+    labelForMany(MALETA_OPTIONS, form.maletas),
   ].join(' · ');
 }
 
@@ -42,7 +43,7 @@ export function tripMetaChips(form: TripFormState): string[] {
     labelFor(CLIMA_OPTIONS, form.clima),
     labelFor(MOTIVO_OPTIONS, form.motivo),
     `${form.dias} días`,
-    labelFor(MALETA_OPTIONS, form.maleta),
+    labelForMany(MALETA_OPTIONS, form.maletas),
   ];
 }
 
