@@ -5,6 +5,17 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.3
+
+- Reemplazados los `window.confirm()` (diálogo nativo del sistema, gris,
+  sin estilo) por un componente propio (`ConfirmDialog`) para borrar un
+  viaje y para la doble confirmación de "Borrar todos los viajes" — se
+  ven con la tipografía y colores de Valija en vez de la alerta del
+  navegador/sistema. Importante de cara a la publicación en el App
+  Store: esto no se arregla al compilar con Capacitor, hay que hacerlo
+  del lado del código (`window.confirm()` siempre es nativo, empaquetar
+  no cambia el comportamiento de JS).
+
 ## v0.9.2
 
 - Botón "Borrar todos los viajes" al final de "Mis viajes" (solo visible

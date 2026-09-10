@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Mascot } from '../components/Mascot';
 import { ProgressRing } from '../components/ProgressRing';
 import { progressPct, tripListMeta, tripTitle } from '../data/trip';
@@ -8,10 +10,17 @@ import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
 import styles from './Trips.module.css';
 
+interface PendingConfirm {
+  title: string;
+  message: string;
+  onConfirm: () => void;
+}
+
 export function Trips() {
   const navigate = useNavigate();
   const { trips, removeTrip, removeAllTrips } = useTrips();
   const [, setLastTripId] = useLastTripId();
+  const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
 
   const openTrip = (id: string) => {
     setLastTripId(id);
@@ -19,19 +28,32 @@ export function Trips() {
   };
 
   const deleteTrip = (id: string, name: string) => {
-    if (window.confirm(`¿Borrar "${name}"? No se puede deshacer.`)) {
-      removeTrip(id);
-    }
+    setConfirm({
+      title: `¿Borrar "${name}"?`,
+      message: 'No se puede deshacer.',
+      onConfirm: () => {
+        removeTrip(id);
+        setConfirm(null);
+      },
+    });
   };
 
   const deleteAllTrips = () => {
-    const first = window.confirm(
-      `¿Borrar los ${trips.length} viajes guardados? Vas a perder todo el progreso de empacado. Esto no se puede deshacer.`,
-    );
-    if (!first) return;
-    const second = window.confirm('Última confirmación: se van a borrar TODOS tus viajes para siempre. ¿Continuar?');
-    if (!second) return;
-    removeAllTrips();
+    setConfirm({
+      title: `¿Borrar los ${trips.length} viajes guardados?`,
+      message: 'Vas a perder todo el progreso de empacado. Esto no se puede deshacer.',
+      onConfirm: () => {
+        // segunda confirmación, encadenada
+        setConfirm({
+          title: 'Última confirmación',
+          message: 'Se van a borrar TODOS tus viajes para siempre. ¿Continuar?',
+          onConfirm: () => {
+            removeAllTrips();
+            setConfirm(null);
+          },
+        });
+      },
+    });
   };
 
   return (
@@ -106,6 +128,10 @@ export function Trips() {
 
       <div style={{ flex: 1 }} />
       <BottomNav active="viajes" />
+
+      {confirm && (
+        <ConfirmDialog title={confirm.title} message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />
+      )}
     </div>
   );
 }
