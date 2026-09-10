@@ -14,14 +14,16 @@ export interface DistributedItem {
  * lectura, pensada para el momento de armar las valijas.
  *
  * Reglas:
- * - Documentos y electrónica van en la valija que llevás "con vos"
- *   (mochila si hay, si no carry-on, si no bodega): son lo que menos
- *   conviene perder o dejar en la bodega del avión.
- * - Si hay bodega en la mezcla y algún ítem tiene más de 1 unidad, se
- *   separa una unidad de "respaldo" en otra valija — para no quedarte sin
- *   nada de eso si la bodega se pierde o se demora.
- * - Todo lo demás va a la valija "principal" (bodega si hay, si no
- *   carry-on, si no mochila).
+ * - Documentos y electrónica van en la mochila (o el carry-on si no hay
+ *   mochila): es lo que llevás encima, no lo que va bajo el avión. Se
+ *   mantiene liviana a propósito, no le mandamos ropa "de respaldo".
+ * - Todo lo demás (ropa, higiene, extras) va a la valija "principal":
+ *   bodega si hay, si no carry-on, si no mochila.
+ * - Si hay bodega en la mezcla y además otra valija (carry-on o mochila,
+ *   en ese orden) y algún ítem tiene más de 1 unidad, se separa ~20% como
+ *   "respaldo" en el carry-on (nunca en la mochila) — es la valija
+ *   pensada para una muda de repuesto por si se pierde o demora la
+ *   bodega.
  */
 export function distributeItems(items: PackingItem[], bags: MaletaKey[]): Record<MaletaKey, DistributedItem[]> {
   const result: Record<MaletaKey, DistributedItem[]> = { carry: [], bodega: [], mochila: [] };
@@ -29,9 +31,10 @@ export function distributeItems(items: PackingItem[], bags: MaletaKey[]): Record
 
   const withYouOrder: MaletaKey[] = (['mochila', 'carry', 'bodega'] as MaletaKey[]).filter((b) => bags.includes(b));
   const primaryOrder: MaletaKey[] = (['bodega', 'carry', 'mochila'] as MaletaKey[]).filter((b) => bags.includes(b));
+  const backupOrder: MaletaKey[] = (['carry', 'mochila'] as MaletaKey[]).filter((b) => bags.includes(b));
   const withYou = withYouOrder[0] ?? bags[0];
   const primary = primaryOrder[0] ?? bags[0];
-  const backupBag = withYouOrder.find((b) => b !== primary) ?? withYou;
+  const backupBag = backupOrder.find((b) => b !== primary) ?? withYou;
 
   for (const item of items) {
     const isValuable = item.cat === 'docs' || item.cat === 'tech';

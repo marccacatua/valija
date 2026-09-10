@@ -5,6 +5,14 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.7.1
+
+- Corregido el algoritmo de distribución: el "respaldo" de ítems con más
+  de una unidad ahora va al **carry-on** (la valija pensada justamente
+  para una muda de repuesto), no a la mochila. Con carry-on + bodega +
+  mochila seleccionados, antes la mochila se llenaba de ropa y el
+  carry-on quedaba vacío — reportado por prueba real de usuario.
+
 ## v0.7.0
 
 - **Múltiples maletas por viaje**: "Tipo de maleta" pasa de selección
