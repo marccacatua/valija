@@ -5,6 +5,17 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.5
+
+- La categoría "Electrónica" deja de mostrar el paso a paso de cantidad
+  (+/-): no tiene sentido llevar "2 cargadores" o "3 auriculares", son
+  ítems que se llevan o no. Ahora es solo checkbox + nombre + borrar,
+  como un recordatorio de cargarlo/empacarlo. El resto de las categorías
+  no cambia.
+- Renombrado "Cable extra" (qty 2, confuso — ¿extra de qué?) a "Cable de
+  carga extra" (qty 1): un cable de repuesto por si el principal falla o
+  se olvida, no una cantidad a elegir.
+
 ## v0.9.4
 
 - `ConfirmDialog` suma una variante `center`: en vez de la hoja que sube

@@ -67,23 +67,27 @@ export function Checklist() {
             <span className={`${styles.checkbox} ${item.done ? styles.checkboxDone : ''}`}>✓</span>
             <span className={`${styles.itemName} ${item.done ? styles.itemNameDone : ''}`}>{item.name}</span>
             <span className={styles.qtyControls} onClick={(e) => e.stopPropagation()}>
-              <button
-                type="button"
-                className={`${styles.qtyBtn} ${styles.qtyDec}`}
-                onClick={() => bumpItem(trip.id, item.id, -1)}
-                aria-label={`Restar ${item.name}`}
-              >
-                –
-              </button>
-              <span className={styles.qtyValue}>{item.qty}</span>
-              <button
-                type="button"
-                className={`${styles.qtyBtn} ${styles.qtyInc}`}
-                onClick={() => bumpItem(trip.id, item.id, 1)}
-                aria-label={`Sumar ${item.name}`}
-              >
-                +
-              </button>
+              {item.cat !== 'tech' && (
+                <>
+                  <button
+                    type="button"
+                    className={`${styles.qtyBtn} ${styles.qtyDec}`}
+                    onClick={() => bumpItem(trip.id, item.id, -1)}
+                    aria-label={`Restar ${item.name}`}
+                  >
+                    –
+                  </button>
+                  <span className={styles.qtyValue}>{item.qty}</span>
+                  <button
+                    type="button"
+                    className={`${styles.qtyBtn} ${styles.qtyInc}`}
+                    onClick={() => bumpItem(trip.id, item.id, 1)}
+                    aria-label={`Sumar ${item.name}`}
+                  >
+                    +
+                  </button>
+                </>
+              )}
               <button
                 type="button"
                 className={styles.removeBtn}

@@ -154,7 +154,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('tech', 'Cargador del celular');
   add('tech', 'Power bank');
   add('tech', 'Auriculares');
-  add('tech', 'Cable extra', 2);
+  add('tech', 'Cable de carga extra');
   if (f.transporte === 'avion') add('tech', 'Adaptador de enchufe');
   if (f.motivo === 'trabajo') add('tech', 'Notebook y cargador');
   if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) add('tech', 'Cámara y memoria');
