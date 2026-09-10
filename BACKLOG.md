@@ -46,3 +46,35 @@ ratos libres).
   los casos).
 - Requiere sumar el control al formulario (`TripForm.tsx`) — probablemente
   un toggle simple, no un grupo de opciones como el resto.
+
+## Ideas de la competencia (Packr, Pack, PackPoint, WhatToPack, Packing Checklist)
+
+Investigado en el App Store (2026-09) para no reinventar la rueda. Anotado
+por si sirve de referencia al priorizar, no todo es para hacer ya.
+
+- **Compartir/exportar la checklist como texto.** Ya existe el flag
+  `exportChecklist` en `features/flags.ts` sin conectar a nada. Es chico:
+  armar un string a partir de `trip.items` agrupado por categoría y usar
+  `navigator.share` (con fallback a copiar al portapapeles).
+- **Filtrar/buscar ítems** dentro de la checklist (packed/sin empacar, por
+  categoría, o buscar por nombre). Útil cuando la lista crece con ítems
+  a mano. Bajo esfuerzo, todo el estado ya está en `trip.items`.
+- **Asignar ítems a una valija/bolso específico** (Packr) — pensado para
+  viajes con más de una maleta o en familia. Implica sumar un concepto de
+  "bolso" (`bagId`) a `PackingItem` y un selector en la UI. Tiene sentido
+  recién si primero resolvemos "viaje en familia".
+- **Clima real del destino en vez de una categoría** (PackPoint es la
+  referencia: pide destino + fechas y trae el pronóstico real, ajusta la
+  lista día a día). Mejora grande sobre nuestro selector actual de
+  Calor/Templado/Frío/Lluvia, pero requiere geocodificar el destino +
+  una API de clima + manejar el caso sin conexión. Candidato a v3+, no a
+  la próxima iteración.
+- **Modo familia** (Packr, feature paga): cada integrante con su propia
+  sub-lista dentro del mismo viaje, más una vista combinada. Se conecta
+  directo con la idea ya anotada arriba de "viaje en familia o solo".
+- **Validación del modelo de precios**: el patrón más común entre estas
+  apps es "una lista/viaje gratis, ilimitados de pago" (WhatToPack) o
+  "generación básica gratis, clima detallado + modo familia de pago"
+  (Packr). Confirma que `unlimitedTrips` es un buen candidato a ser el
+  primer flag que efectivamente cobre algo, antes que features más de
+  nicho.
