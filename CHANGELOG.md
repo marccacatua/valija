@@ -5,6 +5,21 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.8.0
+
+- **Líquidos de higiene con variante de tamaño**: pasta de dientes y
+  shampoo dejan de ser un solo ítem genérico. Si hay bodega, se agrega
+  la versión normal (va a la bodega) y, si el viaje es de 7 días o más
+  y además hay carry-on o mochila, se suma una versión mini de menos de
+  100ml para el día a día del viaje. Sin bodega, salen directo como
+  "envase de 100 ml o menos" (no tiene sentido duplicar).
+- El cepillo de dientes y las versiones mini quedan marcados para ir
+  siempre a la mochila en la pantalla de distribución, junto a los
+  lentes de sol.
+- El recordatorio genérico "Líquidos en envases de 100 ml" ahora solo
+  aparece cuando no hay bodega (cubre protector solar, skincare,
+  repelente — que no tienen variante propia todavía).
+
 ## v0.7.2
 
 - "Lentes de sol" pasa de la categoría "Ropa" a "Extras" — encaja mejor

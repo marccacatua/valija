@@ -29,7 +29,7 @@ export interface DistributedItem {
 // Ítems que van "con vos" sin importar su categoría (no son documentos ni
 // electrónica, pero tampoco tiene sentido facturarlos): se usan en el
 // momento, no querés depender de la bodega para tenerlos a mano.
-const ALWAYS_WITH_YOU = ['Lentes de sol'];
+const ALWAYS_WITH_YOU = ['Lentes de sol', 'Cepillo de dientes', 'Pasta de dientes (mini, <100 ml)', 'Shampoo (mini, <100 ml)'];
 
 export function distributeItems(items: PackingItem[], bags: MaletaKey[]): Record<MaletaKey, DistributedItem[]> {
   const result: Record<MaletaKey, DistributedItem[]> = { carry: [], bodega: [], mochila: [] };

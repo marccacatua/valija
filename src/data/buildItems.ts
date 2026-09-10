@@ -103,17 +103,41 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Calzado para salir');
   }
 
-  add('higiene', 'Cepillo y pasta de dientes');
+  // Si hay bodega, los líquidos grandes van ahí; si además hay una valija
+  // "de mano" (carry-on/mochila) y el viaje es largo, sumamos una versión
+  // mini de <100ml para tener a mano durante el viaje (ver distribute.ts:
+  // esas versiones mini + el cepillo van siempre a la mochila). Sin
+  // bodega, todo tiene que entrar en <100ml directamente, no hay versión
+  // grande que valga la pena llevar.
+  const hasBodega = f.maletas.includes('bodega');
+  const hasCarryAlong = f.maletas.includes('carry') || f.maletas.includes('mochila');
+  const wantsMiniBackup = hasBodega && hasCarryAlong && d >= 7;
+
+  add('higiene', 'Cepillo de dientes');
+  if (hasBodega) {
+    add('higiene', 'Pasta de dientes');
+    if (wantsMiniBackup) add('higiene', 'Pasta de dientes (mini, <100 ml)');
+  } else {
+    add('higiene', 'Pasta de dientes (envase de 100 ml o menos)');
+  }
   add('higiene', 'Enjuague bucal');
   add('higiene', 'Desodorante');
-  add('higiene', 'Shampoo y acondicionador');
+  if (hasBodega) {
+    add('higiene', 'Shampoo y acondicionador');
+    if (wantsMiniBackup) add('higiene', 'Shampoo (mini, <100 ml)');
+  } else {
+    add('higiene', 'Shampoo y acondicionador (envase de 100 ml o menos)');
+  }
   add('higiene', 'Skincare / crema');
   add('higiene', 'Afeitadora, pinza y corta uñas');
   add('higiene', 'Botiquín básico');
   if (f.dest === 'playa' || f.clima === 'calor') add('higiene', 'Protector solar');
   if ((leisure && f.turismo === 'aventura') || f.dest === 'playa') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
-  if (f.maletas.includes('carry')) add('higiene', 'Líquidos en envases de 100 ml');
+  // El resto de los líquidos (protector solar, skincare, repelente,
+  // enjuague bucal) no tienen versión mini propia; si no hay bodega les
+  // toca igual entrar en <100ml, así que dejamos el recordatorio general.
+  if (hasCarryAlong && !hasBodega) add('higiene', 'Líquidos en envases de 100 ml');
 
   add('docs', 'DNI y pasaporte');
   add('docs', 'Pasajes / boarding pass');
