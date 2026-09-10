@@ -1,10 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Mascot } from '../components/Mascot';
+import { useTrips } from '../hooks/useTrips';
 import styles from './Welcome.module.css';
 
 export function Welcome() {
   const navigate = useNavigate();
+  const { trips } = useTrips();
+  const hasTrips = trips.length > 0;
   return (
     <div className={styles.screen}>
       <div className={styles.blobTop} />
@@ -22,12 +25,14 @@ export function Welcome() {
       <div style={{ flex: 1 }} />
 
       <div className={styles.actions}>
-        <Button variant="inverted" onClick={() => navigate('/intro')}>
-          Empecemos
+        <Button variant="inverted" onClick={() => navigate(hasTrips ? '/nuevo' : '/intro')}>
+          {hasTrips ? 'Armar un nuevo viaje' : 'Empecemos'}
         </Button>
-        <Button variant="ghost" onClick={() => navigate('/viajes')}>
-          Ya tengo viajes guardados
-        </Button>
+        {hasTrips && (
+          <Button variant="ghost" onClick={() => navigate('/viajes')}>
+            Mis viajes anteriores
+          </Button>
+        )}
       </div>
 
       <div className={styles.version}>v{__APP_VERSION__}</div>

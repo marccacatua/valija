@@ -29,6 +29,13 @@ export function Trips() {
       <div className={styles.header}>
         <div className={styles.title}>Mis viajes</div>
         <div className={styles.subtitle}>Repetí una valija que ya te funcionó.</div>
+        <Button className={styles.newTripBtn} onClick={() => navigate('/nuevo')}>
+          <svg width="18" height="18" viewBox="0 0 24 24">
+            <rect x="10" y="4" width="4" height="16" rx="2" fill="#FFFDF8" />
+            <rect x="4" y="10" width="16" height="4" rx="2" fill="#FFFDF8" />
+          </svg>
+          Nuevo viaje
+        </Button>
       </div>
 
       <div className={styles.body}>
@@ -71,14 +78,6 @@ export function Trips() {
             );
           })
         )}
-
-        <Button onClick={() => navigate('/nuevo')}>
-          <svg width="18" height="18" viewBox="0 0 24 24">
-            <rect x="10" y="4" width="4" height="16" rx="2" fill="#FFFDF8" />
-            <rect x="4" y="10" width="16" height="4" rx="2" fill="#FFFDF8" />
-          </svg>
-          Nuevo viaje
-        </Button>
 
         {trips.length > 0 && (
           <div className={styles.tip}>

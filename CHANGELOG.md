@@ -5,6 +5,19 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.1
+
+- Revertido el redirect automático de v0.9.0: la bienvenida vuelve a
+  mostrarse siempre en "/" (aporta identidad de marca, no era el
+  problema real).
+- En cambio, la bienvenida ahora verifica si hay viajes guardados: si
+  hay, el botón principal pasa a decir "Armar un nuevo viaje" (salta la
+  intro, va directo al formulario) y aparece un botón nuevo "Mis viajes
+  anteriores". Si no hay viajes, queda igual que siempre ("Empecemos").
+- El botón "Nuevo viaje" en "Mis viajes" se movió arriba, junto al
+  título, en vez de al final de la lista — más accesible con muchos
+  viajes guardados.
+
 ## v0.9.0
 
 - **No más bienvenida repetida**: si ya tenés viajes guardados, abrir la

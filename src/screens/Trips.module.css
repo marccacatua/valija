@@ -22,6 +22,10 @@
   margin-top: 7px;
 }
 
+.newTripBtn {
+  margin-top: 16px;
+}
+
 .body {
   padding: 16px 22px 0;
   display: flex;
