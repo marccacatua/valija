@@ -67,7 +67,7 @@ export function Checklist() {
             <span className={`${styles.checkbox} ${item.done ? styles.checkboxDone : ''}`}>✓</span>
             <span className={`${styles.itemName} ${item.done ? styles.itemNameDone : ''}`}>{item.name}</span>
             <span className={styles.qtyControls} onClick={(e) => e.stopPropagation()}>
-              {item.cat !== 'tech' && (
+              {!item.noQty && (
                 <>
                   <button
                     type="button"

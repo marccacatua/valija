@@ -35,6 +35,8 @@ export interface PackingItem {
   done: boolean;
   /** true si lo agregó el usuario a mano (informativo — cualquier ítem se puede borrar, sea generado o no). */
   isCustom?: boolean;
+  /** true si no tiene sentido contarlo (se lleva o no): oculta el +/- en la checklist. */
+  noQty?: boolean;
 }
 
 export interface Trip {

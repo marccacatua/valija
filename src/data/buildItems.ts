@@ -4,6 +4,8 @@ interface RawItem {
   cat: CategoryKey;
   name: string;
   qty: number;
+  /** true si es un ítem que no tiene sentido contar (se lleva o no): oculta el +/- en la checklist. */
+  noQty?: boolean;
 }
 
 const cap = (n: number, max: number) => Math.min(n, max);
@@ -60,6 +62,9 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   const out: RawItem[] = [];
   const add = (cat: CategoryKey, name: string, qty?: number) =>
     out.push({ cat, name, qty: qty ?? 1 });
+  // Para ítems que no tiene sentido contar (se llevan o no): el cargador,
+  // la botella, el antifaz. Queda siempre en 1, sin +/- en la checklist.
+  const addSingle = (cat: CategoryKey, name: string) => out.push({ cat, name, qty: 1, noQty: true });
   // "Tipo de turismo" no se le pregunta a quien viaja por trabajo (ver
   // TripForm.tsx), así que sus reglas no deben depender de un valor de
   // turismo que el usuario nunca eligió.
@@ -151,31 +156,34 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   }
   if (f.motivo === 'trabajo') add('docs', 'Credencial y tarjeta corporativa');
 
-  add('tech', 'Cargador del celular');
-  add('tech', 'Power bank');
-  add('tech', 'Auriculares');
-  add('tech', 'Cable de carga extra');
-  if (f.transporte === 'avion') add('tech', 'Adaptador de enchufe');
-  if (f.motivo === 'trabajo') add('tech', 'Notebook y cargador');
-  if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) add('tech', 'Cámara y memoria');
+  addSingle('tech', 'Cargador del celular');
+  addSingle('tech', 'Power bank');
+  addSingle('tech', 'Auriculares');
+  addSingle('tech', 'Cable de carga extra');
+  if (f.transporte === 'avion') addSingle('tech', 'Adaptador de enchufe');
+  if (f.motivo === 'trabajo') addSingle('tech', 'Notebook y cargador');
+  if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) addSingle('tech', 'Cámara y memoria');
 
-  add('extras', 'Lentes de sol');
-  add('extras', 'Bolsa para ropa sucia');
+  // Extras evaluado ítem por ítem: lo que se "consume" o se usa en más de
+  // una unidad (bolsas, snacks) conserva el +/-; lo que es un objeto único
+  // (botella, antifaz, candado...) va con addSingle.
+  addSingle('extras', 'Lentes de sol');
+  addSingle('extras', 'Bolsa para ropa sucia');
   add('extras', 'Bolsas ziploc');
-  add('extras', 'Botella reutilizable');
-  if (f.aloj === 'hostel' || f.maletas.includes('mochila')) add('extras', 'Candado');
+  addSingle('extras', 'Botella reutilizable');
+  if (f.aloj === 'hostel' || f.maletas.includes('mochila')) addSingle('extras', 'Candado');
   if (f.transporte === 'avion' || f.transporte === 'bus') {
-    add('extras', 'Antifaz y tapones');
-    add('extras', 'Almohada de viaje');
+    addSingle('extras', 'Antifaz y tapones');
+    addSingle('extras', 'Almohada de viaje');
   }
   if (f.transporte === 'auto' || f.transporte === 'bus') {
-    add('extras', 'Mate y termo');
+    addSingle('extras', 'Mate y termo');
     add('extras', 'Snacks para el camino');
   }
-  if (leisure && (f.turismo === 'aventura' || f.turismo === 'cultura')) add('extras', 'Riñonera o bolso cruzado');
-  if (f.clima === 'lluvia') add('extras', 'Paraguas plegable');
-  if (f.dest === 'playa') add('extras', 'Toallón de playa');
-  if (leisure && f.turismo === 'relax') add('extras', 'Libro o e-reader');
+  if (leisure && (f.turismo === 'aventura' || f.turismo === 'cultura')) addSingle('extras', 'Riñonera o bolso cruzado');
+  if (f.clima === 'lluvia') addSingle('extras', 'Paraguas plegable');
+  if (f.dest === 'playa') addSingle('extras', 'Toallón de playa');
+  if (leisure && f.turismo === 'relax') addSingle('extras', 'Libro o e-reader');
 
   const ropaRank = (name: string) => {
     const idx = ROPA_ORDER.indexOf(name);
@@ -199,5 +207,6 @@ export function buildItems(f: TripFormState): PackingItem[] {
     name: it.name,
     qty: it.qty,
     done: false,
+    noQty: it.noQty,
   }));
 }

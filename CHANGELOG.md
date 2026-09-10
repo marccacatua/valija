@@ -5,6 +5,25 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.6
+
+- **Documentos primero**: reordenada la checklist (antes Ropa, Higiene,
+  Documentos, Electrónica, Extras → ahora Documentos, Ropa, Higiene,
+  Electrónica, Extras), coherente con el mensaje "Arrancá por los
+  documentos" que ya mostraba la barra de progreso.
+- **"Extras" evaluado ítem por ítem**: la mayoría no tiene sentido
+  contarla (botella reutilizable, antifaz y tapones, candado, almohada
+  de viaje, mate y termo, riñonera, paraguas, toallón, libro/e-reader,
+  lentes de sol, bolsa para ropa sucia) — pasan a `addSingle`, sin +/-.
+  Se mantiene el +/- solo en lo que sí varía en cantidad real: bolsas
+  ziploc y snacks para el camino.
+- De paso, "Electrónica" (que ya no mostraba +/- desde v0.9.5) usa ahora
+  el mismo mecanismo genérico (`noQty`) en vez de un caso especial por
+  categoría — mismo resultado, código más simple.
+- Documentado en `features/flags.ts` (sin activar todavía): la decisión
+  de que `customItems` y la futura `tripTemplates` sean el diferenciador
+  free/pro en la versión de App Store.
+
 ## v0.9.5
 
 - La categoría "Electrónica" deja de mostrar el paso a paso de cantidad

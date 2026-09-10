@@ -73,7 +73,9 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
   extras: { title: 'Extras', color: '#63A7D4' },
 };
 
-export const CATEGORY_ORDER: CategoryKey[] = ['ropa', 'higiene', 'docs', 'tech', 'extras'];
+// Documentos primero: coincide con el mensaje de progreso ("Arrancá por
+// los documentos") y es lo más importante de no olvidar.
+export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'ropa', 'higiene', 'tech', 'extras'];
 
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';
