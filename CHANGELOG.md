@@ -5,6 +5,30 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.10.0
+
+- **Plantillas personales**: podés guardar un grupo de ítems que agregaste
+  a mano (con checkboxes para elegir cuáles) como una plantilla con
+  nombre, y aplicarla en cualquier viaje futuro con un toque. Pensado
+  para casos bien personales que la app nunca va a sugerir sola — el
+  ejemplo real que la motivó es un kit de EPP para viajes a yacimiento
+  (mameluco, lentes de protección, casco, botas). 100% privado, vive
+  solo en tu celular, nunca alimenta el generador de checklist.
+  - `useTemplates` (hook nuevo) + `SaveTemplateSheet` / `ApplyTemplateSheet`
+    (componentes nuevos) + `ItemTemplate` (tipo nuevo).
+  - Ya está atado a un feature flag (`tripTemplates`), documentado junto a
+    `customItems` como el diferenciador free/pro para el lanzamiento en
+    el App Store (ver v0.9.6).
+- **Bug real encontrado al probar esto**: aplicar una plantilla con más
+  de un ítem hacía que solo el último quedara guardado — `updateTrip` en
+  `useTrips.ts` armaba el array nuevo a partir de un `trips` externo
+  (closure) en vez de la forma funcional de `setTrips`, así que varias
+  actualizaciones seguidas dentro del mismo clic se pisaban entre sí en
+  vez de encadenarse. No se había notado antes porque hasta ahora nunca
+  se llamaba a `addCustomItem` más de una vez seguida sin que React
+  re-renderizara en el medio. Corregido para que use la forma funcional
+  correctamente.
+
 ## v0.9.6
 
 - **Documentos primero**: reordenada la checklist (antes Ropa, Higiene,

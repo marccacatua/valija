@@ -1,23 +1,29 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
 import { packedCount, progressNote, progressPct, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
+import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { Mascot } from '../components/Mascot';
+import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { useFeatureFlag } from '../features/flags';
 import { useLastTripId } from '../hooks/useLastTripId';
+import { useTemplates } from '../hooks/useTemplates';
 import { useTrips } from '../hooks/useTrips';
-import type { CategoryKey, PackingItem } from '../types';
+import type { CategoryKey, ItemTemplate, PackingItem } from '../types';
 import styles from './Checklist.module.css';
 
 export function Checklist() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
   const { getTrip, toggleItem, bumpItem, addCustomItem, removeItem } = useTrips();
+  const { templates, saveTemplate, removeTemplate } = useTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
+  const canUseTemplates = useFeatureFlag('tripTemplates');
+  const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
 
   const trip = getTrip(tripId);
 
@@ -39,6 +45,23 @@ export function Checklist() {
   }
 
   const items = trip.items;
+  const customItemsInTrip = items.filter((i) => i.isCustom);
+
+  const handleSaveTemplate = (name: string, chosen: PackingItem[]) => {
+    saveTemplate(
+      name,
+      chosen.map((i) => ({ cat: i.cat, name: i.name })),
+    );
+    setSheet(null);
+  };
+
+  const handleApplyTemplate = (template: ItemTemplate) => {
+    for (const it of template.items) {
+      addCustomItem(trip.id, it.cat, it.name);
+    }
+    setSheet(null);
+  };
+
   const packed = packedCount(items);
   const pct = progressPct(items);
   const groups = CATEGORY_ORDER.map((key) => {
@@ -141,6 +164,16 @@ export function Checklist() {
         {trip.form.maletas.length > 1 && (
           <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>
         )}
+        {canUseTemplates && customItemsInTrip.length > 0 && (
+          <Button variant="inverted" onClick={() => setSheet('save')}>
+            Guardar ítems como plantilla
+          </Button>
+        )}
+        {canUseTemplates && (
+          <Button variant="inverted" onClick={() => setSheet('apply')}>
+            Aplicar una plantilla
+          </Button>
+        )}
         <Button variant="teal" className={styles.saveButton} onClick={() => navigate('/viajes')}>
           Ver mis viajes
         </Button>
@@ -149,6 +182,18 @@ export function Checklist() {
 
       <div style={{ flex: 1 }} />
       <BottomNav active="checklist" />
+
+      {sheet === 'save' && (
+        <SaveTemplateSheet items={customItemsInTrip} onSave={handleSaveTemplate} onCancel={() => setSheet(null)} />
+      )}
+      {sheet === 'apply' && (
+        <ApplyTemplateSheet
+          templates={templates}
+          onApply={handleApplyTemplate}
+          onRemove={removeTemplate}
+          onCancel={() => setSheet(null)}
+        />
+      )}
     </div>
   );
 }

@@ -11,21 +11,25 @@ Los ítems agregados así (`isCustom: true`) se pueden borrar con una ×;
 los generados por `buildItems()` siguen sin poder borrarse, solo
 destildarse. Usa el feature flag `customItems` (sigue en `pro: false`).
 
-## "Valijas tipo" — guardar y clonar un viaje anterior como plantilla
+## ~~"Valijas tipo" — plantillas de ítems propios~~ ✅ v0.10.0 (parcial)
 
-Reusar las elecciones de un viaje pasado que funcionó bien, sin tener que
-volver a tildar todo el formulario.
+Se implementó la mitad de esta idea, la de mayor pedido real (caso de
+uso concreto: EPP de yacimiento): guardar un grupo de ítems agregados a
+mano como plantilla con nombre (`useTemplates`, `ItemTemplate`), y
+aplicarla en cualquier viaje futuro. Queda gateada detrás de
+`tripTemplates` en `features/flags.ts`.
+
+**Sigue pendiente** la otra mitad, distinta: clonar un viaje anterior
+COMPLETO (todas las elecciones del formulario — destino, clima, motivo,
+etc.) para no tener que volver a tildar todo. Notas de cuando se pensó:
 
 - El modelo de datos ya lo permite sin cambios: `Trip.form` tiene todas
   las elecciones. "Clonar" = `addTrip(tripAntiguo.form)` para crear un
   viaje nuevo con esa misma configuración (probablemente reseteando
   `dias` o dejando que el usuario lo ajuste antes de generar).
-- Candidato a feature Pro: limitar cuántas plantillas puede guardar un
-  usuario free. Ver si conviene extender el flag `unlimitedTrips` o sumar
-  uno nuevo (`tripTemplates`) en `features/flags.ts`.
-- Pendiente de decidir: ¿una plantilla es un `Trip` más en la lista, o una
-  entidad separada (`TripTemplate`) para no mezclarla con el historial de
-  viajes reales?
+- Candidato a sumarse también a `unlimitedTrips` o un flag propio si se
+  quiere limitar cuántos "viajes tipo" completos puede guardar un
+  usuario free.
 
 ## Pregunta "¿vas a hacer deporte en este viaje?"
 

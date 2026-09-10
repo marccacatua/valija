@@ -43,11 +43,14 @@ export function useTrips() {
 
   const updateTrip = useCallback(
     (id: string, updater: (t: Trip) => Trip) => {
-      // Mapea sobre `trips` (ya migrado) en vez de lo crudo de localStorage,
-      // así cualquier update de paso "cura" un viaje viejo con forma vieja.
-      setTrips(() => trips.map((t) => (t.id === id ? updater(t) : t)));
+      // Usa la forma funcional de setTrips (parte de `prev`, no del `trips`
+      // externo) para que varias llamadas seguidas dentro del mismo evento
+      // (ej. aplicar una plantilla con 3 ítems, uno por llamada) se
+      // encadenen en vez de pisarse entre sí. Migra sobre la marcha para
+      // "curar" un viaje con forma vieja de paso.
+      setTrips((prev) => prev.map(migrateTrip).map((t) => (t.id === id ? updater(t) : t)));
     },
-    [setTrips, trips],
+    [setTrips],
   );
 
   const toggleItem = useCallback(

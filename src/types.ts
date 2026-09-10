@@ -45,3 +45,12 @@ export interface Trip {
   form: TripFormState;
   items: PackingItem[];
 }
+
+/** Plantilla personal de ítems (ej. "Kit yacimiento"), privada del
+ * usuario — nunca alimenta buildItems(), solo se puede aplicar a mano. */
+export interface ItemTemplate {
+  id: string;
+  name: string;
+  items: { cat: CategoryKey; name: string }[];
+  createdAt: string;
+}
