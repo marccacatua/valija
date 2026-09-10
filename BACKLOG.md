@@ -4,17 +4,12 @@ Ideas para próximas versiones, con una nota de cómo encajarían en la
 arquitectura actual (para que cualquier sesión futura pueda retomarlas sin
 tener que releer todo el historial de chat).
 
-## Agregar ítems a mano
+## ~~Agregar ítems a mano~~ ✅ hecho en v0.4.0
 
-El usuario puede querer sumar un ítem puntual que `buildItems()` no
-contempla (algo muy suyo, no generalizable).
-
-- Ya existe el feature flag `customItems` en `src/features/flags.ts`
-  (hoy `pro: false`) pensado exactamente para esto.
-- Implementación sugerida: en `Checklist.tsx`, un input/botón "+ Agregar
-  ítem" al final de cada grupo. Necesita un método nuevo en `useTrips`
-  (algo como `addCustomItem(tripId, cat, name)`) que haga push a
-  `trip.items` con un `id` nuevo.
+Cada categoría de la checklist termina con una fila "Agregar ítem…".
+Los ítems agregados así (`isCustom: true`) se pueden borrar con una ×;
+los generados por `buildItems()` siguen sin poder borrarse, solo
+destildarse. Usa el feature flag `customItems` (sigue en `pro: false`).
 
 ## "Valijas tipo" — guardar y clonar un viaje anterior como plantilla
 
