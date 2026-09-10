@@ -13,6 +13,7 @@ import styles from './Trips.module.css';
 interface PendingConfirm {
   title: string;
   message: string;
+  variant?: 'sheet' | 'center';
   onConfirm: () => void;
 }
 
@@ -43,10 +44,12 @@ export function Trips() {
       title: `¿Borrar los ${trips.length} viajes guardados?`,
       message: 'Vas a perder todo el progreso de empacado. Esto no se puede deshacer.',
       onConfirm: () => {
-        // segunda confirmación, encadenada
+        // segunda confirmación, encadenada — centrada, para que se note
+        // que este paso es el que realmente importa
         setConfirm({
           title: 'Última confirmación',
           message: 'Se van a borrar TODOS tus viajes para siempre. ¿Continuar?',
+          variant: 'center',
           onConfirm: () => {
             removeAllTrips();
             setConfirm(null);
@@ -130,7 +133,13 @@ export function Trips() {
       <BottomNav active="viajes" />
 
       {confirm && (
-        <ConfirmDialog title={confirm.title} message={confirm.message} onConfirm={confirm.onConfirm} onCancel={() => setConfirm(null)} />
+        <ConfirmDialog
+          title={confirm.title}
+          message={confirm.message}
+          variant={confirm.variant}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
       )}
     </div>
   );

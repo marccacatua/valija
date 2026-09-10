@@ -5,6 +5,14 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.9.4
+
+- `ConfirmDialog` suma una variante `center`: en vez de la hoja que sube
+  desde abajo, se muestra centrada con ícono de advertencia y borde
+  rosado. Se usa solo en el último paso de "Borrar todos los viajes" —
+  el más grave de la cadena — para que se note que es distinto de una
+  confirmación cualquiera.
+
 ## v0.9.3
 
 - Reemplazados los `window.confirm()` (diálogo nativo del sistema, gris,

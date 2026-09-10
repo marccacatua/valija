@@ -9,6 +9,11 @@
   animation: fadeIn 0.15s ease;
 }
 
+.overlayCenter {
+  align-items: center;
+  padding: 20px;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -28,6 +33,14 @@
   animation: slideUp 0.2s cubic-bezier(0.3, 1.2, 0.5, 1);
 }
 
+.cardCenter {
+  border-radius: 28px;
+  padding: 30px 24px;
+  text-align: center;
+  animation: popIn 0.18s cubic-bezier(0.3, 1.4, 0.5, 1);
+  border: 3px solid #f3c3bf;
+}
+
 @keyframes slideUp {
   from {
     transform: translateY(30px);
@@ -39,10 +52,31 @@
   }
 }
 
+@keyframes popIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.warningIcon {
+  font-size: 40px;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
 .title {
   font: 1000 20px/1.2 'Nunito', sans-serif;
   color: var(--ink);
   letter-spacing: -0.01em;
+}
+
+.titleCenter {
+  font-size: 22px;
 }
 
 .message {
