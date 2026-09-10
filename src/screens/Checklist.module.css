@@ -222,6 +222,20 @@
   color: var(--coral-dark);
 }
 
+.removeBtn {
+  width: 24px;
+  height: 24px;
+  border-radius: 9999px;
+  background: none;
+  color: var(--muted-2);
+  font: 900 15px/1 'Nunito', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin-left: 2px;
+}
+
 .qtyValue {
   min-width: 26px;
   text-align: center;

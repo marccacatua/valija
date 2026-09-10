@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
 import { packedCount, progressNote, progressPct, tripMetaChips, tripTitle } from '../data/trip';
+import { AddItemRow } from '../components/AddItemRow';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { Mascot } from '../components/Mascot';
+import { useFeatureFlag } from '../features/flags';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
 import type { CategoryKey, PackingItem } from '../types';
@@ -13,8 +15,9 @@ import styles from './Checklist.module.css';
 export function Checklist() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, toggleItem, bumpItem } = useTrips();
+  const { getTrip, toggleItem, bumpItem, addCustomItem, removeItem } = useTrips();
   const [, setLastTripId] = useLastTripId();
+  const canAddCustomItems = useFeatureFlag('customItems');
 
   const trip = getTrip(tripId);
 
@@ -81,9 +84,20 @@ export function Checklist() {
               >
                 +
               </button>
+              {item.isCustom && (
+                <button
+                  type="button"
+                  className={styles.removeBtn}
+                  onClick={() => removeItem(trip.id, item.id)}
+                  aria-label={`Borrar ${item.name}`}
+                >
+                  ×
+                </button>
+              )}
             </span>
           </button>
         ))}
+        {canAddCustomItems && <AddItemRow onAdd={(name) => addCustomItem(trip.id, key, name)} />}
       </div>
     );
   };

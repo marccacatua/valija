@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { buildItems } from '../data/buildItems';
-import type { Trip, TripFormState } from '../types';
+import type { CategoryKey, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
 const STORAGE_KEY = 'valija:trips';
@@ -55,6 +55,25 @@ export function useTrips() {
     [updateTrip],
   );
 
+  const addCustomItem = useCallback(
+    (tripId: string, cat: CategoryKey, name: string) => {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      updateTrip(tripId, (t) => ({
+        ...t,
+        items: [...t.items, { id: crypto.randomUUID(), cat, name: trimmed, qty: 1, done: false, isCustom: true }],
+      }));
+    },
+    [updateTrip],
+  );
+
+  const removeItem = useCallback(
+    (tripId: string, itemId: string) => {
+      updateTrip(tripId, (t) => ({ ...t, items: t.items.filter((i) => i.id !== itemId) }));
+    },
+    [updateTrip],
+  );
+
   const removeTrip = useCallback(
     (id: string) => {
       setTrips((prev) => prev.filter((t) => t.id !== id));
@@ -64,5 +83,5 @@ export function useTrips() {
 
   const getTrip = useCallback((id: string | undefined) => trips.find((t) => t.id === id), [trips]);
 
-  return { trips, addTrip, updateTrip, toggleItem, bumpItem, removeTrip, getTrip };
+  return { trips, addTrip, updateTrip, toggleItem, bumpItem, addCustomItem, removeItem, removeTrip, getTrip };
 }
