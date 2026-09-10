@@ -14,9 +14,10 @@ export interface DistributedItem {
  * lectura, pensada para el momento de armar las valijas.
  *
  * Reglas:
- * - Documentos y electrónica van en la mochila (o el carry-on si no hay
- *   mochila): es lo que llevás encima, no lo que va bajo el avión. Se
- *   mantiene liviana a propósito, no le mandamos ropa "de respaldo".
+ * - Documentos, electrónica y algunos ítems puntuales que siempre conviene
+ *   tener a mano (ver ALWAYS_WITH_YOU) van en la mochila, o el carry-on si
+ *   no hay mochila: es lo que llevás encima, no lo que va bajo el avión.
+ *   Se mantiene liviana a propósito, no le mandamos ropa "de respaldo".
  * - Todo lo demás (ropa, higiene, extras) va a la valija "principal":
  *   bodega si hay, si no carry-on, si no mochila.
  * - Si hay bodega en la mezcla y además otra valija (carry-on o mochila,
@@ -25,6 +26,11 @@ export interface DistributedItem {
  *   pensada para una muda de repuesto por si se pierde o demora la
  *   bodega.
  */
+// Ítems que van "con vos" sin importar su categoría (no son documentos ni
+// electrónica, pero tampoco tiene sentido facturarlos): se usan en el
+// momento, no querés depender de la bodega para tenerlos a mano.
+const ALWAYS_WITH_YOU = ['Lentes de sol'];
+
 export function distributeItems(items: PackingItem[], bags: MaletaKey[]): Record<MaletaKey, DistributedItem[]> {
   const result: Record<MaletaKey, DistributedItem[]> = { carry: [], bodega: [], mochila: [] };
   if (bags.length === 0) return result;
@@ -37,8 +43,8 @@ export function distributeItems(items: PackingItem[], bags: MaletaKey[]): Record
   const backupBag = backupOrder.find((b) => b !== primary) ?? withYou;
 
   for (const item of items) {
-    const isValuable = item.cat === 'docs' || item.cat === 'tech';
-    if (isValuable) {
+    const keepWithYou = item.cat === 'docs' || item.cat === 'tech' || ALWAYS_WITH_YOU.includes(item.name);
+    if (keepWithYou) {
       result[withYou].push({ item, qty: item.qty, isSplit: false });
       continue;
     }

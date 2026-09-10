@@ -5,6 +5,16 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.7.2
+
+- "Lentes de sol" pasa de la categoría "Ropa" a "Extras" — encaja mejor
+  ahí que como prenda.
+- En la pantalla de distribución, los lentes de sol ahora van siempre a
+  la mochila (o al carry-on si no hay mochila), sin importar la
+  categoría: no tiene sentido facturarlos, se usan en el momento.
+- Confirmado (ya era así, sin cambios): se ofrecen siempre, en cualquier
+  viaje, sin condición de clima ni destino.
+
 ## v0.7.1
 
 - Corregido el algoritmo de distribución: el "respaldo" de ítems con más

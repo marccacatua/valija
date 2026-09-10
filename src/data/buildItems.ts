@@ -36,8 +36,7 @@ const ROPA_ORDER = [
   'Short o pantalón de trekking',
   'Shorts o bermudas',
   'Traje de baño',
-  // accesorios
-  'Lentes de sol',
+  // accesorios (lentes de sol vive en "extras", no acá — ver buildRawItems)
   'Cinturón',
   'Bufanda',
   'Gorro y guantes',
@@ -71,7 +70,6 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('ropa', 'Medias', cap(d, 8));
   add('ropa', 'Pantalones', Math.max(1, Math.ceil(d / 4)));
   add('ropa', 'Pijama', d > 5 ? 2 : 1);
-  add('ropa', 'Lentes de sol');
   add('ropa', 'Cinturón');
   if (f.clima === 'frio') {
     add('ropa', 'Campera abrigada');
@@ -137,6 +135,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.motivo === 'trabajo') add('tech', 'Notebook y cargador');
   if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) add('tech', 'Cámara y memoria');
 
+  add('extras', 'Lentes de sol');
   add('extras', 'Bolsa para ropa sucia');
   add('extras', 'Bolsas ziploc');
   add('extras', 'Botella reutilizable');
