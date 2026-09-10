@@ -1,0 +1,96 @@
+.screen {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 20px 22px 16px;
+  background: var(--cream);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  border-bottom: 2px solid #f6e7d8;
+}
+
+.headerRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.backBtn {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+
+.headerTitle {
+  font: 1000 24px/1 'Nunito', sans-serif;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.headerSubtitle {
+  font: 800 13px/1.2 'Nunito', sans-serif;
+  color: var(--coral);
+  margin-top: 4px;
+}
+
+.body {
+  padding: 22px 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.nameInput {
+  width: 100%;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  padding: 16px 18px;
+  font: 800 17px 'Nunito', sans-serif;
+  color: var(--ink);
+  outline: none;
+  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+}
+
+.nameInput:focus {
+  border-color: var(--coral);
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.grid4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  padding: 14px 22px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  background: linear-gradient(180deg, rgba(255, 246, 238, 0) 0%, #fff6ee 34%);
+  z-index: 6;
+}

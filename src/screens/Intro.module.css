@@ -1,0 +1,72 @@
+.screen {
+  min-height: 100vh;
+  box-sizing: border-box;
+  padding: 48px 26px 44px;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.dots {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 30px;
+}
+
+.dot {
+  width: 26px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--line);
+}
+
+.dotActive {
+  background: var(--coral);
+}
+
+.title {
+  margin: 0;
+  font: 1000 33px/1.08 'Nunito', sans-serif;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 28px;
+}
+
+.step {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+}
+
+.iconWrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.stepTitle {
+  font: 900 17px/1.2 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.stepDesc {
+  font: 700 14px/1.35 'Nunito', sans-serif;
+  color: var(--muted);
+  margin-top: 3px;
+}

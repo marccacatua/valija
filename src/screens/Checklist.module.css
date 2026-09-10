@@ -1,0 +1,241 @@
+.screen {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.hero {
+  padding: 40px 22px 40px;
+  background: linear-gradient(165deg, #ff6a3d, #ee4f27);
+  border-radius: 0 0 34px 34px;
+  position: relative;
+  overflow: hidden;
+}
+
+.heroBlob {
+  position: absolute;
+  top: -60px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 9999px;
+  background: rgba(255, 197, 61, 0.24);
+}
+
+.heroLabel {
+  font: 900 12px/1 'Nunito', sans-serif;
+  color: rgba(255, 253, 248, 0.82);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  position: relative;
+}
+
+.heroTitle {
+  font: 1000 32px/1.05 'Nunito', sans-serif;
+  color: #fffdf8;
+  letter-spacing: -0.02em;
+  margin-top: 8px;
+  position: relative;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+  position: relative;
+}
+
+.chip {
+  padding: 7px 13px;
+  border-radius: 9999px;
+  background: rgba(255, 253, 248, 0.2);
+  color: #fffdf8;
+  font: 800 12px/1 'Nunito', sans-serif;
+}
+
+.progressWrap {
+  padding: 0 22px;
+  margin-top: -24px;
+  position: relative;
+  z-index: 3;
+}
+
+.progressCard {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 18px;
+  box-shadow: 0 5px 0 rgba(36, 31, 27, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.progressCount {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.progressCountNum {
+  font: 1000 26px/1 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.progressCountLabel {
+  font: 800 14px/1 'Nunito', sans-serif;
+  color: var(--muted);
+}
+
+.progressBarTrack {
+  height: 14px;
+  border-radius: 9999px;
+  background: #f6e7d8;
+  margin-top: 11px;
+  overflow: hidden;
+}
+
+.progressBarFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #ffc53d, #ff6a3d);
+  transition: width 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+
+.progressNote {
+  font: 800 13px/1 'Nunito', sans-serif;
+  color: var(--coral);
+  margin-top: 9px;
+}
+
+.groups {
+  padding: 18px 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.group {
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 6px 18px 12px;
+  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 0 8px;
+}
+
+.groupDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.groupTitle {
+  font: 1000 18px/1 'Nunito', sans-serif;
+  color: var(--ink);
+  flex: 1;
+}
+
+.groupCount {
+  font: 900 13px/1 'Nunito', sans-serif;
+  color: var(--muted);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 11px 0;
+  border-top: 2px solid var(--line-soft);
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  background: none;
+}
+
+.checkbox {
+  width: 30px;
+  height: 30px;
+  border-radius: 11px;
+  border: 2.5px solid var(--line-outer);
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  font: 900 16px/1 'Nunito', sans-serif;
+  color: transparent;
+  transition: all 0.18s ease;
+}
+
+.checkboxDone {
+  border-color: var(--coral);
+  background: var(--coral);
+  color: #fffdf8;
+}
+
+.itemName {
+  flex: 1;
+  font: 800 16px/1.25 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.itemNameDone {
+  color: var(--muted-2);
+  text-decoration: line-through;
+}
+
+.qtyControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+
+.qtyBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 10px;
+  font: 900 16px/1 'Nunito', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.qtyDec {
+  background: var(--cream);
+  color: var(--muted);
+}
+
+.qtyInc {
+  background: #ffedd9;
+  color: var(--coral-dark);
+}
+
+.qtyValue {
+  min-width: 26px;
+  text-align: center;
+  font: 900 15px/1 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.saveButton {
+  margin-top: 4px;
+}
+
+.notFound {
+  padding: 80px 24px;
+  text-align: center;
+  font: 800 16px/1.4 'Nunito', sans-serif;
+  color: var(--muted);
+}

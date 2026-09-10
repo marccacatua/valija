@@ -1,0 +1,25 @@
+.nav {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  padding: 12px 14px calc(env(safe-area-inset-bottom, 0px) + 18px);
+  background: rgba(255, 246, 238, 0.94);
+  border-top: 2px solid #f6e7d8;
+  backdrop-filter: blur(8px);
+  z-index: 6;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font: 900 11px/1 'Nunito', sans-serif;
+  color: var(--muted-2);
+}
+
+.active {
+  color: var(--coral);
+}

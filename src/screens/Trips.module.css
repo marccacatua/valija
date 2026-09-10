@@ -1,0 +1,108 @@
+.screen {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: var(--cream);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 40px 22px 8px;
+}
+
+.title {
+  font: 1000 32px/1 'Nunito', sans-serif;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font: 800 14px/1.3 'Nunito', sans-serif;
+  color: var(--muted);
+  margin-top: 7px;
+}
+
+.body {
+  padding: 16px 22px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tripCard {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: #fff;
+  border: 2px solid var(--line);
+  border-radius: 24px;
+  padding: 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  width: 100%;
+  text-align: left;
+}
+
+.tripCard:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(36, 31, 27, 0.05);
+}
+
+.tripInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.tripName {
+  font: 1000 18px/1.1 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.tripMeta {
+  font: 800 13px/1.3 'Nunito', sans-serif;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+.tripState {
+  font: 900 12px/1 'Nunito', sans-serif;
+  margin-top: 7px;
+}
+
+.emptyState {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 14px;
+  padding: 32px 20px;
+  background: #fff;
+  border: 2px dashed var(--line);
+  border-radius: 24px;
+}
+
+.emptyTitle {
+  font: 900 18px/1.3 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.emptyDesc {
+  font: 700 14px/1.4 'Nunito', sans-serif;
+  color: var(--muted);
+}
+
+.tip {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff2ce;
+  border-radius: 22px;
+  padding: 16px 18px;
+  margin-top: 6px;
+}
+
+.tipText {
+  font: 800 14px/1.35 'Nunito', sans-serif;
+  color: #6b5a1e;
+}

@@ -1,0 +1,20 @@
+.chip {
+  padding: 13px 20px;
+  border-radius: 9999px;
+  border: 2px solid var(--line);
+  cursor: pointer;
+  font: 900 15px/1 'Nunito', sans-serif;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+}
+
+.selected {
+  background: var(--selected-bg);
+  border-color: var(--coral);
+  color: var(--coral-dark);
+}
+
+.locked {
+  opacity: 0.55;
+}
