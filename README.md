@@ -1,8 +1,10 @@
 # Valija
 
-PWA de checklist de equipaje. Implementación real, basada en el prototipo de
-Claude Design (`../project/Valija.dc.html`), con estructura mantenible y
-persistencia local de verdad.
+PWA de checklist de equipaje. Implementación real, basada en un prototipo de
+Claude Design, con estructura mantenible y persistencia local de verdad.
+
+Ver `CHANGELOG.md` para el historial de versiones y `BACKLOG.md` para lo
+que sigue.
 
 ## Correr en desarrollo
 

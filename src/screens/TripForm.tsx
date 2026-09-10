@@ -96,6 +96,17 @@ export function TripForm() {
         </div>
 
         <div>
+          <SectionLabel>Vestuario</SectionLabel>
+          <div className={styles.wrap}>
+            <OptionChip
+              label="Sumar vestidos / pollera"
+              selected={form.vestidos}
+              onSelect={() => set('vestidos', !form.vestidos)}
+            />
+          </div>
+        </div>
+
+        <div>
           <SectionLabel>Motivo</SectionLabel>
           <div className={styles.wrap}>
             {MOTIVO_OPTIONS.map((opt) => (

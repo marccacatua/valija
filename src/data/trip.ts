@@ -20,6 +20,7 @@ export const DEFAULT_FORM: TripFormState = {
   transporte: 'avion',
   maleta: 'carry',
   dias: 5,
+  vestidos: false,
 };
 
 export function tripTitle(form: TripFormState): string {

@@ -21,6 +21,9 @@ export interface TripFormState {
   transporte: TransporteKey;
   maleta: MaletaKey;
   dias: number;
+  /** Sumar vestidos/pollera a la checklist. Independiente de todo lo demás:
+   * no le preguntamos género a nadie, es una preferencia de vestuario. */
+  vestidos: boolean;
 }
 
 export interface PackingItem {

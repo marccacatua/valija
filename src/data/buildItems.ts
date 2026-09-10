@@ -32,7 +32,9 @@ const ROPA_ORDER = [
   'Outfit para salir',
   // abajo
   'Pantalones',
+  'Vestido o pollera',
   'Short o pantalón de trekking',
+  'Shorts o bermudas',
   'Traje de baño',
   // accesorios
   'Lentes de sol',
@@ -83,8 +85,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.dest === 'playa' || f.clima === 'calor') {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
+    add('ropa', 'Shorts o bermudas', cap(Math.ceil(d / 2), 4));
   }
   if (f.dest === 'playa') add('ropa', 'Ojotas o sandalias');
+  if (f.vestidos) add('ropa', 'Vestido o pollera', Math.max(1, Math.ceil(d / 3)));
   if (f.dest === 'montana' || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
   if (leisure && f.turismo === 'aventura') {
     add('ropa', 'Remeras deportivas', 2);
