@@ -84,16 +84,14 @@ export function Checklist() {
               >
                 +
               </button>
-              {item.isCustom && (
-                <button
-                  type="button"
-                  className={styles.removeBtn}
-                  onClick={() => removeItem(trip.id, item.id)}
-                  aria-label={`Borrar ${item.name}`}
-                >
-                  ×
-                </button>
-              )}
+              <button
+                type="button"
+                className={styles.removeBtn}
+                onClick={() => removeItem(trip.id, item.id)}
+                aria-label={`Borrar ${item.name}`}
+              >
+                ×
+              </button>
             </span>
           </button>
         ))}

@@ -9,6 +9,47 @@ interface RawItem {
 const cap = (n: number, max: number) => Math.min(n, max);
 
 /**
+ * Orden de empaque dentro de la categoría "ropa": interior -> arriba ->
+ * abajo -> accesorios -> calzado (el calzado queda último a propósito,
+ * ocupa espacio y conviene acomodarlo al fondo/costado de la valija).
+ * Cualquier ítem de ropa que no esté en esta lista (no debería pasar, la
+ * lista cubre todo lo que genera buildRawItems) queda al final.
+ */
+const ROPA_ORDER = [
+  // interior
+  'Ropa interior',
+  'Medias',
+  'Pijama',
+  // arriba
+  'Remeras',
+  'Remeras deportivas',
+  'Camisas',
+  'Buzo o campera liviana',
+  'Buzos',
+  'Campera abrigada',
+  'Rompeviento impermeable',
+  'Saco o blazer',
+  'Outfit para salir',
+  // abajo
+  'Pantalones',
+  'Short o pantalón de trekking',
+  'Traje de baño',
+  // accesorios
+  'Lentes de sol',
+  'Cinturón',
+  'Bufanda',
+  'Gorro y guantes',
+  'Gorra o sombrero',
+  // calzado (último)
+  'Ojotas o sandalias',
+  'Zapatillas de trekking',
+  'Zapatillas cómodas para caminar',
+  'Zapatos de vestir',
+  'Calzado para salir',
+  'Botas o calzado de abrigo',
+];
+
+/**
  * Reglas de armado de checklist, portadas del prototipo de Claude Design
  * (Valija.dc.html). Es una función pura: mismo form -> mismos ítems, sin
  * estado ni ids, para que sea fácil de testear y de ajustar reglas.
@@ -108,6 +149,14 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.clima === 'lluvia') add('extras', 'Paraguas plegable');
   if (f.dest === 'playa') add('extras', 'Toallón de playa');
   if (leisure && f.turismo === 'relax') add('extras', 'Libro o e-reader');
+
+  const ropaRank = (name: string) => {
+    const idx = ROPA_ORDER.indexOf(name);
+    return idx === -1 ? ROPA_ORDER.length : idx;
+  };
+  // Sort estable: solo reordena el bloque de "ropa" entre sí, todo lo
+  // demás mantiene el orden en que se agregó arriba.
+  out.sort((a, b) => (a.cat === 'ropa' && b.cat === 'ropa' ? ropaRank(a.name) - ropaRank(b.name) : 0));
 
   return out;
 }

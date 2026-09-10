@@ -29,7 +29,7 @@ export interface PackingItem {
   name: string;
   qty: number;
   done: boolean;
-  /** true si lo agregó el usuario a mano (permite borrarlo; los generados por buildItems no se borran, solo se destildan). */
+  /** true si lo agregó el usuario a mano (informativo — cualquier ítem se puede borrar, sea generado o no). */
   isCustom?: boolean;
 }
 
