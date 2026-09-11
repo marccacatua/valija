@@ -71,6 +71,17 @@ export function progressNote(items: PackingItem[]): string {
   return `Te faltan ${items.length - packed} ítems`;
 }
 
+/** Ejemplo de nombre de plantilla, sugerido según el viaje actual — para
+ * que el placeholder inspire algo relevante en vez de un genérico fijo. */
+export function templatePlaceholder(form: TripFormState): string {
+  if (form.dest === 'playa') return 'Kit snorkel';
+  if (form.dest === 'montana') return 'Kit escalada';
+  // ciudad
+  if (form.turismo === 'fiesta') return 'Kit noche de salida';
+  if (form.motivo === 'trabajo') return 'Kit oficina';
+  return 'Kit museos';
+}
+
 export function tripListMeta(trip: Trip): string {
   const when = new Date(trip.createdAt).toLocaleDateString('es-AR', { month: 'short', year: 'numeric' });
   return `${tripMetaLine(trip.form)} · ${when}`;

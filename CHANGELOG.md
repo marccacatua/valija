@@ -5,6 +5,24 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.10.1
+
+- **Zoom automático de iOS**: los inputs de "Agregar ítem" y de nombre de
+  plantilla tenían letra de 15px — por debajo de 16px, Safari en iOS
+  hace zoom al enfocar el campo y a veces la app queda con el zoom
+  metido. Subidos a 16px, y agregada una regla global de seguridad
+  (`input { font-size: 16px }` como piso) para que ningún input futuro
+  reintroduzca el problema.
+- **Ejemplo de plantilla según el viaje**: el placeholder del nombre de
+  plantilla ya no es siempre "Kit yacimiento" — ahora sugiere algo
+  relevante al destino/motivo del viaje actual (playa → "Kit snorkel",
+  montaña → "Kit escalada", ciudad+trabajo → "Kit oficina", ciudad+salidas
+  → "Kit noche de salida", ciudad en general → "Kit museos").
+- **Confirmación al borrar una plantilla**: antes se borraba al toque, sin
+  vuelta atrás y sin avisar. Ahora pide confirmación (mismo componente
+  `ConfirmDialog` que ya usábamos para viajes), encadenada sobre la hoja
+  de "Aplicar una plantilla".
+
 ## v0.10.0
 
 - **Plantillas personales**: podés guardar un grupo de ítems que agregaste

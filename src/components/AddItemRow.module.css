@@ -26,7 +26,9 @@
   border: none;
   outline: none;
   background: none;
-  font: 800 15px 'Nunito', sans-serif;
+  /* 16px mínimo: por debajo de eso, Safari en iOS hace zoom automático al
+     tocar el campo y a veces no vuelve a su tamaño normal. */
+  font: 800 16px 'Nunito', sans-serif;
   color: var(--ink);
   min-width: 0;
 }

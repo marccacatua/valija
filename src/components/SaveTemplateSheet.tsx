@@ -4,6 +4,7 @@ import styles from './TemplateSheets.module.css';
 
 interface SaveTemplateSheetProps {
   items: PackingItem[];
+  placeholderExample: string;
   onSave: (name: string, items: PackingItem[]) => void;
   onCancel: () => void;
 }
@@ -11,7 +12,7 @@ interface SaveTemplateSheetProps {
 /** Elegís con checkboxes cuáles de tus ítems a mano entran en la
  * plantilla nueva — no todos los que agregaste tienen por qué repetirse
  * en el próximo viaje. */
-export function SaveTemplateSheet({ items, onSave, onCancel }: SaveTemplateSheetProps) {
+export function SaveTemplateSheet({ items, placeholderExample, onSave, onCancel }: SaveTemplateSheetProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set(items.map((i) => i.id)));
   const [name, setName] = useState('');
 
@@ -48,7 +49,7 @@ export function SaveTemplateSheet({ items, onSave, onCancel }: SaveTemplateSheet
           className={styles.nameInput}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Ej. Kit yacimiento"
+          placeholder={`Ej. ${placeholderExample}`}
         />
 
         <div className={styles.actions}>

@@ -42,6 +42,10 @@ body {
 
 input {
   font-family: inherit;
+  /* Red de seguridad: por debajo de 16px, Safari en iOS hace zoom
+     automático al enfocar un input y a veces no vuelve a su tamaño
+     normal. Cada input puede subir el tamaño, nunca bajarlo de acá. */
+  font-size: 16px;
 }
 
 input::placeholder {

@@ -6,8 +6,10 @@ import { AddItemRow } from '../components/AddItemRow';
 import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Mascot } from '../components/Mascot';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
+import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTemplates } from '../hooks/useTemplates';
@@ -24,6 +26,7 @@ export function Checklist() {
   const canAddCustomItems = useFeatureFlag('customItems');
   const canUseTemplates = useFeatureFlag('tripTemplates');
   const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
+  const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
 
   const trip = getTrip(tripId);
 
@@ -184,14 +187,30 @@ export function Checklist() {
       <BottomNav active="checklist" />
 
       {sheet === 'save' && (
-        <SaveTemplateSheet items={customItemsInTrip} onSave={handleSaveTemplate} onCancel={() => setSheet(null)} />
+        <SaveTemplateSheet
+          items={customItemsInTrip}
+          placeholderExample={templatePlaceholder(trip.form)}
+          onSave={handleSaveTemplate}
+          onCancel={() => setSheet(null)}
+        />
       )}
       {sheet === 'apply' && (
         <ApplyTemplateSheet
           templates={templates}
           onApply={handleApplyTemplate}
-          onRemove={removeTemplate}
+          onRemove={(id) => setTemplateToDelete(templates.find((t) => t.id === id) ?? null)}
           onCancel={() => setSheet(null)}
+        />
+      )}
+      {templateToDelete && (
+        <ConfirmDialog
+          title={`¿Borrar la plantilla "${templateToDelete.name}"?`}
+          message="No se puede deshacer."
+          onConfirm={() => {
+            removeTemplate(templateToDelete.id);
+            setTemplateToDelete(null);
+          }}
+          onCancel={() => setTemplateToDelete(null)}
         />
       )}
     </div>
