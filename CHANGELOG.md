@@ -5,6 +5,18 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.12.2
+
+- **Transporte no se veía en ningún lado**: el punto 3 de la vuelta
+  anterior en realidad se refería a los chips debajo de "Tu valija
+  para..." (no al formulario) — `tripMetaChips()` calculaba destino,
+  clima, motivo, días y maletas, pero nunca incluía transporte. Se
+  agregó.
+- **Orden de categorías**: "Higiene" pasa a mostrarse antes que "Ropa"
+  (coincide con el orden que ya tenía la vista rápida) — evita la
+  incoherencia de que el mensaje de progreso invite a seguir con una
+  categoría que en la lista aparece más abajo que otra.
+
 ## v0.12.1
 
 - **Choque con la barra de estado en PWA instalada**: al agregar la app

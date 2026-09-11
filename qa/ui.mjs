@@ -599,8 +599,8 @@ try {
       await page.waitForTimeout(50);
     }
     await page.waitForTimeout(100);
-    const notaTrasDocs = await page.locator('text=Ahora seguí con la ropa').count();
-    assert(notaTrasDocs === 1, 'Al completar documentos, la nota invita a seguir con la ropa', `count=${notaTrasDocs}`);
+    const notaTrasDocs = await page.locator('text=Ahora seguí con la higiene').count();
+    assert(notaTrasDocs === 1, 'Al completar documentos, la nota invita a seguir con la higiene', `count=${notaTrasDocs}`);
     await ctx.close();
   }
 } catch (err) {

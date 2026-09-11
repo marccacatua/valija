@@ -44,6 +44,7 @@ export function tripMetaChips(form: TripFormState): string[] {
     labelFor(CLIMA_OPTIONS, form.clima),
     labelFor(MOTIVO_OPTIONS, form.motivo),
     `${form.dias} días`,
+    labelFor(TRANSPORTE_OPTIONS, form.transporte),
     labelForMany(MALETA_OPTIONS, form.maletas),
   ];
 }

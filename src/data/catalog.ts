@@ -77,8 +77,11 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
 };
 
 // Documentos primero: coincide con el mensaje de progreso ("Arrancá por
-// los documentos") y es lo más importante de no olvidar.
-export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'ropa', 'higiene', 'tech', 'extras'];
+// los documentos") y es lo más importante de no olvidar. Higiene antes
+// que ropa para que coincida con el orden de QUICK_GROUP_ORDER (vista
+// rápida) — mismo orden en las dos vistas, y con el mensaje de progreso
+// que invita a seguir con la próxima categoría.
+export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'ropa', 'tech', 'extras'];
 
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';
