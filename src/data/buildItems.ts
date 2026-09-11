@@ -17,7 +17,7 @@ const cap = (n: number, max: number) => Math.min(n, max);
  * Cualquier ítem de ropa que no esté en esta lista (no debería pasar, la
  * lista cubre todo lo que genera buildRawItems) queda al final.
  */
-const ROPA_ORDER = [
+export const ROPA_ORDER = [
   // interior
   'Ropa interior',
   'Medias',

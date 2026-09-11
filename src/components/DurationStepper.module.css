@@ -1,9 +1,9 @@
 .card {
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 22px;
   padding: 16px;
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
 }
 
 .row {
@@ -30,13 +30,13 @@
 }
 
 .dec {
-  background: #ffedd9;
+  background: var(--selected-bg);
   color: var(--coral-dark);
 }
 
 .inc {
   background: var(--coral);
-  color: #fffdf8;
+  color: var(--paper);
 }
 
 .center {

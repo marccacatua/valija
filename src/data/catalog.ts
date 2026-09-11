@@ -65,12 +65,15 @@ export const MALETA_OPTIONS: CatalogOption<MaletaKey>[] = [
   { key: 'mochila', label: 'Mochila' },
 ];
 
+// Colores como var(--token) en vez de hex: son strings que terminan en un
+// style inline (background/fill), el navegador los resuelve igual que si
+// vinieran de una clase — así quedan preparados para modo oscuro.
 export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; pro?: boolean }> = {
-  ropa: { title: 'Ropa', color: '#FF6A3D' },
-  higiene: { title: 'Higiene', color: '#12A594' },
-  docs: { title: 'Documentos', color: '#7A6BF5' },
-  tech: { title: 'Electrónica', color: '#E5A400' },
-  extras: { title: 'Extras', color: '#63A7D4' },
+  ropa: { title: 'Ropa', color: 'var(--coral)' },
+  higiene: { title: 'Higiene', color: 'var(--teal)' },
+  docs: { title: 'Documentos', color: 'var(--violet)' },
+  tech: { title: 'Electrónica', color: 'var(--mustard-dark)' },
+  extras: { title: 'Extras', color: 'var(--sky)' },
 };
 
 // Documentos primero: coincide con el mensaje de progreso ("Arrancá por

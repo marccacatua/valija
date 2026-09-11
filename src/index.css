@@ -1,5 +1,11 @@
+/*
+ * Paleta central. Todo color que aparezca en más de un lugar (o que
+ * eventualmente tenga que cambiar en modo oscuro) tiene que vivir acá,
+ * no hardcodeado en un .module.css o un fill de SVG. Ver BACKLOG.md.
+ */
 :root {
   --coral: #ff6a3d;
+  --coral-mid: #f2522a;
   --coral-dark: #d9491e;
   --coral-deep: #e0431f;
   --cream: #fff6ee;
@@ -7,9 +13,13 @@
   --ink: #241f1b;
   --muted: #8a7f76;
   --muted-2: #b4a79b;
+  --muted-3: #d8c6b7;
+  --muted-4: #c9baae;
+  --placeholder: #c4b4a6;
   --line: #f1dcc9;
   --line-soft: #fbf1e7;
   --line-outer: #e4d3c3;
+  --border-subtle: #f6e7d8;
   --teal: #12a594;
   --teal-dark: #0c7c6f;
   --mustard: #ffc53d;
@@ -18,7 +28,27 @@
   --violet-dark: #5b49e8;
   --sky: #63a7d4;
   --paper: #fffdf8;
+  --surface: #ffffff;
   --selected-bg: #ffedd9;
+
+  /* fondos tenues (íconos, banners de tip) — coral usa --selected-bg,
+     ya definido arriba con el mismo valor, para no duplicar tokens */
+  --tint-teal: #ddf3f0;
+  --tint-mustard: #fff2ce;
+  --tip-text: #6b5a1e;
+
+  /* acciones destructivas */
+  --danger: #d9302a;
+  --danger-dark: #a8241f;
+  --danger-light: #f3c3bf;
+  --danger-text: #b3413a;
+
+  --shadow-tan: #c7a98f;
+  --shadow-card: rgba(36, 31, 27, 0.05);
+  --overlay: rgba(36, 31, 27, 0.5);
+  --mascot-strap: #f3a81e;
+  --mountain-dark: #0e8377;
+  --cloud: #bfd3d9;
 }
 
 * {
@@ -49,7 +79,7 @@ input {
 }
 
 input::placeholder {
-  color: #c4b4a6;
+  color: var(--placeholder);
   font-weight: 700;
 }
 

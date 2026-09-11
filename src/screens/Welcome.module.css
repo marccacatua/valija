@@ -2,7 +2,7 @@
   min-height: 100vh;
   box-sizing: border-box;
   padding: 56px 28px 44px;
-  background: linear-gradient(170deg, #ff6a3d 0%, #f2522a 62%, #e0431f 100%);
+  background: linear-gradient(170deg, var(--coral) 0%, var(--coral-mid) 62%, var(--coral-deep) 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -18,7 +18,7 @@
   width: 260px;
   height: 260px;
   border-radius: 9999px;
-  background: rgba(255, 197, 61, 0.28);
+  background: color-mix(in srgb, var(--mustard) 28%, transparent);
 }
 
 .blobBottom {
@@ -28,13 +28,13 @@
   width: 200px;
   height: 200px;
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.12);
+  background: color-mix(in srgb, var(--surface) 12%, transparent);
 }
 
 .title {
   margin: 22px 0 0;
   font: 1000 40px/1.02 'Nunito', sans-serif;
-  color: #fffdf8;
+  color: var(--paper);
   letter-spacing: -0.02em;
   text-wrap: balance;
   position: relative;
@@ -44,7 +44,7 @@
 .subtitle {
   margin: 14px 0 0;
   font: 700 17px/1.45 'Nunito', sans-serif;
-  color: rgba(255, 253, 248, 0.9);
+  color: color-mix(in srgb, var(--paper) 90%, transparent);
   max-width: 290px;
   position: relative;
   z-index: 2;
@@ -62,7 +62,7 @@
 .version {
   margin-top: 10px;
   font: 800 11px/1 'Nunito', sans-serif;
-  color: rgba(255, 253, 248, 0.55);
+  color: color-mix(in srgb, var(--paper) 55%, transparent);
   text-align: center;
   position: relative;
   z-index: 2;

@@ -43,7 +43,7 @@ export function BottomNav({ active }: { active: Tab }) {
     <div className={styles.nav}>
       {tabs.map((tab) => {
         const isActive = tab.key === active;
-        const color = isActive ? '#FF6A3D' : '#B4A79B';
+        const color = isActive ? 'var(--coral)' : 'var(--muted-2)';
         return (
           <button
             key={tab.key}

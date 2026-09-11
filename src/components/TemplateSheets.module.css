@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(36, 31, 27, 0.5);
+  background: var(--overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -23,7 +23,7 @@
   max-width: 420px;
   max-height: 85vh;
   overflow-y: auto;
-  background: #fff;
+  background: var(--surface);
   border-radius: 28px 28px 0 0;
   padding: 26px 24px calc(env(safe-area-inset-bottom, 0px) + 26px);
   box-sizing: border-box;
@@ -76,7 +76,7 @@
   height: 26px;
   border-radius: 9px;
   border: 2.5px solid var(--line-outer);
-  background: #fff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -88,7 +88,7 @@
 .checkboxOn {
   border-color: var(--coral);
   background: var(--coral);
-  color: #fffdf8;
+  color: var(--paper);
 }
 
 .name {
@@ -129,7 +129,7 @@
   text-align: center;
   cursor: pointer;
   background: var(--coral);
-  color: #fffdf8;
+  color: var(--paper);
   box-shadow: 0 4px 0 var(--coral-dark);
 }
 

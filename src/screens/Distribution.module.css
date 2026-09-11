@@ -12,7 +12,7 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  border-bottom: 2px solid #f6e7d8;
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 .headerRow {
@@ -25,7 +25,7 @@
   width: 40px;
   height: 40px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   display: flex;
   align-items: center;
@@ -48,11 +48,11 @@
 
 .note {
   margin: 18px 22px 0;
-  background: #fff2ce;
+  background: var(--tint-mustard);
   border-radius: 18px;
   padding: 14px 16px;
   font: 700 13px/1.4 'Nunito', sans-serif;
-  color: #6b5a1e;
+  color: var(--tip-text);
 }
 
 .body {
@@ -63,11 +63,11 @@
 }
 
 .bag {
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 24px;
   padding: 6px 18px 12px;
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
 }
 
 .bagHeader {

@@ -50,14 +50,14 @@ ratos libres).
 
 Toggle de tema (claro/oscuro/según sistema), guardado en localStorage.
 
-- Hoy la paleta vive en variables CSS en `index.css` (`--coral`,
-  `--cream`, `--ink`, `--muted`, etc.), pero varios `.module.css` usan
-  hex directo en vez de esas variables (gradientes del hero de Welcome
-  y Checklist, colores de `CATEGORY_META` en `catalog.ts`, fills de SVG
-  en `icons.tsx`/`Mascot.tsx`). Antes de poder ofrecer modo oscuro de
-  verdad hay que auditar y migrar esos hardcodeos a variables — no
-  alcanza con agregar un set de valores oscuros a `:root[data-theme]`,
-  hay que asegurarse de que TODO lea de ahí.
+- ✅ Hecho (v0.10.2): toda la paleta vive en variables CSS en `index.css`
+  y no queda un solo hex/rgba hardcodeado en ningún `.module.css`, `.tsx`
+  ni `.ts` fuera de la definición de `:root` — gradientes, `CATEGORY_META`,
+  fills de SVG en `icons.tsx`/`Mascot.tsx`, sombras y overlays, todo pasa
+  por `var(--token)` (algunos con `color-mix()` para las traslúcidas que
+  antes eran `rgba(...)`). Lo que falta para el modo oscuro real es
+  únicamente sumar los valores oscuros bajo `:root[data-theme="dark"]` y
+  el toggle — ya no hace falta auditar nada más.
 - Pensarlo como "coral sobre tinta oscura" en vez de un dark mode gris
   genérico, para no perder la identidad de marca (sticker/Duolingo).
 - El control (toggle) necesita un lugar — hoy no hay pantalla de

@@ -5,6 +5,30 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.10.2
+
+- **Colores a variables CSS**: se migró toda la paleta hardcodeada
+  (hex y `rgba(...)`) en `.module.css`, íconos SVG y componentes a
+  `var(--token)` definidos en `index.css` — cero hex/rgba sueltos fuera
+  de esa definición. No cambia nada visualmente (verificado con
+  capturas antes/después en las 6 pantallas), pero es el prerequisito
+  que faltaba para poder ofrecer modo oscuro (ver `BACKLOG.md`).
+- **QA exhaustivo, sin bugs encontrados**:
+  - Lógica pura (`buildRawItems` + `distributeItems`): 258.048
+    combinaciones de formulario (destino × clima × motivo × turismo ×
+    alojamiento × transporte × todos los subconjuntos de maletas ×
+    vestidos × 12 duraciones representativas) contra 1.806.336 chequeos
+    de distribución, verificando que no haya ítems duplicados, ninguna
+    cantidad menor a 1, los ítems sin cantidad (`noQty`) siempre en 1,
+    el orden de "ropa" respetado y que la suma repartida entre valijas
+    siempre cierre con la cantidad original del ítem.
+  - Flujos de UI (Playwright): 25 casos — límites del stepper de
+    cantidad y de días, ítems sin cantidad, ítems personalizados en las
+    5 categorías, plantillas (selección parcial, aplicar, borrar con
+    confirmación), pantalla de distribución con distintas combinaciones
+    de valijas, y borrado de viajes (individual y borrado total con
+    doble confirmación).
+
 ## v0.10.1
 
 - **Zoom automático de iOS**: los inputs de "Agregar ítem" y de nombre de

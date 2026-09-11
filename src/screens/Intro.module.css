@@ -43,11 +43,11 @@
   display: flex;
   gap: 16px;
   align-items: center;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 22px;
   padding: 18px;
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
 }
 
 .iconWrap {

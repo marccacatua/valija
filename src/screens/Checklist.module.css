@@ -8,7 +8,7 @@
 
 .hero {
   padding: 40px 22px 40px;
-  background: linear-gradient(165deg, #ff6a3d, #ee4f27);
+  background: linear-gradient(165deg, var(--coral), var(--coral-deep));
   border-radius: 0 0 34px 34px;
   position: relative;
   overflow: hidden;
@@ -21,12 +21,12 @@
   width: 180px;
   height: 180px;
   border-radius: 9999px;
-  background: rgba(255, 197, 61, 0.24);
+  background: color-mix(in srgb, var(--mustard) 24%, transparent);
 }
 
 .heroLabel {
   font: 900 12px/1 'Nunito', sans-serif;
-  color: rgba(255, 253, 248, 0.82);
+  color: color-mix(in srgb, var(--paper) 82%, transparent);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   position: relative;
@@ -34,7 +34,7 @@
 
 .heroTitle {
   font: 1000 32px/1.05 'Nunito', sans-serif;
-  color: #fffdf8;
+  color: var(--paper);
   letter-spacing: -0.02em;
   margin-top: 8px;
   position: relative;
@@ -51,8 +51,8 @@
 .chip {
   padding: 7px 13px;
   border-radius: 9999px;
-  background: rgba(255, 253, 248, 0.2);
-  color: #fffdf8;
+  background: color-mix(in srgb, var(--paper) 20%, transparent);
+  color: var(--paper);
   font: 800 12px/1 'Nunito', sans-serif;
 }
 
@@ -64,11 +64,11 @@
 }
 
 .progressCard {
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 24px;
   padding: 18px;
-  box-shadow: 0 5px 0 rgba(36, 31, 27, 0.06);
+  box-shadow: 0 5px 0 var(--shadow-card);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -93,7 +93,7 @@
 .progressBarTrack {
   height: 14px;
   border-radius: 9999px;
-  background: #f6e7d8;
+  background: var(--border-subtle);
   margin-top: 11px;
   overflow: hidden;
 }
@@ -101,7 +101,7 @@
 .progressBarFill {
   height: 100%;
   border-radius: 9999px;
-  background: linear-gradient(90deg, #ffc53d, #ff6a3d);
+  background: linear-gradient(90deg, var(--mustard), var(--coral));
   transition: width 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 
@@ -119,11 +119,11 @@
 }
 
 .group {
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 24px;
   padding: 6px 18px 12px;
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
 }
 
 .groupHeader {
@@ -167,7 +167,7 @@
   height: 30px;
   border-radius: 11px;
   border: 2.5px solid var(--line-outer);
-  background: #fff;
+  background: var(--surface);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -180,7 +180,7 @@
 .checkboxDone {
   border-color: var(--coral);
   background: var(--coral);
-  color: #fffdf8;
+  color: var(--paper);
 }
 
 .itemName {
@@ -218,7 +218,7 @@
 }
 
 .qtyInc {
-  background: #ffedd9;
+  background: var(--selected-bg);
   color: var(--coral-dark);
 }
 

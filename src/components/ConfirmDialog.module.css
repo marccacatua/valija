@@ -1,7 +1,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(36, 31, 27, 0.5);
+  background: var(--overlay);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -26,7 +26,7 @@
 .card {
   width: 100%;
   max-width: 420px;
-  background: #fff;
+  background: var(--surface);
   border-radius: 28px 28px 0 0;
   padding: 26px 24px calc(env(safe-area-inset-bottom, 0px) + 26px);
   box-sizing: border-box;
@@ -38,7 +38,7 @@
   padding: 30px 24px;
   text-align: center;
   animation: popIn 0.18s cubic-bezier(0.3, 1.4, 0.5, 1);
-  border: 3px solid #f3c3bf;
+  border: 3px solid var(--danger-light);
 }
 
 @keyframes slideUp {
@@ -98,14 +98,14 @@
   font: 900 16px/1 'Nunito', sans-serif;
   text-align: center;
   cursor: pointer;
-  background: #d9302a;
-  color: #fffdf8;
-  box-shadow: 0 4px 0 #a8241f;
+  background: var(--danger);
+  color: var(--paper);
+  box-shadow: 0 4px 0 var(--danger-dark);
 }
 
 .confirm:active {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 #a8241f;
+  box-shadow: 0 1px 0 var(--danger-dark);
 }
 
 .cancel {

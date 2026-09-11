@@ -3,8 +3,8 @@
   bottom: 0;
   display: flex;
   padding: 12px 14px calc(env(safe-area-inset-bottom, 0px) + 18px);
-  background: rgba(255, 246, 238, 0.94);
-  border-top: 2px solid #f6e7d8;
+  background: color-mix(in srgb, var(--cream) 94%, transparent);
+  border-top: 2px solid var(--border-subtle);
   backdrop-filter: blur(8px);
   z-index: 6;
 }

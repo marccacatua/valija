@@ -37,19 +37,19 @@
   display: flex;
   align-items: center;
   gap: 15px;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 24px;
   padding: 16px;
   cursor: pointer;
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
   width: 100%;
   text-align: left;
 }
 
 .tripCard:active {
   transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 2px 0 var(--shadow-card);
 }
 
 .tripInfo {
@@ -95,7 +95,7 @@
   text-align: center;
   gap: 14px;
   padding: 32px 20px;
-  background: #fff;
+  background: var(--surface);
   border: 2px dashed var(--line);
   border-radius: 24px;
 }
@@ -114,7 +114,7 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #fff2ce;
+  background: var(--tint-mustard);
   border-radius: 22px;
   padding: 16px 18px;
   margin-top: 6px;
@@ -122,7 +122,7 @@
 
 .tipText {
   font: 800 14px/1.35 'Nunito', sans-serif;
-  color: #6b5a1e;
+  color: var(--tip-text);
 }
 
 .deleteAllBtn {
@@ -130,7 +130,7 @@
   padding: 12px;
   text-align: center;
   font: 800 13px/1 'Nunito', sans-serif;
-  color: #b3413a;
+  color: var(--danger-text);
   background: none;
   cursor: pointer;
 }

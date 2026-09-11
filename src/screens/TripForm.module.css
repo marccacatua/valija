@@ -12,7 +12,7 @@
   position: sticky;
   top: 0;
   z-index: 5;
-  border-bottom: 2px solid #f6e7d8;
+  border-bottom: 2px solid var(--border-subtle);
 }
 
 .headerRow {
@@ -25,7 +25,7 @@
   width: 40px;
   height: 40px;
   border-radius: 14px;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   display: flex;
   align-items: center;
@@ -55,14 +55,14 @@
 
 .nameInput {
   width: 100%;
-  background: #fff;
+  background: var(--surface);
   border: 2px solid var(--line);
   border-radius: 18px;
   padding: 16px 18px;
   font: 800 17px 'Nunito', sans-serif;
   color: var(--ink);
   outline: none;
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
 }
 
 .nameInput:focus {
@@ -91,6 +91,6 @@
   position: sticky;
   bottom: 0;
   padding: 14px 22px calc(env(safe-area-inset-bottom, 0px) + 24px);
-  background: linear-gradient(180deg, rgba(255, 246, 238, 0) 0%, #fff6ee 34%);
+  background: linear-gradient(180deg, transparent 0%, var(--cream) 34%);
   z-index: 6;
 }

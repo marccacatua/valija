@@ -66,8 +66,8 @@ export function Trips() {
         <div className={styles.subtitle}>Repetí una valija que ya te funcionó.</div>
         <Button className={styles.newTripBtn} onClick={() => navigate('/nuevo')}>
           <svg width="18" height="18" viewBox="0 0 24 24">
-            <rect x="10" y="4" width="4" height="16" rx="2" fill="#FFFDF8" />
-            <rect x="4" y="10" width="16" height="4" rx="2" fill="#FFFDF8" />
+            <rect x="10" y="4" width="4" height="16" rx="2" fill="var(--paper)" />
+            <rect x="4" y="10" width="16" height="4" rx="2" fill="var(--paper)" />
           </svg>
           Nuevo viaje
         </Button>
@@ -84,7 +84,7 @@ export function Trips() {
           trips.map((trip) => {
             const pct = progressPct(trip.items);
             const done = pct === 100;
-            const color = done ? '#12A594' : '#FF6A3D';
+            const color = done ? 'var(--teal)' : 'var(--coral)';
             return (
               <button key={trip.id} type="button" className={styles.tripCard} onClick={() => openTrip(trip.id)}>
                 <ProgressRing pct={pct} color={color} />
@@ -107,7 +107,7 @@ export function Trips() {
                   ×
                 </span>
                 <svg width="9" height="16" viewBox="0 0 9 16" style={{ flex: 'none' }}>
-                  <path d="M2 2l5 6-5 6" stroke="#D8C6B7" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M2 2l5 6-5 6" stroke="var(--muted-3)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </button>
             );

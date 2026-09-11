@@ -4,9 +4,9 @@
   border: 2px solid var(--line);
   cursor: pointer;
   font: 900 15px/1 'Nunito', sans-serif;
-  background: #fff;
+  background: var(--surface);
   color: var(--ink);
-  box-shadow: 0 4px 0 rgba(36, 31, 27, 0.05);
+  box-shadow: 0 4px 0 var(--shadow-card);
 }
 
 .selected {

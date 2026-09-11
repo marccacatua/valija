@@ -1,4 +1,4 @@
-export function ProgressRing({ pct, color = '#FF6A3D', size = 54 }: { pct: number; color?: string; size?: number }) {
+export function ProgressRing({ pct, color = 'var(--coral)', size = 54 }: { pct: number; color?: string; size?: number }) {
   const deg = Math.round(pct * 3.6);
   const inner = size - 14;
   return (
@@ -11,7 +11,7 @@ export function ProgressRing({ pct, color = '#FF6A3D', size = 54 }: { pct: numbe
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: `conic-gradient(${color} ${deg}deg, #F6E7D8 0)`,
+        background: `conic-gradient(${color} ${deg}deg, var(--border-subtle) 0)`,
       }}
     >
       <div
@@ -19,7 +19,7 @@ export function ProgressRing({ pct, color = '#FF6A3D', size = 54 }: { pct: numbe
           width: inner,
           height: inner,
           borderRadius: 9999,
-          background: '#FFFFFF',
+          background: 'var(--surface)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',

@@ -12,7 +12,7 @@ export function SectionLabel({ children, hint }: { children: ReactNode; hint?: s
       }}
     >
       {children}
-      {hint ? <span style={{ color: '#C9BAAE', letterSpacing: 0, textTransform: 'none' }}> {hint}</span> : null}
+      {hint ? <span style={{ color: 'var(--muted-4)', letterSpacing: 0, textTransform: 'none' }}> {hint}</span> : null}
     </div>
   );
 }
