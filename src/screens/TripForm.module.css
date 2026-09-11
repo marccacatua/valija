@@ -7,7 +7,7 @@
 }
 
 .header {
-  padding: 20px 22px 16px;
+  padding: calc(env(safe-area-inset-top) + 20px) 22px 16px;
   background: var(--cream);
   position: sticky;
   top: 0;
@@ -51,6 +51,14 @@
   display: flex;
   flex-direction: column;
   gap: 26px;
+}
+
+/* Colchón para que el botón sticky del footer nunca termine tapando la
+   última sección (Duración): sin esto, en pantallas más bajas o con la
+   barra de Safari visible, el documento puede no tener suficiente
+   alto para "destrabar" el sticky antes de llegar al final. */
+.scrollPad {
+  height: 110px;
 }
 
 .nameInput {

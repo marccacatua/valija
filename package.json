@@ -1,13 +1,16 @@
 {
   "name": "valija",
   "private": true,
-  "version": "0.12.0",
+  "version": "0.12.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "qa:logic": "tsx qa/combinatorial.ts",
+    "qa:ui": "npm run build && node qa/ui.mjs",
+    "qa": "npm run qa:logic && npm run qa:ui"
   },
   "dependencies": {
     "react": "^19.2.8",
@@ -21,7 +24,9 @@
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.1.0",
     "oxlint": "^1.79.0",
+    "playwright": "^1.63.0",
     "sharp": "^0.35.4",
+    "tsx": "^4.23.13",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
   }

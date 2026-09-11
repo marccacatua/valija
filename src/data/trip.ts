@@ -1,5 +1,6 @@
 import {
   ALOJ_OPTIONS,
+  CATEGORY_ORDER,
   CLIMA_OPTIONS,
   DEST_OPTIONS,
   MALETA_OPTIONS,
@@ -9,7 +10,7 @@ import {
   labelFor,
   labelForMany,
 } from './catalog';
-import type { PackingItem, Trip, TripFormState } from '../types';
+import type { CategoryKey, PackingItem, Trip, TripFormState } from '../types';
 
 export const DEFAULT_FORM: TripFormState = {
   name: '',
@@ -64,10 +65,37 @@ export function progressPct(items: PackingItem[]): number {
   return Math.round((packedCount(items) / items.length) * 100);
 }
 
+// Frase natural para invitar a seguir con la próxima categoría (con
+// artículo, no el título tal cual de CATEGORY_META) una vez que la
+// anterior queda completa.
+const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
+  docs: 'los documentos',
+  ropa: 'la ropa',
+  higiene: 'la higiene',
+  tech: 'la electrónica',
+  extras: 'los extras',
+};
+
 export function progressNote(items: PackingItem[]): string {
   const packed = packedCount(items);
   if (packed === 0) return 'Arrancá por los documentos';
   if (packed === items.length) return '¡Valija lista! Buen viaje.';
+
+  // Si una categoría quedó recién completa, invitamos a seguir con la
+  // próxima en el orden de la checklist en vez de repetir siempre "te
+  // faltan N ítems" — ayuda más a saber por dónde seguir.
+  for (let i = 0; i < CATEGORY_ORDER.length - 1; i++) {
+    const cat = CATEGORY_ORDER[i];
+    const next = CATEGORY_ORDER[i + 1];
+    const catItems = items.filter((it) => it.cat === cat);
+    const nextItems = items.filter((it) => it.cat === next);
+    const catDone = catItems.length > 0 && catItems.every((it) => it.done);
+    const nextPending = nextItems.some((it) => !it.done);
+    if (catDone && nextPending) {
+      return `Ahora seguí con ${NEXT_CATEGORY_PHRASE[next]}`;
+    }
+  }
+
   return `Te faltan ${items.length - packed} ítems`;
 }
 

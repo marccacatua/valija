@@ -5,6 +5,32 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.12.1
+
+- **Choque con la barra de estado en PWA instalada**: al agregar la app
+  a la pantalla de inicio, el título de cada pantalla se pisaba con el
+  reloj y la isla de la cámara (no pasaba entrando por Safari). Es un
+  efecto esperado de `apple-mobile-web-app-status-bar-style:
+  black-translucent` (deja la barra de estado transparente encima del
+  contenido) sin el padding que hace falta para compensarlo. Se agregó
+  `env(safe-area-inset-top)` al tope de las 6 pantallas.
+- **"Transporte" y "Tipo de maleta" podían quedar tapados por el botón
+  flotante** del formulario en pantallas más bajas o con la barra de
+  Safari visible: el contenedor no reservaba espacio de sobra al final,
+  así que en ciertas alturas de viewport el sticky del botón no
+  alcanzaba a "destrabarse" antes del final del documento. Se agregó un
+  colchón fijo debajo de "Duración".
+- **Mensaje de progreso más útil**: además de "Arrancá por los
+  documentos" y "¡Valija lista!", ahora cuando termina una categoría
+  entera invita a seguir con la próxima (ej. "Ahora seguí con la ropa")
+  en vez de repetir siempre "Te faltan N ítems".
+- **QA a partir de ahora vive en el repo** (`qa/`): el harness
+  combinatorio (`npm run qa:logic`) y la suite de Playwright
+  (`npm run qa:ui`, levanta su propio servidor de preview) que se
+  venían usando de forma manual durante esta ronda de pruebas, ahora
+  con sus propias dependencias (`playwright`, `tsx`) para poder
+  correrlos en cualquier momento futuro. Ver `qa/README.md`.
+
 ## v0.12.0
 
 - **Combinar destinos**: "Destino" pasa de elegir uno solo a poder elegir

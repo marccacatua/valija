@@ -192,7 +192,7 @@ export function TripForm() {
           <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
         </div>
 
-        <div style={{ height: 26 }} />
+        <div className={styles.scrollPad} />
       </div>
 
       <div className={styles.footer}>
