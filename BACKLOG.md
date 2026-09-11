@@ -46,6 +46,40 @@ ratos libres).
 - Requiere sumar el control al formulario (`TripForm.tsx`) — probablemente
   un toggle simple, no un grupo de opciones como el resto.
 
+## Modo oscuro
+
+Toggle de tema (claro/oscuro/según sistema), guardado en localStorage.
+
+- Hoy la paleta vive en variables CSS en `index.css` (`--coral`,
+  `--cream`, `--ink`, `--muted`, etc.), pero varios `.module.css` usan
+  hex directo en vez de esas variables (gradientes del hero de Welcome
+  y Checklist, colores de `CATEGORY_META` en `catalog.ts`, fills de SVG
+  en `icons.tsx`/`Mascot.tsx`). Antes de poder ofrecer modo oscuro de
+  verdad hay que auditar y migrar esos hardcodeos a variables — no
+  alcanza con agregar un set de valores oscuros a `:root[data-theme]`,
+  hay que asegurarse de que TODO lea de ahí.
+- Pensarlo como "coral sobre tinta oscura" en vez de un dark mode gris
+  genérico, para no perder la identidad de marca (sticker/Duolingo).
+- El control (toggle) necesita un lugar — hoy no hay pantalla de
+  "ajustes"; probablemente haya que crear una, aunque sea mínima.
+
+## Estética/paleta según el tipo de viaje
+
+Que el "skin" de la checklist cambie según el viaje (ej. playa con
+turquesas y coral, montaña con verdes y tierras, ciudad con violetas),
+en vez de una única paleta fija para todas.
+
+- Hoy `CATEGORY_META` fija un color por categoría (ropa, higiene, docs,
+  tech, extras) igual para cualquier viaje — esto conviviría con eso o
+  lo reemplazaría, hay que decidir cuál gana visualmente.
+- Tocaría sobre todo el hero de `Checklist.tsx` (hoy gradiente coral fijo)
+  y quizás la mascota (`Mascot.tsx` ya acepta `bodyColor`/`strapColor`
+  como props, listo para variar).
+- Es más una decisión de diseño que de ingeniería — antes de picar
+  código conviene explorar 2-3 combinaciones de paleta por tipo de
+  destino (con Claude Design, por ejemplo) para no terminar con algo
+  que rompa la identidad visual ya validada con los usuarios de prueba.
+
 ## Ideas de la competencia (Packr, Pack, PackPoint, WhatToPack, Packing Checklist)
 
 Investigado en el App Store (2026-09) para no reinventar la rueda. Anotado
