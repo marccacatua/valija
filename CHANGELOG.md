@@ -5,6 +5,26 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.13.0
+
+- **"¿Quedó todo pronto en casa?"**: idea de un amigo que probó la
+  app — una sección nueva y separada al final de la checklist, para las
+  cosas de la casa que hay que dejar resueltas antes de salir de viaje
+  (apagar las luces, cerrar las llaves de agua y de gas por separado,
+  sacar la basura, regar las plantas, avisarle a un vecino, cerrar
+  puertas y ventanas, cargar los dispositivos, configurar el asistente
+  en modo ausente, y vaciar la heladera si el viaje dura 5 días o más).
+  A propósito NO suma al contador "X de N empacado" — son tareas, no
+  cosas para llevar.
+  - Se puede borrar cualquier tarea (por si alguien no tiene plantas,
+    por ejemplo) y agregar las propias, igual que con los ítems de la
+    valija — sin cantidad, porque no tiene sentido "contar" una tarea.
+  - `Trip` suma un campo nuevo (`homeChecklist`); los viajes guardados
+    antes de esta versión lo generan solo la primera vez que se abren.
+  - QA: invariantes nuevas en el harness combinatorio (ids únicos, la
+    tarea de la heladera aparece si y solo si el viaje dura 5+ días) y
+    6 casos nuevos de Playwright — 49/49 en total.
+
 ## v0.12.2
 
 - **Transporte no se veía en ningún lado**: el punto 3 de la vuelta

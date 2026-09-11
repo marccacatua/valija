@@ -1,5 +1,6 @@
 import { buildRawItems, ROPA_ORDER } from '../src/data/buildItems';
 import { distributeItems } from '../src/data/distribute';
+import { buildHomeChecklist } from '../src/data/homeTasks';
 import { QUICK_GROUP_META, quickGroupFor } from '../src/data/quickGroups';
 import type { AlojKey, ClimaKey, DestKey, MaletaKey, MotivoKey, TransporteKey, TripFormState, TurismoKey } from '../src/types';
 
@@ -113,6 +114,21 @@ for (const dest of DEST_SUBSETS)
                       fail(form, `Orden de ropa incorrecto: "${ropaNames[i - 1]}" antes que "${ropaNames[i]}"`);
                       break;
                     }
+                  }
+
+                  // Invariante: buildHomeChecklist (tareas de "antes de salir de
+                  // casa") siempre tiene ids únicos, labels no vacíos, y la tarea
+                  // de la heladera aparece si y solo si el viaje dura 5+ días.
+                  const homeChecklist = buildHomeChecklist(form);
+                  const homeIds = new Set<string>();
+                  for (const task of homeChecklist) {
+                    if (homeIds.has(task.id)) fail(form, `Home checklist: id duplicado "${task.id}"`);
+                    homeIds.add(task.id);
+                    if (!task.label.trim()) fail(form, `Home checklist: label vacío (id=${task.id})`);
+                  }
+                  const hasHeladera = homeChecklist.some((t) => t.label.includes('heladera'));
+                  if (hasHeladera !== dias >= 5) {
+                    fail(form, `Home checklist: "heladera" presente=${hasHeladera} pero dias=${dias} (se espera solo con 5+)`);
                   }
 
                   // Ahora distribute.ts: contra CADA subconjunto de valijas (no solo el

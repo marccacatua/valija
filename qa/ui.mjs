@@ -52,6 +52,13 @@ async function goToNewTripForm(page) {
   await page.waitForSelector('text=Nuevo viaje');
 }
 
+// el número y el "de N empacado" viven en spans hermanos separados, sin
+// espacio entre ellos en el DOM — ubicamos el span exacto "de N
+// empacado" y tomamos su hermano anterior (el contador de empacados)
+function progressNumLocator(page) {
+  return page.locator('span', { hasText: /^de \d+ empacado$/ }).locator('xpath=preceding-sibling::span[1]');
+}
+
 async function generateTrip(page, { maletas = ['Bodega'] } = {}) {
   await goToNewTripForm(page);
   for (const m of maletas) {
@@ -207,7 +214,9 @@ try {
 
     // cerrar, borrar los 3 custom items originales para verificar que
     // aplicar la plantilla los vuelve a crear
-    await page.click('text=Cerrar');
+    // comilla = match exacto: evita matchear las tareas de casa que
+    // contienen "Cerrar" como substring ("Cerrar la llave de gas", etc.)
+    await page.click('text="Cerrar"');
     for (const name of ['Mameluco', 'Casco EPP', 'Botas EPP']) {
       const btn = page.locator(`[aria-label="Borrar ${name}"]`);
       if (await btn.count()) await btn.click();
@@ -359,7 +368,11 @@ try {
   {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
-    const totalItems = await page.locator('button[aria-label^="Borrar"]').count();
+    // el total real de ítems de la valija (no de la lista de casa, que
+    // reusa el mismo patrón de aria-label "Borrar X") sale del propio
+    // texto de la barra de progreso: "de N empacado"
+    const progressLabel = await page.locator('span', { hasText: /^de \d+ empacado$/ }).textContent();
+    const totalItems = parseInt(progressLabel.match(/\d+/)[0], 10);
 
     await page.click('text=Rápida');
     await page.waitForTimeout(100);
@@ -377,11 +390,7 @@ try {
     const higieneSize = parseInt(higieneCountText, 10);
     await higieneRow.click();
     await page.waitForTimeout(100);
-    // el número y el "de N empacado" viven en spans hermanos separados,
-    // sin espacio entre ellos en el DOM — ubicamos el span exacto "de N
-    // empacado" y tomamos su hermano anterior (el contador de empacados)
-    const progressNum = () => page.locator('span', { hasText: /^de \d+ empacado$/ }).locator('xpath=preceding-sibling::span[1]');
-    const packedAfterOn = await progressNum().textContent();
+    const packedAfterOn = await progressNumLocator(page).textContent();
     assert(
       packedAfterOn.trim() === String(higieneSize),
       'Marcar un grupo de la vista rápida empaca todos sus ítems reales',
@@ -403,7 +412,7 @@ try {
     await page.waitForTimeout(100);
     await page.locator('button', { hasText: 'Higiene' }).click();
     await page.waitForTimeout(100);
-    const packedAfterOff = await progressNum().textContent();
+    const packedAfterOff = await progressNumLocator(page).textContent();
     assert(packedAfterOff.trim() === '0', 'Volver a tocar un grupo ya completo lo desmarca entero', `packed=${packedAfterOff}`);
     await ctx.close();
   }
@@ -601,6 +610,98 @@ try {
     await page.waitForTimeout(100);
     const notaTrasDocs = await page.locator('text=Ahora seguí con la higiene').count();
     assert(notaTrasDocs === 1, 'Al completar documentos, la nota invita a seguir con la higiene', `count=${notaTrasDocs}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 19) Home checklist ("¿Quedó todo pronto en casa?"): agua/gas
+  // separados, no suma al progreso de empaque, se puede tildar, borrar
+  // un ítem y agregar uno propio
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // DEFAULT_FORM: dias=5 -> incluye heladera
+    // varios divs anidados matchean el mismo texto: el contenedor entero
+    // (con todas las filas y el input de agregar) y su header interno
+    // (solo título + contador) — el contenedor completo es el PRIMERO en
+    // orden de documento, el header interno el ÚLTIMO.
+    const homeSection = () => page.locator('div', { hasText: /^¿Quedó todo pronto en casa\?/ }).first();
+    const homeSectionHeader = () => page.locator('div', { hasText: /^¿Quedó todo pronto en casa\?/ }).last();
+
+    const hasAgua = await page.locator('button', { hasText: 'Cerrar la llave de paso de agua' }).count();
+    const hasGas = await page.locator('button', { hasText: 'Cerrar la llave de gas' }).count();
+    assert(hasAgua === 1 && hasGas === 1, 'Agua y gas son tareas separadas', `agua=${hasAgua} gas=${hasGas}`);
+
+    const packedBefore = await progressNumLocator(page).textContent();
+    await page.click('button:has-text("Apagar las luces")');
+    await page.waitForTimeout(100);
+    const packedAfter = await progressNumLocator(page).textContent();
+    assert(
+      packedBefore.trim() === packedAfter.trim(),
+      'Tildar una tarea de casa NO afecta el contador de empacado de la valija',
+      `antes=${packedBefore} después=${packedAfter}`,
+    );
+    const homeCountAfterCheck = await homeSectionHeader().locator('span').last().textContent();
+    assert(homeCountAfterCheck.startsWith('1/'), 'El contador propio de la sección de casa sí refleja el tilde', `texto=${homeCountAfterCheck}`);
+
+    // borrar una tarea (ej. alguien sin plantas)
+    await page.click('[aria-label="Borrar Regar o encargar las plantas"]');
+    await page.waitForTimeout(100);
+    const plantasCount = await page.locator('button', { hasText: 'Regar o encargar las plantas' }).count();
+    assert(plantasCount === 0, 'Se puede borrar una tarea de casa (ej. "Regar las plantas")', `count=${plantasCount}`);
+
+    // agregar una propia, sin contador de cantidad (como los noQty de la valija)
+    const homeInput = homeSection().locator('input[placeholder="Agregar ítem…"]');
+    await homeInput.fill('Bajar térmica de la pileta');
+    await homeInput.press('Enter');
+    await page.waitForTimeout(100);
+    const customTaskRow = page.locator('button', { hasText: 'Bajar térmica de la pileta' });
+    const customTaskCount = await customTaskRow.count();
+    const customTaskHasStepper = await customTaskRow.locator('[aria-label^="Sumar"]').count();
+    assert(
+      customTaskCount === 1 && customTaskHasStepper === 0,
+      'Se puede agregar una tarea propia y no tiene stepper de cantidad',
+      `count=${customTaskCount} stepper=${customTaskHasStepper}`,
+    );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 20) Home checklist: un viaje guardado antes de esta versión (sin el
+  // campo homeChecklist) genera la lista sola al leerlo
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.evaluate(() => {
+      const oldTrip = {
+        id: 'old-trip-1',
+        createdAt: new Date().toISOString(),
+        form: {
+          name: '',
+          dest: ['playa'],
+          clima: 'calor',
+          motivo: 'placer',
+          turismo: 'relax',
+          aloj: 'depto',
+          transporte: 'avion',
+          maletas: ['carry'],
+          dias: 5,
+          vestidos: false,
+        },
+        items: [{ id: '0-docs', cat: 'docs', name: 'DNI y pasaporte', qty: 1, done: false }],
+        // sin homeChecklist a propósito: simula un viaje guardado antes de esta versión
+      };
+      localStorage.setItem('valija:trips', JSON.stringify([oldTrip]));
+    });
+    await page.goto(`${BASE}/viaje/old-trip-1`);
+    await page.waitForSelector('text=Tu valija para');
+    const hasHomeSection = await page.locator('text=¿Quedó todo pronto en casa?').count();
+    const hasHeladera = await page.locator('button', { hasText: 'Vaciar la heladera' }).count();
+    assert(
+      hasHomeSection === 1 && hasHeladera === 1,
+      'Un viaje viejo sin homeChecklist lo genera solo al abrirlo (con heladera, porque dias=5)',
+      `hasHomeSection=${hasHomeSection} hasHeladera=${hasHeladera}`,
+    );
     await ctx.close();
   }
 } catch (err) {

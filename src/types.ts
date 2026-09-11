@@ -41,11 +41,21 @@ export interface PackingItem {
   noQty?: boolean;
 }
 
+/** Tarea de "antes de salir de casa" (apagar luces, cerrar llaves de
+ * paso, etc.) — a propósito separada de PackingItem: no es algo que se
+ * empaca, así que no suma al contador "X de N empacado". */
+export interface HomeTask {
+  id: string;
+  label: string;
+  done: boolean;
+}
+
 export interface Trip {
   id: string;
   createdAt: string;
   form: TripFormState;
   items: PackingItem[];
+  homeChecklist: HomeTask[];
 }
 
 /** Plantilla personal de ítems (ej. "Kit yacimiento"), privada del

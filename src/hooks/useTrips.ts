@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { buildItems } from '../data/buildItems';
+import { buildHomeChecklist } from '../data/homeTasks';
 import type { CategoryKey, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
@@ -9,22 +10,26 @@ const STORAGE_KEY = 'valija:trips';
  * Viajes guardados antes de la v0.7.0 tienen `form.maleta` (una sola)
  * en vez de `form.maletas` (array); antes de la v0.12.0 pasa lo mismo
  * con `form.dest` (un solo valor en vez de array, ver combinar destinos
- * en BACKLOG.md). Se migra en lectura, sin tocar lo que ya está en
- * localStorage — así no hace falta un paso de migración explícito ni
- * arriesgarse a corromper datos viejos.
+ * en BACKLOG.md); antes de la v0.13.0 no existía `homeChecklist`. Se
+ * migra en lectura, sin tocar lo que ya está en localStorage — así no
+ * hace falta un paso de migración explícito ni arriesgarse a corromper
+ * datos viejos.
  */
 function migrateTrip(t: Trip): Trip {
   const form = t.form as TripFormState & { maleta?: string; dest: TripFormState['dest'] | TripFormState['dest'][number] };
   const needsMaletas = !Array.isArray(form.maletas);
   const needsDest = !Array.isArray(form.dest);
-  if (!needsMaletas && !needsDest) return t;
+  const needsHomeChecklist = !Array.isArray(t.homeChecklist);
+  if (!needsMaletas && !needsDest && !needsHomeChecklist) return t;
+  const migratedForm: TripFormState = {
+    ...form,
+    maletas: needsMaletas ? (form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry']) : form.maletas,
+    dest: needsDest ? [form.dest as TripFormState['dest'][number]] : form.dest,
+  };
   return {
     ...t,
-    form: {
-      ...form,
-      maletas: needsMaletas ? (form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry']) : form.maletas,
-      dest: needsDest ? [form.dest as TripFormState['dest'][number]] : form.dest,
-    },
+    form: migratedForm,
+    homeChecklist: needsHomeChecklist ? buildHomeChecklist(migratedForm) : t.homeChecklist,
   };
 }
 
@@ -45,6 +50,7 @@ export function useTrips() {
         createdAt: new Date().toISOString(),
         form,
         items: buildItems(form),
+        homeChecklist: buildHomeChecklist(form),
       };
       setTrips((prev) => [trip, ...prev]);
       return trip;
@@ -108,6 +114,41 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Tilda/destilda una tarea de "antes de salir de casa" — independiente
+   * de los ítems de la valija, no afecta el progreso de empaque. */
+  const toggleHomeTask = useCallback(
+    (tripId: string, taskId: string) => {
+      updateTrip(tripId, (t) => ({
+        ...t,
+        homeChecklist: t.homeChecklist.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+      }));
+    },
+    [updateTrip],
+  );
+
+  /** Agrega una tarea de casa a mano (sin cantidad, como el resto de la
+   * lista — no tiene sentido "contar" una tarea). */
+  const addHomeTask = useCallback(
+    (tripId: string, label: string) => {
+      const trimmed = label.trim();
+      if (!trimmed) return;
+      updateTrip(tripId, (t) => ({
+        ...t,
+        homeChecklist: [...t.homeChecklist, { id: crypto.randomUUID(), label: trimmed, done: false }],
+      }));
+    },
+    [updateTrip],
+  );
+
+  /** Saca una tarea de casa de la lista — cualquiera, generada o
+   * agregada a mano (ej. alguien sin plantas saca "Regar las plantas"). */
+  const removeHomeTask = useCallback(
+    (tripId: string, taskId: string) => {
+      updateTrip(tripId, (t) => ({ ...t, homeChecklist: t.homeChecklist.filter((task) => task.id !== taskId) }));
+    },
+    [updateTrip],
+  );
+
   const addCustomItem = useCallback(
     (tripId: string, cat: CategoryKey, name: string) => {
       const trimmed = name.trim();
@@ -148,6 +189,9 @@ export function useTrips() {
     bumpItem,
     setItemsDone,
     renameTrip,
+    toggleHomeTask,
+    addHomeTask,
+    removeHomeTask,
     addCustomItem,
     removeItem,
     removeTrip,

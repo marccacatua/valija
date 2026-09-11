@@ -22,7 +22,8 @@ import styles from './Checklist.module.css';
 export function Checklist() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, toggleItem, bumpItem, setItemsDone, renameTrip, addCustomItem, removeItem } = useTrips();
+  const { getTrip, toggleItem, bumpItem, setItemsDone, renameTrip, toggleHomeTask, addHomeTask, removeHomeTask, addCustomItem, removeItem } =
+    useTrips();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
@@ -262,6 +263,33 @@ export function Checklist() {
         {view === 'detallada'
           ? groups.map((g) => grouped(g.key, g.list))
           : quickGroups.map((g) => groupedQuick(g.key, g.list))}
+
+        <div className={styles.homeSection}>
+          <div className={styles.homeSectionHeader}>
+            <span className={styles.homeSectionTitle}>¿Quedó todo pronto en casa?</span>
+            <span className={styles.groupCount}>
+              {trip.homeChecklist.filter((t) => t.done).length}/{trip.homeChecklist.length}
+            </span>
+          </div>
+          <div className={styles.homeSectionHint}>No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.</div>
+          {trip.homeChecklist.map((task) => (
+            <button key={task.id} type="button" className={styles.item} onClick={() => toggleHomeTask(trip.id, task.id)}>
+              <span className={`${styles.checkbox} ${task.done ? styles.checkboxDone : ''}`}>✓</span>
+              <span className={`${styles.itemName} ${task.done ? styles.itemNameDone : ''}`}>{task.label}</span>
+              <span onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  className={styles.removeBtn}
+                  onClick={() => removeHomeTask(trip.id, task.id)}
+                  aria-label={`Borrar ${task.label}`}
+                >
+                  ×
+                </button>
+              </span>
+            </button>
+          ))}
+          {canAddCustomItems && <AddItemRow onAdd={(label) => addHomeTask(trip.id, label)} />}
+        </div>
 
         {trip.form.maletas.length > 1 && (
           <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>
