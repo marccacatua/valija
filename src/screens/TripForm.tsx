@@ -39,6 +39,16 @@ export function TripForm() {
       return { ...prev, maletas };
     });
 
+  // Mismo patrón que toggleMaleta: se puede combinar más de un destino
+  // (playa + montaña, playa + ciudad) y siempre queda al menos uno.
+  const toggleDest = (key: TripFormState['dest'][number]) =>
+    setForm((prev) => {
+      const has = prev.dest.includes(key);
+      if (has && prev.dest.length === 1) return prev;
+      const dest = has ? prev.dest.filter((d) => d !== key) : [...prev.dest, key];
+      return { ...prev, dest };
+    });
+
   const handleGenerate = () => {
     const trip = addTrip(form);
     setLastTripId(trip.id);
@@ -73,15 +83,15 @@ export function TripForm() {
         </div>
 
         <div>
-          <SectionLabel>Destino</SectionLabel>
+          <SectionLabel hint="elegí uno o varios">Destino</SectionLabel>
           <div className={styles.grid3}>
             {DEST_OPTIONS.map((opt) => (
               <OptionCard
                 key={opt.key}
                 label={opt.label}
                 icon={DestIcons[opt.key]}
-                selected={form.dest === opt.key}
-                onSelect={() => set('dest', opt.key)}
+                selected={form.dest.includes(opt.key)}
+                onSelect={() => toggleDest(opt.key)}
               />
             ))}
           </div>

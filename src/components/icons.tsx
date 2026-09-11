@@ -73,3 +73,16 @@ export const BackArrowIcon = (
     <path d="M9 2L3 9l6 7" stroke="var(--ink)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
+
+export const EditIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24">
+    <path
+      d="M4 20h4l10.5-10.5a2 2 0 0 0 0-2.83l-1.17-1.17a2 2 0 0 0-2.83 0L4 16v4Z"
+      fill="none"
+      stroke="var(--paper)"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);

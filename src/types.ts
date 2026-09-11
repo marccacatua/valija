@@ -13,7 +13,9 @@ export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras';
 
 export interface TripFormState {
   name: string;
-  dest: DestKey;
+  /** Array porque se puede combinar más de un destino en el mismo viaje:
+   * playa + montaña, playa + ciudad, etc. */
+  dest: DestKey[];
   clima: ClimaKey;
   motivo: MotivoKey;
   turismo: TurismoKey;

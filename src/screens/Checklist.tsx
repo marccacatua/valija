@@ -8,6 +8,7 @@ import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { EditIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { templatePlaceholder } from '../data/trip';
@@ -21,7 +22,7 @@ import styles from './Checklist.module.css';
 export function Checklist() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, toggleItem, bumpItem, setItemsDone, addCustomItem, removeItem } = useTrips();
+  const { getTrip, toggleItem, bumpItem, setItemsDone, renameTrip, addCustomItem, removeItem } = useTrips();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
@@ -29,6 +30,8 @@ export function Checklist() {
   const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
   const [view, setView] = useState<'detallada' | 'rapida'>('detallada');
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
 
   const trip = getTrip(tripId);
 
@@ -66,6 +69,21 @@ export function Checklist() {
     }
     setSheet(null);
   };
+
+  const startEditingName = () => {
+    setNameDraft(trip.form.name);
+    setEditingName(true);
+  };
+
+  const saveEditingName = () => {
+    renameTrip(trip.id, nameDraft);
+    setEditingName(false);
+  };
+
+  // título que se ve si el usuario deja el nombre vacío — mismo fallback
+  // que usa tripTitle(), útil como placeholder para no mostrar un campo
+  // en blanco sin ninguna pista de qué va a pasar
+  const autoTitle = tripTitle({ ...trip.form, name: '' });
 
   const packed = packedCount(items);
   const pct = progressPct(items);
@@ -177,7 +195,27 @@ export function Checklist() {
       <div className={styles.hero}>
         <div className={styles.heroBlob} />
         <div className={styles.heroLabel}>Tu valija para</div>
-        <div className={styles.heroTitle}>{tripTitle(trip.form)}</div>
+        {editingName ? (
+          <input
+            autoFocus
+            className={styles.heroTitleInput}
+            value={nameDraft}
+            onChange={(e) => setNameDraft(e.target.value)}
+            onBlur={saveEditingName}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') saveEditingName();
+              if (e.key === 'Escape') setEditingName(false);
+            }}
+            placeholder={autoTitle}
+          />
+        ) : (
+          <div className={styles.heroTitleRow}>
+            <div className={styles.heroTitle}>{tripTitle(trip.form)}</div>
+            <button type="button" className={styles.editNameBtn} onClick={startEditingName} aria-label="Cambiar nombre del viaje">
+              {EditIcon}
+            </button>
+          </div>
+        )}
         <div className={styles.chips}>
           {tripMetaChips(trip.form).map((label) => (
             <span className={styles.chip} key={label}>

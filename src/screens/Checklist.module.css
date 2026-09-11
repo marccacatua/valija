@@ -32,12 +32,49 @@
   position: relative;
 }
 
+.heroTitleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 8px;
+  position: relative;
+}
+
 .heroTitle {
   font: 1000 32px/1.05 'Nunito', sans-serif;
   color: var(--paper);
   letter-spacing: -0.02em;
+}
+
+.editNameBtn {
+  width: 30px;
+  height: 30px;
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--paper) 20%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+  margin-top: 4px;
+}
+
+.heroTitleInput {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--paper);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 8px 14px;
+  font: 1000 26px/1.15 'Nunito', sans-serif;
+  color: var(--ink);
   margin-top: 8px;
   position: relative;
+  outline: none;
+}
+
+.heroTitleInput:focus {
+  border-color: var(--coral-dark);
 }
 
 .chips {

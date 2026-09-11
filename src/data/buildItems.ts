@@ -84,20 +84,20 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Botas o calzado de abrigo');
   }
   if (f.clima === 'templado') add('ropa', 'Buzo o campera liviana');
-  if (f.clima === 'lluvia' || f.dest === 'montana') add('ropa', 'Rompeviento impermeable');
-  if (f.dest === 'playa' || f.clima === 'calor') {
+  if (f.clima === 'lluvia' || f.dest.includes('montana')) add('ropa', 'Rompeviento impermeable');
+  if (f.dest.includes('playa') || f.clima === 'calor') {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
     add('ropa', 'Shorts o bermudas', cap(Math.ceil(d / 2), 4));
   }
-  if (f.dest === 'playa') add('ropa', 'Ojotas o sandalias');
+  if (f.dest.includes('playa')) add('ropa', 'Ojotas o sandalias');
   if (f.vestidos) add('ropa', 'Vestido o pollera', Math.max(1, Math.ceil(d / 3)));
-  if (f.dest === 'montana' || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
+  if (f.dest.includes('montana') || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
   if (leisure && f.turismo === 'aventura') {
     add('ropa', 'Remeras deportivas', 2);
     add('ropa', 'Short o pantalón de trekking');
   }
-  if (f.dest === 'ciudad') add('ropa', 'Zapatillas cómodas para caminar');
+  if (f.dest.includes('ciudad')) add('ropa', 'Zapatillas cómodas para caminar');
   if (f.motivo === 'trabajo') {
     add('ropa', 'Camisas', 2);
     add('ropa', 'Saco o blazer');
@@ -136,8 +136,8 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('higiene', 'Skincare / crema');
   add('higiene', 'Afeitadora, pinza y corta uñas');
   add('higiene', 'Botiquín básico');
-  if (f.dest === 'playa' || f.clima === 'calor') add('higiene', 'Protector solar');
-  if ((leisure && f.turismo === 'aventura') || f.dest === 'playa') add('higiene', 'Repelente');
+  if (f.dest.includes('playa') || f.clima === 'calor') add('higiene', 'Protector solar');
+  if ((leisure && f.turismo === 'aventura') || f.dest.includes('playa')) add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
   // El resto de los líquidos (protector solar, skincare, repelente,
   // enjuague bucal) no tienen versión mini propia; si no hay bodega les
@@ -182,7 +182,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   }
   if (leisure && (f.turismo === 'aventura' || f.turismo === 'cultura')) addSingle('extras', 'Riñonera o bolso cruzado');
   if (f.clima === 'lluvia') addSingle('extras', 'Paraguas plegable');
-  if (f.dest === 'playa') addSingle('extras', 'Toallón de playa');
+  if (f.dest.includes('playa')) addSingle('extras', 'Toallón de playa');
   if (leisure && f.turismo === 'relax') addSingle('extras', 'Libro o e-reader');
 
   const ropaRank = (name: string) => {

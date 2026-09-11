@@ -5,6 +5,26 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.12.0
+
+- **Combinar destinos**: "Destino" pasa de elegir uno solo a poder elegir
+  varios a la vez (playa + montaña, playa + ciudad, etc.), mismo patrón
+  que ya usa "Tipo de maleta" — se puede combinar libremente y siempre
+  queda al menos uno seleccionado. La checklist generada suma los ítems
+  de cada destino elegido (ej. playa + montaña trae ojotas Y zapatillas
+  de trekking), sin duplicados: son reglas aditivas independientes que
+  ya convivían bien entre sí. Viajes guardados con la forma vieja
+  (`dest` como un solo valor) se migran solos a array al leerlos.
+- **Renombrar un viaje ya creado**: antes el nombre quedaba fijo para
+  siempre después de armar la valija. Ahora se puede tocar el ícono de
+  lápiz junto al título en la checklist y escribir uno nuevo en
+  cualquier momento; dejarlo vacío vuelve a mostrar el título automático
+  (destino + días), igual que al crear el viaje.
+- QA: harness combinatorio actualizado a los 7 subconjuntos no vacíos de
+  destino (602.112 combinaciones de formulario, 4.214.784 chequeos de
+  distribución) y 7 casos nuevos de Playwright para destino combinado y
+  renombrado — 41/41 casos pasando en total.
+
 ## v0.11.0
 
 - **Vista rápida de la checklist**: un amigo que probó la app dijo que la

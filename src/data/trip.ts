@@ -13,7 +13,7 @@ import type { PackingItem, Trip, TripFormState } from '../types';
 
 export const DEFAULT_FORM: TripFormState = {
   name: '',
-  dest: 'playa',
+  dest: ['playa'],
   clima: 'calor',
   motivo: 'placer',
   turismo: 'relax',
@@ -25,12 +25,12 @@ export const DEFAULT_FORM: TripFormState = {
 };
 
 export function tripTitle(form: TripFormState): string {
-  return form.name.trim() || `${labelFor(DEST_OPTIONS, form.dest)} en ${form.dias} días`;
+  return form.name.trim() || `${labelForMany(DEST_OPTIONS, form.dest)} en ${form.dias} días`;
 }
 
 export function tripMetaLine(form: TripFormState): string {
   return [
-    labelFor(DEST_OPTIONS, form.dest),
+    labelForMany(DEST_OPTIONS, form.dest),
     labelFor(MOTIVO_OPTIONS, form.motivo),
     `${form.dias} días`,
     labelForMany(MALETA_OPTIONS, form.maletas),
@@ -39,7 +39,7 @@ export function tripMetaLine(form: TripFormState): string {
 
 export function tripMetaChips(form: TripFormState): string[] {
   return [
-    labelFor(DEST_OPTIONS, form.dest),
+    labelForMany(DEST_OPTIONS, form.dest),
     labelFor(CLIMA_OPTIONS, form.clima),
     labelFor(MOTIVO_OPTIONS, form.motivo),
     `${form.dias} días`,
@@ -74,8 +74,8 @@ export function progressNote(items: PackingItem[]): string {
 /** Ejemplo de nombre de plantilla, sugerido según el viaje actual — para
  * que el placeholder inspire algo relevante en vez de un genérico fijo. */
 export function templatePlaceholder(form: TripFormState): string {
-  if (form.dest === 'playa') return 'Kit snorkel';
-  if (form.dest === 'montana') return 'Kit escalada';
+  if (form.dest.includes('playa')) return 'Kit snorkel';
+  if (form.dest.includes('montana')) return 'Kit escalada';
   // ciudad
   if (form.turismo === 'fiesta') return 'Kit noche de salida';
   if (form.motivo === 'trabajo') return 'Kit oficina';

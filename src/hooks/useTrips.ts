@@ -7,14 +7,25 @@ const STORAGE_KEY = 'valija:trips';
 
 /**
  * Viajes guardados antes de la v0.7.0 tienen `form.maleta` (una sola)
- * en vez de `form.maletas` (array). Se migra en lectura, sin tocar lo
- * que ya está en localStorage — así no hace falta un paso de migración
- * explícito ni arriesgarse a corromper datos viejos.
+ * en vez de `form.maletas` (array); antes de la v0.12.0 pasa lo mismo
+ * con `form.dest` (un solo valor en vez de array, ver combinar destinos
+ * en BACKLOG.md). Se migra en lectura, sin tocar lo que ya está en
+ * localStorage — así no hace falta un paso de migración explícito ni
+ * arriesgarse a corromper datos viejos.
  */
 function migrateTrip(t: Trip): Trip {
-  const form = t.form as TripFormState & { maleta?: string };
-  if (Array.isArray(form.maletas)) return t;
-  return { ...t, form: { ...form, maletas: form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry'] } };
+  const form = t.form as TripFormState & { maleta?: string; dest: TripFormState['dest'] | TripFormState['dest'][number] };
+  const needsMaletas = !Array.isArray(form.maletas);
+  const needsDest = !Array.isArray(form.dest);
+  if (!needsMaletas && !needsDest) return t;
+  return {
+    ...t,
+    form: {
+      ...form,
+      maletas: needsMaletas ? (form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry']) : form.maletas,
+      dest: needsDest ? [form.dest as TripFormState['dest'][number]] : form.dest,
+    },
+  };
 }
 
 /**
@@ -88,6 +99,15 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Cambia el nombre de un viaje ya creado. Vacío es válido: vuelve a
+   * mostrar el título automático (destino + días), igual que al armarlo. */
+  const renameTrip = useCallback(
+    (tripId: string, name: string) => {
+      updateTrip(tripId, (t) => ({ ...t, form: { ...t.form, name: name.trim() } }));
+    },
+    [updateTrip],
+  );
+
   const addCustomItem = useCallback(
     (tripId: string, cat: CategoryKey, name: string) => {
       const trimmed = name.trim();
@@ -127,6 +147,7 @@ export function useTrips() {
     toggleItem,
     bumpItem,
     setItemsDone,
+    renameTrip,
     addCustomItem,
     removeItem,
     removeTrip,
