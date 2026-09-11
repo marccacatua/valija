@@ -73,6 +73,21 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Marca/desmarca varios ítems de una — usado por la vista rápida para
+   * tildar un grupo temático entero con un solo toque, en una sola
+   * actualización (no una por ítem, para no perder cambios si el usuario
+   * toca dos grupos seguido). */
+  const setItemsDone = useCallback(
+    (tripId: string, itemIds: string[], done: boolean) => {
+      const ids = new Set(itemIds);
+      updateTrip(tripId, (t) => ({
+        ...t,
+        items: t.items.map((i) => (ids.has(i.id) ? { ...i, done } : i)),
+      }));
+    },
+    [updateTrip],
+  );
+
   const addCustomItem = useCallback(
     (tripId: string, cat: CategoryKey, name: string) => {
       const trimmed = name.trim();
@@ -105,5 +120,17 @@ export function useTrips() {
 
   const getTrip = useCallback((id: string | undefined) => trips.find((t) => t.id === id), [trips]);
 
-  return { trips, addTrip, updateTrip, toggleItem, bumpItem, addCustomItem, removeItem, removeTrip, removeAllTrips, getTrip };
+  return {
+    trips,
+    addTrip,
+    updateTrip,
+    toggleItem,
+    bumpItem,
+    setItemsDone,
+    addCustomItem,
+    removeItem,
+    removeTrip,
+    removeAllTrips,
+    getTrip,
+  };
 }

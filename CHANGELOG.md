@@ -5,6 +5,27 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.11.0
+
+- **Vista rápida de la checklist**: un amigo que probó la app dijo que la
+  checklist detallada (~40 ítems) le resultaba pesada para revisar. En
+  vez de un checklist separado (dos botones al armar el viaje), se
+  agregó un toggle "Detallada / Rápida" arriba de la lista — mismo
+  viaje, mismos ítems reales, solo cambia cómo se presentan.
+  - En "Rápida" los ítems se agrupan en 9 temas grandes en vez de las 5
+    categorías de siempre (`data/quickGroups.ts`): Documentos, Higiene,
+    Ropa, Ropa de trabajo, Ropa para salir, Abrigo, Calzado, Electrónica,
+    Extras — separa de "Ropa" lo que hoy vive mezclado. Cubre el 100%
+    de lo que genera `buildRawItems` (verificado con las mismas 258.048
+    combinaciones del QA de la v0.10.2) y a un ítem personalizado con
+    nombre libre le toca el grupo de su categoría.
+  - Tocar un grupo marca (o desmarca) todos sus ítems de una — un solo
+    toque en vez de N. El progreso de la valija sigue siendo el mismo
+    dato de siempre; no hay dos checklists ni dos fuentes de verdad,
+    cambiar de vista no pierde nada de lo ya tildado.
+  - Nuevo método `setItemsDone` en `useTrips` para el marcado en bloque
+    (una sola actualización, no N seguidas).
+
 ## v0.10.2
 
 - **Colores a variables CSS**: se migró toda la paleta hardcodeada

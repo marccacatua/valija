@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
+import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
 import { packedCount, progressNote, progressPct, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
 import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
@@ -20,13 +21,14 @@ import styles from './Checklist.module.css';
 export function Checklist() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, toggleItem, bumpItem, addCustomItem, removeItem } = useTrips();
+  const { getTrip, toggleItem, bumpItem, setItemsDone, addCustomItem, removeItem } = useTrips();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
   const canUseTemplates = useFeatureFlag('tripTemplates');
   const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
+  const [view, setView] = useState<'detallada' | 'rapida'>('detallada');
 
   const trip = getTrip(tripId);
 
@@ -71,6 +73,24 @@ export function Checklist() {
     const list = items.filter((i) => i.cat === key);
     return { key, list };
   }).filter((g) => g.list.length);
+
+  // Vista rápida: mismos ítems, agrupados en temas más grandes (ver
+  // data/quickGroups.ts) para revisar de un vistazo en vez de ítem por
+  // ítem — pedido de un amigo que probó la app y le pareció demasiado
+  // larga la checklist detallada.
+  const quickGroups = QUICK_GROUP_ORDER.map((key) => {
+    const list = items.filter((i) => quickGroupFor(i) === key);
+    return { key, list };
+  }).filter((g) => g.list.length);
+
+  const toggleQuickGroup = (list: PackingItem[]) => {
+    const allDone = list.every((i) => i.done);
+    setItemsDone(
+      trip.id,
+      list.map((i) => i.id),
+      !allDone,
+    );
+  };
 
   const grouped = (key: CategoryKey, list: PackingItem[]) => {
     const meta = CATEGORY_META[key];
@@ -130,6 +150,28 @@ export function Checklist() {
     );
   };
 
+  const groupedQuick = (key: string, list: PackingItem[]) => {
+    const meta = QUICK_GROUP_META[key as keyof typeof QUICK_GROUP_META];
+    const allDone = list.every((i) => i.done);
+    return (
+      <button
+        type="button"
+        key={key}
+        className={`${styles.quickGroup} ${allDone ? styles.quickGroupDone : ''}`}
+        onClick={() => toggleQuickGroup(list)}
+      >
+        <span className={`${styles.checkbox} ${allDone ? styles.checkboxDone : ''}`}>✓</span>
+        <span className={styles.quickGroupInfo}>
+          <span className={`${styles.groupTitle} ${allDone ? styles.itemNameDone : ''}`}>{meta.title}</span>
+          <span className={styles.quickGroupHint}>{list.length} ítems</span>
+        </span>
+        <span className={styles.groupCount}>
+          {list.filter((i) => i.done).length}/{list.length}
+        </span>
+      </button>
+    );
+  };
+
   return (
     <div className={styles.screen}>
       <div className={styles.hero}>
@@ -161,8 +203,27 @@ export function Checklist() {
         </div>
       </div>
 
+      <div className={styles.viewToggle}>
+        <button
+          type="button"
+          className={`${styles.viewToggleBtn} ${view === 'detallada' ? styles.viewToggleBtnActive : ''}`}
+          onClick={() => setView('detallada')}
+        >
+          Detallada
+        </button>
+        <button
+          type="button"
+          className={`${styles.viewToggleBtn} ${view === 'rapida' ? styles.viewToggleBtnActive : ''}`}
+          onClick={() => setView('rapida')}
+        >
+          Rápida
+        </button>
+      </div>
+
       <div className={styles.groups}>
-        {groups.map((g) => grouped(g.key, g.list))}
+        {view === 'detallada'
+          ? groups.map((g) => grouped(g.key, g.list))
+          : quickGroups.map((g) => groupedQuick(g.key, g.list))}
 
         {trip.form.maletas.length > 1 && (
           <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>
