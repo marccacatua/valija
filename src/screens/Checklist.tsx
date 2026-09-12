@@ -49,6 +49,8 @@ export function Checklist() {
   const [nameDraft, setNameDraft] = useState('');
   const [copied, setCopied] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [search, setSearch] = useState('');
+  const [onlyPending, setOnlyPending] = useState(false);
 
   const trip = getTrip(tripId);
 
@@ -142,8 +144,19 @@ export function Checklist() {
 
   const packed = packedCount(items);
   const pct = progressPct(items);
+
+  // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
+  // detallada, nunca el dato de fondo (progreso, vista rápida) — filtrar no
+  // debería poder "perder" un ítem, solo ocultarlo momentáneamente.
+  const matchesFilter = (item: PackingItem) => {
+    const matchesSearch = search.trim() === '' || item.name.toLowerCase().includes(search.trim().toLowerCase());
+    const matchesPending = !onlyPending || !item.done;
+    return matchesSearch && matchesPending;
+  };
+  const isFiltering = search.trim() !== '' || onlyPending;
+
   const groups = CATEGORY_ORDER.map((key) => {
-    const list = items.filter((i) => i.cat === key);
+    const list = items.filter((i) => i.cat === key && matchesFilter(i));
     return { key, list };
   }).filter((g) => g.list.length);
 
@@ -313,10 +326,35 @@ export function Checklist() {
         </button>
       </div>
 
+      {view === 'detallada' && (
+        <div className={styles.searchBar}>
+          <input
+            className={styles.searchInput}
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Buscar ítem…"
+          />
+          <button
+            type="button"
+            className={`${styles.pendingToggle} ${onlyPending ? styles.pendingToggleActive : ''}`}
+            onClick={() => setOnlyPending((v) => !v)}
+          >
+            Sin empacar
+          </button>
+        </div>
+      )}
+
       <div className={styles.groups}>
-        {view === 'detallada'
-          ? groups.map((g) => grouped(g.key, g.list))
-          : quickGroups.map((g) => groupedQuick(g.key, g.list))}
+        {view === 'detallada' ? (
+          groups.length > 0 ? (
+            groups.map((g) => grouped(g.key, g.list))
+          ) : (
+            isFiltering && <div className={styles.noResults}>No hay ítems que coincidan con la búsqueda.</div>
+          )
+        ) : (
+          quickGroups.map((g) => groupedQuick(g.key, g.list))
+        )}
 
         <div className={styles.homeSection}>
           <div className={styles.homeSectionHeader}>

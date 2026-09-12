@@ -172,6 +172,53 @@
   color: var(--paper);
 }
 
+.searchBar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 22px 0;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  padding: 11px 14px;
+  font: 700 14px 'Nunito', sans-serif;
+  color: var(--ink);
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: var(--coral);
+}
+
+.pendingToggle {
+  flex: none;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  font: 800 13px/1 'Nunito', sans-serif;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pendingToggleActive {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--paper);
+}
+
+.noResults {
+  text-align: center;
+  padding: 30px 20px;
+  font: 700 14px/1.4 'Nunito', sans-serif;
+  color: var(--muted);
+}
+
 .homeSection {
   background: var(--tint-mustard);
   border: 2px dashed var(--mustard-dark);

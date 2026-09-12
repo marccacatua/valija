@@ -367,6 +367,9 @@ try {
     await generateTrip(page, { maletas: ['Bodega'] });
     await page.click('text=Ver mis viajes');
     await page.waitForSelector('text=Mis viajes');
+    // esperar el botón puntual (no solo el título de la pantalla) evita una
+    // carrera con el render: .count() no reintenta como waitForSelector
+    await page.waitForSelector('text=Nuevo viaje');
     const hasNewTripBtn = await page.locator('text=Nuevo viaje').count();
     const hasEmptyState = await page.locator('text=Todavía no armaste ninguna valija').count();
     assert(hasNewTripBtn > 0, '"Nuevo viaje" sigue disponible con viajes existentes', `count=${hasNewTripBtn}`);
@@ -1102,6 +1105,50 @@ try {
       hasApplyAfter === 1 && hasClone === 1,
       'Tras "Desbloquear" en el paywall, las features Pro aparecen sin recargar la página',
       `apply=${hasApplyAfter} clone=${hasClone}`,
+    );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 30) Buscar/filtrar en la vista detallada: por nombre y por "sin
+  // empacar", sin que el filtro afecte el progreso real
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+
+    await page.fill('input[placeholder="Buscar ítem…"]', 'cinturón');
+    await page.waitForTimeout(100);
+    const hasCinturon = await page.locator('button', { hasText: 'Cinturón' }).count();
+    const hasDni = await page.locator('button', { hasText: 'DNI y pasaporte' }).count();
+    assert(
+      hasCinturon === 1 && hasDni === 0,
+      'Buscar por nombre deja ver solo los ítems que coinciden',
+      `cinturon=${hasCinturon} dni=${hasDni}`,
+    );
+
+    await page.fill('input[placeholder="Buscar ítem…"]', '');
+    await page.waitForTimeout(100);
+    const hasDniAfterClear = await page.locator('button', { hasText: 'DNI y pasaporte' }).count();
+    assert(hasDniAfterClear === 1, 'Vaciar la búsqueda vuelve a mostrar todos los ítems', `count=${hasDniAfterClear}`);
+
+    await page.fill('input[placeholder="Buscar ítem…"]', 'zzz-no-existe');
+    await page.waitForTimeout(100);
+    const noResultsMsg = await page.locator('text=No hay ítems que coincidan').count();
+    assert(noResultsMsg === 1, 'Sin coincidencias, muestra el mensaje de "sin resultados"', `count=${noResultsMsg}`);
+
+    await page.fill('input[placeholder="Buscar ítem…"]', '');
+    await page.waitForTimeout(80);
+    await page.click('button:has-text("Cinturón")');
+    await page.waitForTimeout(100);
+    await page.click('text=Sin empacar');
+    await page.waitForTimeout(100);
+    const hasCinturonAfterPendingFilter = await page.locator('button', { hasText: 'Cinturón' }).count();
+    const packedLabel = await progressNumLocator(page).textContent();
+    assert(
+      hasCinturonAfterPendingFilter === 0 && packedLabel.trim() !== '0',
+      '"Sin empacar" oculta los ítems tildados sin afectar el progreso real',
+      `cinturonVisible=${hasCinturonAfterPendingFilter} packed=${packedLabel}`,
     );
     await ctx.close();
   }

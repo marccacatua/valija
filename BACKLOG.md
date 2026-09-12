@@ -255,9 +255,11 @@ relacionadas, ninguna para hacer ya:
     la misma valija" como flujo real (ej. dos personas yendo al mismo
     viaje) — confirmar que hay ganas de eso antes de construirlo.
 
-- **Filtrar/buscar ítems** dentro de la checklist (packed/sin empacar, por
-  categoría, o buscar por nombre). Útil cuando la lista crece con ítems
-  a mano. Bajo esfuerzo, todo el estado ya está en `trip.items`.
+- ~~Filtrar/buscar ítems~~ ✅ v0.18.0 (parcial): buscador por nombre +
+  toggle "Sin empacar" en la vista detallada (`Checklist.tsx`), sin tocar
+  el progreso real. Queda pendiente el filtro por categoría si hace
+  falta más adelante — con la búsqueda por nombre ya cubre el caso de
+  uso principal (encontrar un ítem agregado a mano entre muchos).
 - ~~Asignar ítems a una valija/bolso específico~~ ✅ v0.7.0, como
   recomendación de solo lectura (`src/data/distribute.ts` + pantalla
   `Distribution.tsx`), no como asignación persistida por ítem. Si más

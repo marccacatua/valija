@@ -5,6 +5,18 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.18.0
+
+- **Buscar/filtrar ítems en la checklist**: nueva barra de búsqueda por
+  nombre + toggle "Sin empacar" arriba de la vista detallada — útil
+  cuando la lista crece con ítems agregados a mano. El filtro solo
+  cambia qué se ve, nunca el progreso real (tildar sigue funcionando
+  igual, esté filtrado o no). Gratis, sin feature flag.
+  - QA: 4 casos nuevos de Playwright, más un fix de estabilidad en un
+    test existente que empezaba a fallar de forma intermitente bajo
+    carga (le faltaba esperar el render antes de contar) — 81/81 en
+    total.
+
 ## v0.17.1
 
 - **Botón real de "Desbloquear Valija Pro"**: hasta ahora las features
