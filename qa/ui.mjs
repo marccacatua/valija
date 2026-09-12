@@ -1079,6 +1079,32 @@ try {
     assert(hasSupportTitle > 0, 'La URL directa /soporte muestra la página de ayuda', `count=${hasSupportTitle}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 29) Paywall real (stub sin cobro todavía): tocar "Desbloquear" en el
+  // sheet de Pro prende isPro de verdad y las features bloqueadas
+  // aparecen al toque, sin recargar la página
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser); // gratis
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const hasApplyBefore = await page.locator('text=Aplicar una plantilla').count();
+    assert(hasApplyBefore === 0, 'Antes de comprar, no se ve "Aplicar una plantilla"', `count=${hasApplyBefore}`);
+
+    await page.click('text=🔒 Desbloquear ítems propios, plantillas y repetir viaje');
+    await page.waitForSelector('text=Valija Pro');
+    await page.click('button:has-text("Desbloquear —")');
+    await page.waitForTimeout(150);
+
+    const hasApplyAfter = await page.locator('text=Aplicar una plantilla').count();
+    const hasClone = await page.locator('text=Repetir este viaje').count();
+    assert(
+      hasApplyAfter === 1 && hasClone === 1,
+      'Tras "Desbloquear" en el paywall, las features Pro aparecen sin recargar la página',
+      `apply=${hasApplyAfter} clone=${hasClone}`,
+    );
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

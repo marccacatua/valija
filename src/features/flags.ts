@@ -1,4 +1,4 @@
-import { useLocalStorage } from '../hooks/useLocalStorage';
+import { useCallback, useSyncExternalStore } from 'react';
 
 /**
  * Registro central de features "gateables" — un cambio de flag acá en vez
@@ -12,12 +12,10 @@ import { useLocalStorage } from '../hooks/useLocalStorage';
  * app para quien la recibe, no tiene sentido trabarlo).
  *
  * Importante: esto vive en un simple booleano de localStorage (`isPro`),
- * no hay compra real todavía. En la PWA (sin StoreKit) no hay forma de
- * desbloquear desde la propia UI — es una limitación conocida del canal
- * web, no un bug: el desbloqueo real solo va a existir en la app nativa.
- * Si alguien probando por web necesita ver la versión Pro mientras tanto,
- * `localStorage.setItem('valija:isPro', 'true')` en la consola del
- * navegador lo simula sin tocar código.
+ * todavía no hay compra real. El botón "Desbloquear Valija Pro" (ver
+ * `features/purchase.ts` y `PaywallSheet`) ya funciona de punta a punta,
+ * pero hoy solo prende el flag sin cobrar nada — placeholder hasta
+ * conectar StoreKit/RevenueCat (ver el roadmap de publicación).
  */
 export type FeatureKey =
   | 'unlimitedTrips'
@@ -52,11 +50,49 @@ export function isFeatureEnabled(key: FeatureKey, isPro: boolean): boolean {
   return !def.pro || isPro;
 }
 
-/** Fuente de verdad de si el usuario tiene la suscripción pro. Placeholder
- * hasta que exista compra real (StoreKit/RevenueCat): por ahora es un toggle
- * local para poder probar la UI condicionada sin pagar nada. */
+// `useLocalStorage` normal no alcanza acá: cada instancia mantiene su
+// propio estado en memoria, así que si el paywall (montado en un sheet)
+// prendiera isPro con ese hook, otro componente ya montado (la checklist
+// detrás) no se enteraría hasta un remount. isPro sí necesita que TODOS
+// los que lo leen en la misma página se enteren al toque de un cambio
+// (comprar Pro y ver las features desbloquearse ahí mismo, sin recargar)
+// — por eso usa un store externo mínimo con useSyncExternalStore en vez
+// del hook genérico.
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+function readIsPro(): boolean {
+  try {
+    const raw = window.localStorage.getItem(IS_PRO_KEY);
+    return raw !== null ? (JSON.parse(raw) as boolean) : false;
+  } catch {
+    return false;
+  }
+}
+
+function writeIsPro(value: boolean) {
+  try {
+    window.localStorage.setItem(IS_PRO_KEY, JSON.stringify(value));
+  } catch {
+    // si no se puede persistir, esta pestaña sigue funcionando en memoria
+  }
+  listeners.forEach((notify) => notify());
+}
+
+function subscribe(listener: Listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+/** Fuente de verdad de si el usuario tiene Valija Pro. Placeholder hasta que
+ * exista compra real (ver features/purchase.ts): por ahora es un booleano de
+ * localStorage, pero ya reactivo entre todos los componentes montados. */
 export function useIsPro() {
-  const [isPro, setIsPro] = useLocalStorage<boolean>(IS_PRO_KEY, false);
+  const isPro = useSyncExternalStore(subscribe, readIsPro, () => false);
+  const setIsPro = useCallback((next: boolean | ((prev: boolean) => boolean)) => {
+    const resolved = typeof next === 'function' ? (next as (prev: boolean) => boolean)(readIsPro()) : next;
+    writeIsPro(resolved);
+  }, []);
   return [isPro, setIsPro] as const;
 }
 

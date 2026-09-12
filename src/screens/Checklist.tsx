@@ -10,6 +10,7 @@ import { BottomNav } from '../components/BottomNav';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EditIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
+import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
@@ -47,6 +48,7 @@ export function Checklist() {
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const trip = getTrip(tripId);
 
@@ -361,6 +363,11 @@ export function Checklist() {
             Repetir este viaje
           </Button>
         )}
+        {!canAddCustomItems && (
+          <Button variant="inverted" onClick={() => setShowPaywall(true)}>
+            🔒 Desbloquear ítems propios, plantillas y repetir viaje
+          </Button>
+        )}
         {canExport && (
           <Button variant="inverted" onClick={handleShare}>
             {copied ? 'Copiado ✓' : 'Compartir checklist'}
@@ -374,6 +381,8 @@ export function Checklist() {
 
       <div style={{ flex: 1 }} />
       <BottomNav active="checklist" />
+
+      {showPaywall && <PaywallSheet onClose={() => setShowPaywall(false)} />}
 
       {sheet === 'save' && (
         <SaveTemplateSheet

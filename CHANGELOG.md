@@ -5,6 +5,26 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.17.1
+
+- **Botón real de "Desbloquear Valija Pro"**: hasta ahora las features
+  pagas simplemente desaparecían para un usuario gratis, sin ninguna
+  forma de comprar desde la propia app. Nuevo `PaywallSheet` (con los
+  beneficios listados, precio y "restaurar compra") disparado desde el
+  tope de 3 viajes en `TripForm` y desde un botón "🔒 Desbloquear…" en
+  la checklist. Todavía no cobra nada de verdad — `features/purchase.ts`
+  deja la capa de compra lista y aislada para conectar RevenueCat/StoreKit
+  más adelante sin tocar ningún componente.
+  - **Bug real encontrado y corregido en el camino**: `useIsPro()` usaba
+    el hook genérico `useLocalStorage`, que mantiene un estado en
+    memoria por instancia — si el paywall (montado en un sheet aparte)
+    prendía `isPro`, la checklist de atrás no se enteraba hasta
+    recargar la página. Reescrito con `useSyncExternalStore` para que
+    todos los componentes que leen `isPro` en la misma página se
+    actualicen al toque, sin recargar nada.
+  - QA: 1 caso nuevo de Playwright (comprar en el sheet desbloquea sin
+    recargar) — 77/77 en total.
+
 ## v0.17.0
 
 - **Requisitos de privacidad para el App Store, listos**: páginas

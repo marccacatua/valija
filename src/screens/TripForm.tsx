@@ -15,6 +15,7 @@ import { Button } from '../components/Button';
 import { Mascot } from '../components/Mascot';
 import { OptionCard } from '../components/OptionCard';
 import { OptionChip } from '../components/OptionChip';
+import { PaywallSheet } from '../components/PaywallSheet';
 import { SectionLabel } from '../components/SectionLabel';
 import { DurationStepper } from '../components/DurationStepper';
 import { BackArrowIcon, ClimaIcons, DestIcons, MaletaIcons } from '../components/icons';
@@ -30,6 +31,7 @@ export function TripForm() {
   const [, setLastTripId] = useLastTripId();
   const [isPro] = useIsPro();
   const [form, setForm] = useState<TripFormState>(DEFAULT_FORM);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   // Tope de la versión gratis: se chequea acá (antes de mostrar el
   // formulario) y no recién al tocar "Armar mi valija", para no hacer
@@ -86,9 +88,12 @@ export function TripForm() {
             <div className={styles.limitTitle}>Llegaste al límite de {FREE_TRIP_LIMIT} viajes gratis</div>
             <div className={styles.limitDesc}>
               Borrá o pausá alguno de tus viajes guardados en "Mis viajes" para hacer lugar, o desbloqueá viajes
-              ilimitados con Valija Pro (USD 0,99, pago único) — disponible próximamente.
+              ilimitados con Valija Pro.
             </div>
-            <Button onClick={() => navigate('/viajes')}>Ir a mis viajes</Button>
+            <Button onClick={() => setShowPaywall(true)}>Desbloquear Valija Pro</Button>
+            <Button variant="inverted" onClick={() => navigate('/viajes')}>
+              Ir a mis viajes
+            </Button>
           </div>
         </div>
       ) : (
@@ -227,6 +232,8 @@ export function TripForm() {
           <Button onClick={handleGenerate}>Armar mi valija · {itemsPreview} ítems</Button>
         </div>
       )}
+
+      {showPaywall && <PaywallSheet onClose={() => setShowPaywall(false)} />}
     </div>
   );
 }
