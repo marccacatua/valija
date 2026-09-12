@@ -60,6 +60,11 @@ export interface Trip {
   form: TripFormState;
   items: PackingItem[];
   homeChecklist: HomeTask[];
+  /** Cuándo se marcó el viaje como finalizado — sin valor significa que
+   * sigue activo. Se guarda la fecha (no un simple booleano) por si en
+   * el futuro sirve mostrar "finalizado el 12 sept"; hoy solo se usa
+   * para ordenar los finalizados al final de "Mis viajes". */
+  finishedAt?: string;
 }
 
 /** Plantilla personal de ítems (ej. "Kit yacimiento"), privada del

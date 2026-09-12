@@ -179,6 +179,15 @@ export function useTrips() {
     setTrips(() => []);
   }, [setTrips]);
 
+  /** Marca/desmarca un viaje como finalizado — reversible, por si fue
+   * sin querer. No borra nada: sigue disponible para volver a mirarlo. */
+  const toggleTripFinished = useCallback(
+    (id: string) => {
+      updateTrip(id, (t) => ({ ...t, finishedAt: t.finishedAt ? undefined : new Date().toISOString() }));
+    },
+    [updateTrip],
+  );
+
   const getTrip = useCallback((id: string | undefined) => trips.find((t) => t.id === id), [trips]);
 
   return {
@@ -196,6 +205,7 @@ export function useTrips() {
     removeItem,
     removeTrip,
     removeAllTrips,
+    toggleTripFinished,
     getTrip,
   };
 }

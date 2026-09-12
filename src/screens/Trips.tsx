@@ -19,7 +19,7 @@ interface PendingConfirm {
 
 export function Trips() {
   const navigate = useNavigate();
-  const { trips, removeTrip, removeAllTrips } = useTrips();
+  const { trips, removeTrip, removeAllTrips, toggleTripFinished } = useTrips();
   const [, setLastTripId] = useLastTripId();
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
 
@@ -38,6 +38,11 @@ export function Trips() {
       },
     });
   };
+
+  // Los finalizados van al final, sin reordenar dentro de cada grupo
+  // (Array.sort es estable) — los activos quedan como ya venían (más
+  // nuevo primero, por cómo addTrip los antepone).
+  const sortedTrips = [...trips].sort((a, b) => Number(!!a.finishedAt) - Number(!!b.finishedAt));
 
   const deleteAllTrips = () => {
     setConfirm({
@@ -81,20 +86,50 @@ export function Trips() {
             <div className={styles.emptyDesc}>Creá tu primer viaje y va a aparecer acá, listo para repetir.</div>
           </div>
         ) : (
-          trips.map((trip) => {
+          sortedTrips.map((trip) => {
             const pct = progressPct(trip.items);
             const done = pct === 100;
+            const finished = Boolean(trip.finishedAt);
             const color = done ? 'var(--teal)' : 'var(--coral)';
             return (
-              <button key={trip.id} type="button" className={styles.tripCard} onClick={() => openTrip(trip.id)}>
-                <ProgressRing pct={pct} color={color} />
+              <button
+                key={trip.id}
+                type="button"
+                className={`${styles.tripCard} ${finished ? styles.tripCardFinished : ''}`}
+                onClick={() => openTrip(trip.id)}
+              >
+                <ProgressRing pct={pct} color={finished ? 'var(--muted-3)' : color} />
                 <div className={styles.tripInfo}>
                   <div className={styles.tripName}>{tripTitle(trip.form)}</div>
                   <div className={styles.tripMeta}>{tripListMeta(trip)}</div>
-                  <div className={styles.tripState} style={{ color }}>
-                    {done ? 'Empacado completo' : `${trip.items.filter((i) => i.done).length} de ${trip.items.length} empacado`}
+                  <div className={styles.tripState} style={{ color: finished ? 'var(--muted)' : color }}>
+                    {finished
+                      ? 'Viaje finalizado'
+                      : done
+                        ? 'Empacado completo'
+                        : `${trip.items.filter((i) => i.done).length} de ${trip.items.length} empacado`}
                   </div>
                 </div>
+                <span
+                  role="button"
+                  className={`${styles.finishBtn} ${finished ? styles.finishBtnActive : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleTripFinished(trip.id);
+                  }}
+                  aria-label={finished ? `Reactivar ${tripTitle(trip.form)}` : `Marcar ${tripTitle(trip.form)} como finalizado`}
+                >
+                  <svg width="14" height="11" viewBox="0 0 14 11">
+                    <path
+                      d="M1 5.5L5 9.5L13 1.5"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      fill="none"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
                 <span
                   role="button"
                   className={styles.deleteBtn}

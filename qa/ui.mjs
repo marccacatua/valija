@@ -757,6 +757,68 @@ try {
     );
     await ctx.close();
   }
+
+  // ============================================================
+  // 22) Marcar un viaje como finalizado: baja al final de la lista,
+  // muestra "Viaje finalizado", se puede revertir, y sigue siendo
+  // posible entrar a verlo
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje A');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje B');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    const namesBefore = await page.locator('[class*="tripName"]').allTextContents();
+    assert(
+      namesBefore[0] === 'Viaje B' && namesBefore[1] === 'Viaje A',
+      'Viaje B (creado después) aparece arriba de Viaje A antes de finalizar nada',
+      `orden=${JSON.stringify(namesBefore)}`,
+    );
+
+    // finalizar "Viaje B" (el de arriba) y confirmar que baja al final
+    await page.click('[aria-label="Marcar Viaje B como finalizado"]');
+    await page.waitForTimeout(100);
+    const namesAfterFinish = await page.locator('[class*="tripName"]').allTextContents();
+    const finishedLabelCount = await page.locator('text=Viaje finalizado').count();
+    assert(
+      namesAfterFinish[0] === 'Viaje A' && namesAfterFinish[1] === 'Viaje B' && finishedLabelCount === 1,
+      'Finalizar "Viaje B" lo manda al final de la lista y muestra la etiqueta',
+      `orden=${JSON.stringify(namesAfterFinish)} etiqueta=${finishedLabelCount}`,
+    );
+
+    // sigue siendo posible entrar a un viaje finalizado
+    await page.click('text=Viaje B');
+    await page.waitForSelector('text=Tu valija para');
+    const heroShowsB = await page.locator('text=Viaje B').count();
+    assert(heroShowsB > 0, 'Un viaje finalizado se sigue pudiendo abrir normalmente', `count=${heroShowsB}`);
+
+    // revertir: vuelve a subir a su posición original
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('[aria-label="Reactivar Viaje B"]');
+    await page.waitForTimeout(100);
+    const namesAfterRevert = await page.locator('[class*="tripName"]').allTextContents();
+    assert(
+      namesAfterRevert[0] === 'Viaje B' && namesAfterRevert[1] === 'Viaje A',
+      'Reactivar un viaje finalizado lo devuelve a su posición (más nuevo primero)',
+      `orden=${JSON.stringify(namesAfterRevert)}`,
+    );
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

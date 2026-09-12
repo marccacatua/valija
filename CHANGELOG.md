@@ -5,6 +5,20 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.14.0
+
+- **Marcar un viaje como finalizado**: en "Mis viajes" ahora hay un
+  botón de tilde junto al de borrar — al finalizar un viaje, la
+  tarjeta se atenúa, muestra "Viaje finalizado" y baja al final de la
+  lista (los activos quedan siempre arriba, más nuevo primero). Es
+  reversible (se puede reactivar) y no borra nada: el viaje se puede
+  seguir abriendo normalmente para consultarlo más adelante.
+- Evaluamos también achicar la sección "¿Quedó todo pronto en casa?"
+  en la vista rápida y agregar swipe para borrar/finalizar en "Mis
+  viajes" — quedan documentadas las razones para no hacerlo (todavía)
+  en `BACKLOG.md`.
+- QA: 4 casos nuevos de Playwright — 56/56 en total.
+
 ## v0.13.1
 
 - **Las plantillas ahora también guardan tareas de casa**: hasta ahora

@@ -4,6 +4,23 @@ Ideas para próximas versiones, con una nota de cómo encajarían en la
 arquitectura actual (para que cualquier sesión futura pueda retomarlas sin
 tener que releer todo el historial de chat).
 
+## Swipe para borrar/finalizar en "Mis viajes"
+
+Hoy borrar y marcar como finalizado son botones explícitos en la
+tarjeta (`Trips.tsx`, `.deleteBtn` / `.finishBtn`). Un swipe horizontal
+(como Mail de iOS) sería más "nativo", pero se decidió dejarlo para
+después de publicar: hay que distinguir bien un swipe horizontal del
+scroll vertical de la lista (fácil de romper cualquiera de los dos sin
+una librería), y es un gesto no descubrible sin una pista visual. Los
+botones ya cubren la misma funcionalidad sin ese riesgo.
+
+## Animación de transición entre pantallas
+
+Slide u otra transición al navegar (ej. Welcome → Mis viajes) usando
+`react-router-dom` + una librería como `framer-motion`/`motion`. Aditivo,
+no toca lógica existente. Lo que hay que pensar es el tipo de transición
+por caso (¿todas iguales, o distinta según de dónde a dónde se navega?).
+
 ## ~~Agregar ítems a mano~~ ✅ hecho en v0.4.0
 
 Cada categoría de la checklist termina con una fila "Agregar ítem…".
