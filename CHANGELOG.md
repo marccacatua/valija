@@ -5,6 +5,32 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.17.0
+
+- **Requisitos de privacidad para el App Store, listos**: páginas
+  `/privacidad` y `/soporte` (contenido honesto — Valija no recolecta
+  ningún dato, todo vive en el dispositivo), enlazadas desde la
+  bienvenida junto al número de versión. `PrivacyInfo.xcprivacy` para el
+  target de iOS (sin tracking, sin datos recolectados, sin uso de APIs
+  de "razón requerida" — coherente con que la app no tiene SDKs de
+  analítica ni de terceros). Falta un solo paso manual en Xcode:
+  agregar ese archivo al proyecto vía "Add Files to App…" (no se pudo
+  automatizar sin arriesgar corromper el `.pbxproj` a mano).
+  - Pendiente antes de enviar a revisión: reemplazar el mail placeholder
+    en `data/contact.ts` por el mail de soporte real — a propósito no
+    se decidió solo, es información pública permanente.
+- **`vercel.json`**: agrega el rewrite estándar de SPA (`/* -> /index.html`).
+  Sin esto, entrar directo a una URL como `/privacidad` o `/viajes`
+  (en vez de navegar desde adentro de la app) podía devolver 404 en
+  Vercel — necesario para que Apple pueda abrir la política de
+  privacidad como URL suelta.
+- **Capturas para App Store Connect**: `scripts/generate-screenshots.mjs`
+  arma un viaje de ejemplo real (con progreso) y saca capturas de las
+  4 pantallas clave en los 3 tamaños de iPhone que pide Apple
+  (6.9″/6.7″/6.5″), guardadas en `store-assets/screenshots/`.
+  Reproducible cuando haga falta actualizarlas.
+- QA: 72/72 sin regresiones (combinatorio + Playwright).
+
 ## v0.16.1
 
 - **Fix urgente**: activar el paywall dejó sin ver sus viajes/Pro a

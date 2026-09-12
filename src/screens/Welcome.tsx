@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Mascot } from '../components/Mascot';
 import { useTrips } from '../hooks/useTrips';
@@ -36,6 +36,10 @@ export function Welcome() {
       </div>
 
       <div className={styles.version}>v{__APP_VERSION__}</div>
+      <div className={styles.legalLinks}>
+        <Link to="/privacidad">Privacidad</Link>
+        <Link to="/soporte">Soporte</Link>
+      </div>
     </div>
   );
 }

@@ -1054,6 +1054,31 @@ try {
     assert(tripCountAfter === 1, 'El viaje sigue siendo 1 después de reimportar el mismo backup', `count=${tripCountAfter}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 28) Privacidad y Soporte: enlazadas desde la bienvenida y
+  // accesibles por URL directa (Apple entra directo, sin pasar por la app)
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.goto(`${BASE}/`);
+    const hasPrivacyLink = await page.locator('a[href="/privacidad"]').count();
+    const hasSupportLink = await page.locator('a[href="/soporte"]').count();
+    assert(
+      hasPrivacyLink === 1 && hasSupportLink === 1,
+      'La bienvenida enlaza a Privacidad y Soporte',
+      `privacy=${hasPrivacyLink} support=${hasSupportLink}`,
+    );
+
+    await page.goto(`${BASE}/privacidad`);
+    const hasPrivacyTitle = await page.locator('text=Política de privacidad').count();
+    assert(hasPrivacyTitle > 0, 'La URL directa /privacidad muestra la política', `count=${hasPrivacyTitle}`);
+
+    await page.goto(`${BASE}/soporte`);
+    const hasSupportTitle = await page.locator('h2', { hasText: '¿Cómo empiezo?' }).count();
+    assert(hasSupportTitle > 0, 'La URL directa /soporte muestra la página de ayuda', `count=${hasSupportTitle}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
