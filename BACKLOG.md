@@ -58,6 +58,66 @@ ratos libres).
 - Requiere sumar el control al formulario (`TripForm.tsx`) — probablemente
   un toggle simple, no un grupo de opciones como el resto.
 
+## Viajar con bebé o niño pequeño
+
+Pedido del usuario (2026-09): sumar la posibilidad de armar la parte de
+la valija de un bebé/niño chico — pañales, termómetro, su ropa, etc.
+Pidió explícitamente pensar la lista con cuidado, no copiar un borrador
+de ejemplo tal cual.
+
+**Cómo encaja en la arquitectura**: NO como una "valija extra" (un
+4to tipo de maleta) — las maletas (`MaletaKey`) son el contenedor
+físico donde entra todo lo demás, un bolso de bebé se guarda dentro
+del carry-on/bodega/mochila igual que la ropa. La forma correcta es
+un toggle en el formulario, igual que `vestidos: boolean` hoy, más una
+categoría NUEVA (no repartir sus ítems entre `ropa`/`higiene`
+existentes) para que se pueda escanear todo junto de un vistazo — el
+mismo razonamiento que llevó a separar "¿Quedó todo pronto en casa?"
+en vez de mezclarlo con la checklist de empaque.
+
+- `TripFormState`: sumar `bebe: boolean` (o `ninoPequeno`, definir
+  nombre — cubre bebé y niño chico, no hace falta separar en dos
+  toggles a menos que la lista de ítems difiera mucho por edad).
+- `CategoryKey`: sumar `'bebe'`. `CATEGORY_META`: título "Bebé" + un
+  color nuevo (los 5 tokens actuales — coral/teal/violeta/mostaza/cielo
+  — ya están usados, elegir uno que no choque, ej. un rosa/lila suave).
+  `CATEGORY_ORDER`: ubicarla cerca de "Higiene" (bastante superpuesta
+  temáticamente — pañales, cremas, termómetro).
+  `quickGroups.ts`: un solo grupo rápido `bebe`, sin dividir (la lista
+  no es tan larga como para necesitarlo).
+- Ítems propuestos en `buildItems.ts` (repensados desde cero, no es la
+  lista literal que tiró el usuario como ejemplo — algunos con la misma
+  lógica condicional que ya usa el resto de la app, para que se sienta
+  parte del mismo sistema y no una lista pegada aparte):
+  - Higiene/salud: pañales, toallitas húmedas, crema para la
+    irritación, termómetro, medicación habitual y antifebril infantil,
+    botiquín pediátrico básico (suero fisiológico nasal, curitas
+    chicas) — todos qty=1 ("una provisión", mismo criterio que ya usa
+    la app para shampoo/pasta de dientes, no tiene sentido contar
+    pañales unidad por unidad.
+  - Alimentación: mamadera/vasito, babero, utensilios de comida.
+  - Descanso/contención: chupete y mordillo, mantita o saco de dormir.
+  - Ropa (separada de la ropa del adulto, en su propia categoría):
+    mudas de ropa con cantidad escalada por día igual que la del adulto
+    pero con más margen (`cap(d + 2, 10)` en vez de `cap(d + 1, 10)` —
+    se ensucian más seguido), pijamas.
+  - Condicionales que reusan campos que YA existe en el formulario, para
+    que se sienta igual de "inteligente" que el resto de la app:
+    - `dest.includes('playa') || clima === 'calor'` → traje de baño y
+      gorro/protector solar de bebé (mismo condicional que ya usa la
+      ropa de baño del adulto).
+    - `transporte === 'auto'` → butaca/silla para auto.
+    - Siempre: cochecito o mochila portabebé, y algo de entretenimiento
+      para el viaje (más importante cuanto más largo el trayecto, pero
+      no vale la pena condicionarlo a `dias` — un vuelo corto también
+      lo necesita).
+- El toggle también podría alimentar la vista rápida sin cambios
+  (ya agrupa por categoría) y las plantillas sin cambios (ya funcionan
+  por `cat` genérico).
+- Que no complique el generador: seguir el patrón de `vestidos` —
+  un `if (f.bebe) { add(...) }` bloque, no dispersarlo por todo
+  `buildRawItems`.
+
 ## Modo oscuro
 
 Toggle de tema (claro/oscuro/según sistema), guardado en localStorage.
