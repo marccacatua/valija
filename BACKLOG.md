@@ -4,6 +4,34 @@ Ideas para próximas versiones, con una nota de cómo encajarían en la
 arquitectura actual (para que cualquier sesión futura pueda retomarlas sin
 tener que releer todo el historial de chat).
 
+## Analítica de uso (qué features se usan, cuánta gente usa la app)
+
+Pedido del usuario (2026-09): poder ver más adelante cuánta gente usa
+la app y qué usan más, para priorizar mejoras con datos reales en vez
+de a ojo. Mejor esperar a tener usuarios reales post-lanzamiento antes
+de decidir qué medir — instrumentar de más antes de tiempo es trabajo
+tirado si después no sirve para nada.
+
+- **App Store Connect ya da algo gratis sin escribir una línea**:
+  descargas, retención por cohortes, crashes — alcanza para responder
+  "¿cuánta gente la instaló y vuelve?" apenas se publique.
+- Para "qué es lo que más usan" (por feature, no solo por pantalla) hace
+  falta instrumentar eventos a mano: ej. `viaje_creado`,
+  `plantilla_aplicada`, `checklist_compartida`, `vista_rapida_usada`.
+  Candidato recomendado: **PostHog** (tiene plan gratis generoso, es
+  "event-based" — pensado justo para esto — y el mismo SDK sirve para
+  medir uso en la PWA y en la app empaquetada con Capacitor sin
+  duplicar trabajo). Alternativa más simple pero más limitada:
+  Plausible (bueno para "cuánta gente entra", flojo para "qué tocan").
+- Importante para no romper la confianza de nadie: nunca mandar datos
+  personales ni el contenido de un viaje (destino, fechas, ítems) — solo
+  qué acción se hizo, no el detalle. Hay que sumar una líena a una futura
+  política de privacidad (obligatoria igual para publicar en el App
+  Store) contándolo.
+- Se conecta con `features/flags.ts`: una vez que exista, sirve también
+  para medir qué tan seguido se topan con un muro de "esto es Pro" — dato
+  clave para ajustar el precio o qué va gratis/pago más adelante.
+
 ## Swipe para borrar/finalizar en "Mis viajes"
 
 Hoy borrar y marcar como finalizado son botones explícitos en la
@@ -163,6 +191,38 @@ por si sirve de referencia al priorizar, no todo es para hacer ya.
   `Checklist.tsx` usa `navigator.share` cuando está disponible y si no
   cae a copiar al portapapeles con feedback "Copiado ✓". Gateado detrás
   de `exportChecklist` (sigue en `pro: false`).
+
+## Compartir: sumar el link de descarga, y evaluar poder importar
+
+Pedido del usuario (2026-09) sobre la función de compartir que ya
+existe (`shareText()` en `data/trip.ts`, ver arriba). Dos ideas
+relacionadas, ninguna para hacer ya:
+
+- **Agregar el link de descarga al texto compartido.** Chico en código
+  (una línea más en `shareText()`, tipo "📱 Armá la tuya con Valija:
+  <link>"), pero no tiene sentido hacerlo antes de tener a dónde
+  apuntar: hoy no existe ni la ficha del App Store ni una landing page.
+  Anotarlo para cuando exista esa URL — ahí sí es de 5 minutos.
+- **Importar un viaje recibido por este medio.** Bastante más grande,
+  pensarlo bien antes de meter mano:
+  - El texto humano de `shareText()` (para leer en WhatsApp) no es el
+    formato ideal para volver a parsear — mejor no reusarlo tal cual.
+    La opción más prolija es un **link con los datos codificados** (ej.
+    el `form` + los ítems agregados a mano, en base64 en un query param
+    o un deep link `valija://importar?...`), separado del texto legible
+    que ya se comparte.
+  - Requiere manejar el caso "quien lo recibe no tiene la app
+    instalada todavía" — el link debería primero mandar a instalarla
+    (App Store) y recién después poder abrir el import (universal
+    link / deferred deep link, más trabajo de lo que parece a primera
+    vista).
+  - Versionado: si el formato de `TripFormState` cambia con el tiempo,
+    un link viejo compartido hace tiempo tiene que seguir importando
+    algo razonable, no romperse.
+  - Vale la pena solo si de verdad se usa "invitar a alguien a armar
+    la misma valija" como flujo real (ej. dos personas yendo al mismo
+    viaje) — confirmar que hay ganas de eso antes de construirlo.
+
 - **Filtrar/buscar ítems** dentro de la checklist (packed/sin empacar, por
   categoría, o buscar por nombre). Útil cuando la lista crece con ítems
   a mano. Bajo esfuerzo, todo el estado ya está en `trip.items`.

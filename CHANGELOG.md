@@ -5,6 +5,29 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.16.0
+
+- **Modelo de precios definido y activado**: pago único de USD 0,99
+  (StoreKit "non-consumable", sin suscripción) para desbloquear Valija
+  Pro. Gratis para siempre: el generador de checklist completo, las 5
+  pantallas, distribución por valija, y **compartir/exportar la
+  checklist** (a propósito nunca pago — cada checklist compartida es
+  publicidad gratis de la app). Detrás del pago: viajes guardados
+  ilimitados (gratis: tope de 3), agregar ítems/tareas propias,
+  plantillas, y repetir un viaje anterior.
+  - `features/flags.ts`: `customItems`, `tripTemplates` y
+    `unlimitedTrips` pasan a `pro: true`; nuevo flag `cloneTrip`
+    (también pro) para "Repetir este viaje"; nueva constante
+    `FREE_TRIP_LIMIT = 3`.
+  - `TripForm.tsx`: al llegar al tope gratis, "Nuevo viaje" muestra un
+    aviso en vez del formulario (se chequea antes de mostrar el form,
+    no recién al enviarlo).
+  - Todavía no hay compra real (eso espera a StoreKit, más adelante en
+    el roadmap de publicación) — `isPro` sigue siendo un booleano de
+    localStorage, ahora con más peso real detrás.
+  - QA: 5 casos nuevos de Playwright (tope gratis + qué se ve/no según
+    plan) — 66/66 en total.
+
 ## v0.15.0
 
 - **Proyecto iOS con Capacitor**: primer paso hacia la publicación en el

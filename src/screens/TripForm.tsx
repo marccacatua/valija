@@ -12,11 +12,13 @@ import {
 import { countItems } from '../data/buildItems';
 import { DEFAULT_FORM } from '../data/trip';
 import { Button } from '../components/Button';
+import { Mascot } from '../components/Mascot';
 import { OptionCard } from '../components/OptionCard';
 import { OptionChip } from '../components/OptionChip';
 import { SectionLabel } from '../components/SectionLabel';
 import { DurationStepper } from '../components/DurationStepper';
 import { BackArrowIcon, ClimaIcons, DestIcons, MaletaIcons } from '../components/icons';
+import { FREE_TRIP_LIMIT, useIsPro } from '../features/flags';
 import { useTrips } from '../hooks/useTrips';
 import { useLastTripId } from '../hooks/useLastTripId';
 import type { TripFormState } from '../types';
@@ -24,9 +26,15 @@ import styles from './TripForm.module.css';
 
 export function TripForm() {
   const navigate = useNavigate();
-  const { addTrip } = useTrips();
+  const { trips, addTrip } = useTrips();
   const [, setLastTripId] = useLastTripId();
+  const [isPro] = useIsPro();
   const [form, setForm] = useState<TripFormState>(DEFAULT_FORM);
+
+  // Tope de la versión gratis: se chequea acá (antes de mostrar el
+  // formulario) y no recién al tocar "Armar mi valija", para no hacer
+  // llenar todo el form a alguien que ya está en el límite.
+  const atFreeLimit = !isPro && trips.length >= FREE_TRIP_LIMIT;
 
   const set = <K extends keyof TripFormState>(key: K, value: TripFormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -71,133 +79,154 @@ export function TripForm() {
         </div>
       </div>
 
-      <div className={styles.body}>
-        <div>
-          <SectionLabel hint="opcional">¿A dónde?</SectionLabel>
-          <input
-            className={styles.nameInput}
-            value={form.name}
-            onChange={(e) => set('name', e.target.value)}
-            placeholder="Ej. Bariloche"
-          />
-        </div>
-
-        <div>
-          <SectionLabel hint="elegí uno o varios">Destino</SectionLabel>
-          <div className={styles.grid3}>
-            {DEST_OPTIONS.map((opt) => (
-              <OptionCard
-                key={opt.key}
-                label={opt.label}
-                icon={DestIcons[opt.key]}
-                selected={form.dest.includes(opt.key)}
-                onSelect={() => toggleDest(opt.key)}
-              />
-            ))}
+      {atFreeLimit ? (
+        <div className={styles.body}>
+          <div className={styles.limitState}>
+            <Mascot size={64} />
+            <div className={styles.limitTitle}>Llegaste al límite de {FREE_TRIP_LIMIT} viajes gratis</div>
+            <div className={styles.limitDesc}>
+              Borrá o pausá alguno de tus viajes guardados en "Mis viajes" para hacer lugar, o desbloqueá viajes
+              ilimitados con Valija Pro (USD 0,99, pago único) — disponible próximamente.
+            </div>
+            <Button onClick={() => navigate('/viajes')}>Ir a mis viajes</Button>
           </div>
         </div>
-
-        <div>
-          <SectionLabel>Clima</SectionLabel>
-          <div className={styles.grid4}>
-            {CLIMA_OPTIONS.map((opt) => (
-              <OptionCard
-                key={opt.key}
-                compact
-                label={opt.label}
-                icon={ClimaIcons[opt.key]}
-                selected={form.clima === opt.key}
-                onSelect={() => set('clima', opt.key)}
-              />
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <SectionLabel>Vestuario</SectionLabel>
-          <div className={styles.wrap}>
-            <OptionChip
-              label="Sumar vestidos / pollera"
-              selected={form.vestidos}
-              onSelect={() => set('vestidos', !form.vestidos)}
+      ) : (
+        <div className={styles.body}>
+          <div>
+            <SectionLabel hint="opcional">¿A dónde?</SectionLabel>
+            <input
+              className={styles.nameInput}
+              value={form.name}
+              onChange={(e) => set('name', e.target.value)}
+              placeholder="Ej. Bariloche"
             />
           </div>
-        </div>
 
-        <div>
-          <SectionLabel>Motivo</SectionLabel>
-          <div className={styles.wrap}>
-            {MOTIVO_OPTIONS.map((opt) => (
-              <OptionChip key={opt.key} label={opt.label} selected={form.motivo === opt.key} onSelect={() => set('motivo', opt.key)} />
-            ))}
-          </div>
-        </div>
-
-        {form.motivo !== 'trabajo' && (
           <div>
-            <SectionLabel>Tipo de turismo</SectionLabel>
-            <div className={styles.wrap}>
-              {TURISMO_OPTIONS.map((opt) => (
-                <OptionChip
+            <SectionLabel hint="elegí uno o varios">Destino</SectionLabel>
+            <div className={styles.grid3}>
+              {DEST_OPTIONS.map((opt) => (
+                <OptionCard
                   key={opt.key}
                   label={opt.label}
-                  selected={form.turismo === opt.key}
-                  onSelect={() => set('turismo', opt.key)}
+                  icon={DestIcons[opt.key]}
+                  selected={form.dest.includes(opt.key)}
+                  onSelect={() => toggleDest(opt.key)}
                 />
               ))}
             </div>
           </div>
-        )}
 
-        <div>
-          <SectionLabel>Alojamiento</SectionLabel>
-          <div className={styles.wrap}>
-            {ALOJ_OPTIONS.map((opt) => (
-              <OptionChip key={opt.key} label={opt.label} selected={form.aloj === opt.key} onSelect={() => set('aloj', opt.key)} />
-            ))}
+          <div>
+            <SectionLabel>Clima</SectionLabel>
+            <div className={styles.grid4}>
+              {CLIMA_OPTIONS.map((opt) => (
+                <OptionCard
+                  key={opt.key}
+                  compact
+                  label={opt.label}
+                  icon={ClimaIcons[opt.key]}
+                  selected={form.clima === opt.key}
+                  onSelect={() => set('clima', opt.key)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <SectionLabel>Transporte</SectionLabel>
-          <div className={styles.wrap}>
-            {TRANSPORTE_OPTIONS.map((opt) => (
+          <div>
+            <SectionLabel>Vestuario</SectionLabel>
+            <div className={styles.wrap}>
               <OptionChip
-                key={opt.key}
-                label={opt.label}
-                selected={form.transporte === opt.key}
-                onSelect={() => set('transporte', opt.key)}
+                label="Sumar vestidos / pollera"
+                selected={form.vestidos}
+                onSelect={() => set('vestidos', !form.vestidos)}
               />
-            ))}
+            </div>
           </div>
-        </div>
 
-        <div>
-          <SectionLabel hint="elegí una o varias">Tipo de maleta</SectionLabel>
-          <div className={styles.grid3}>
-            {MALETA_OPTIONS.map((opt) => (
-              <OptionCard
-                key={opt.key}
-                label={opt.label}
-                icon={MaletaIcons[opt.key]}
-                selected={form.maletas.includes(opt.key)}
-                onSelect={() => toggleMaleta(opt.key)}
-              />
-            ))}
+          <div>
+            <SectionLabel>Motivo</SectionLabel>
+            <div className={styles.wrap}>
+              {MOTIVO_OPTIONS.map((opt) => (
+                <OptionChip
+                  key={opt.key}
+                  label={opt.label}
+                  selected={form.motivo === opt.key}
+                  onSelect={() => set('motivo', opt.key)}
+                />
+              ))}
+            </div>
           </div>
+
+          {form.motivo !== 'trabajo' && (
+            <div>
+              <SectionLabel>Tipo de turismo</SectionLabel>
+              <div className={styles.wrap}>
+                {TURISMO_OPTIONS.map((opt) => (
+                  <OptionChip
+                    key={opt.key}
+                    label={opt.label}
+                    selected={form.turismo === opt.key}
+                    onSelect={() => set('turismo', opt.key)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div>
+            <SectionLabel>Alojamiento</SectionLabel>
+            <div className={styles.wrap}>
+              {ALOJ_OPTIONS.map((opt) => (
+                <OptionChip key={opt.key} label={opt.label} selected={form.aloj === opt.key} onSelect={() => set('aloj', opt.key)} />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel>Transporte</SectionLabel>
+            <div className={styles.wrap}>
+              {TRANSPORTE_OPTIONS.map((opt) => (
+                <OptionChip
+                  key={opt.key}
+                  label={opt.label}
+                  selected={form.transporte === opt.key}
+                  onSelect={() => set('transporte', opt.key)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel hint="elegí una o varias">Tipo de maleta</SectionLabel>
+            <div className={styles.grid3}>
+              {MALETA_OPTIONS.map((opt) => (
+                <OptionCard
+                  key={opt.key}
+                  label={opt.label}
+                  icon={MaletaIcons[opt.key]}
+                  selected={form.maletas.includes(opt.key)}
+                  onSelect={() => toggleMaleta(opt.key)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel>Duración</SectionLabel>
+            <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+          </div>
+
+          <div className={styles.scrollPad} />
         </div>
+      )}
 
-        <div>
-          <SectionLabel>Duración</SectionLabel>
-          <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+      {!atFreeLimit && (
+        <div className={styles.footer}>
+          <Button onClick={handleGenerate}>Armar mi valija · {itemsPreview} ítems</Button>
         </div>
-
-        <div className={styles.scrollPad} />
-      </div>
-
-      <div className={styles.footer}>
-        <Button onClick={handleGenerate}>Armar mi valija · {itemsPreview} ítems</Button>
-      </div>
+      )}
     </div>
   );
 }

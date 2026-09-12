@@ -40,6 +40,7 @@ export function Checklist() {
   const canAddCustomItems = useFeatureFlag('customItems');
   const canUseTemplates = useFeatureFlag('tripTemplates');
   const canExport = useFeatureFlag('exportChecklist');
+  const canClone = useFeatureFlag('cloneTrip');
   const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
   const [view, setView] = useState<'detallada' | 'rapida'>('detallada');
@@ -355,9 +356,11 @@ export function Checklist() {
             Aplicar una plantilla
           </Button>
         )}
-        <Button variant="inverted" onClick={handleClone}>
-          Repetir este viaje
-        </Button>
+        {canClone && (
+          <Button variant="inverted" onClick={handleClone}>
+            Repetir este viaje
+          </Button>
+        )}
         {canExport && (
           <Button variant="inverted" onClick={handleShare}>
             {copied ? 'Copiado ✓' : 'Compartir checklist'}

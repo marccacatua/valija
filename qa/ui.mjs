@@ -39,7 +39,11 @@ function assert(cond, label, detail) {
   else fail(label, detail);
 }
 
-async function freshPage(browser) {
+// `pro: true` simula tener Valija Pro desbloqueada (mismo mecanismo que
+// describe el comentario de features/flags.ts para probar por web sin
+// compra real) — hace falta para ejercitar ítems propios, plantillas y
+// repetir viaje, que desde v0.16.0 están detrás del paywall.
+async function freshPage(browser, { pro = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width: 420, height: 900 } });
   // La app carga la tipografía desde Google Fonts en cada página (ver
   // index.html) — en un entorno sin salida a esa red (o con la red lenta)
@@ -49,7 +53,10 @@ async function freshPage(browser) {
   await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
   const page = await ctx.newPage();
   await page.goto(`${BASE}/`);
-  await page.evaluate(() => localStorage.clear());
+  await page.evaluate((isPro) => {
+    localStorage.clear();
+    if (isPro) localStorage.setItem('valija:isPro', 'true');
+  }, pro);
   return { ctx, page };
 }
 
@@ -148,7 +155,7 @@ try {
   // 4) Agregar ítem personalizado en cada categoría
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
     const categories = [
       { title: 'Documentos', item: 'Visa impresa' },
@@ -176,7 +183,7 @@ try {
   // 5) Ítem personalizado nace con qty=1 y SÍ tiene stepper (no es noQty)
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
     const input = page.locator('input[placeholder="Agregar ítem…"]').first();
     await input.fill('Item Custom Test');
@@ -192,7 +199,7 @@ try {
   // 6) Templates: guardar con selección parcial (checkboxes), aplicar y borrar
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
     // agregar 3 ítems custom (para poder elegir un subconjunto)
     const input = page.locator('input[placeholder="Agregar ítem…"]').first();
@@ -427,7 +434,7 @@ try {
   // 13) Vista rápida: un ítem personalizado cae en el grupo de su categoría
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
     const input = page.locator('input[placeholder="Agregar ítem…"]').first(); // primera categoría: Documentos
     await input.fill('Visa impresa');
@@ -625,7 +632,7 @@ try {
   // un ítem y agregar uno propio
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] }); // DEFAULT_FORM: dias=5 -> incluye heladera
     // varios divs anidados matchean el mismo texto: el contenedor entero
     // (con todas las filas y el input de agregar) y su header interno
@@ -716,7 +723,7 @@ try {
   // la valija (ej. "llevar al perro a guardería")
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
     const homeSection = page.locator('div', { hasText: /^¿Quedó todo pronto en casa\?/ }).first();
     const homeInput = homeSection.locator('input[placeholder="Agregar ítem…"]');
@@ -831,7 +838,7 @@ try {
   // ítems y tareas agregados a mano, y aparece como un viaje nuevo
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
     await page.click('button:has-text("Cinturón")');
     const input = page.locator('input[placeholder="Agregar ítem…"]').first();
@@ -897,6 +904,77 @@ try {
     );
     const feedbackCount = await page.locator('button', { hasText: 'Copiado' }).count();
     assert(feedbackCount === 1, 'El botón muestra "Copiado ✓" como feedback tras copiar', `count=${feedbackCount}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 25) Tope de la versión gratis: al llegar a FREE_TRIP_LIMIT (3) viajes
+  // guardados, "Nuevo viaje" muestra el aviso de límite en vez del
+  // formulario; con Pro no hay tope
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser); // gratis (default)
+    for (let i = 0; i < 3; i++) {
+      await generateTrip(page, { maletas: ['Bodega'] });
+      await page.click('text=Ver mis viajes');
+      await page.waitForSelector('text=Mis viajes');
+    }
+    await page.click('text=Nuevo viaje');
+    await page.waitForTimeout(150);
+    const hasLimitMsg = await page.locator('text=Llegaste al límite de 3 viajes gratis').count();
+    const hasForm = await page.locator('text=¿A dónde?').count();
+    assert(
+      hasLimitMsg === 1 && hasForm === 0,
+      'Al llegar a 3 viajes gratis, "Nuevo viaje" muestra el aviso de límite en vez del formulario',
+      `limitMsg=${hasLimitMsg} form=${hasForm}`,
+    );
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    for (let i = 0; i < 3; i++) {
+      await generateTrip(page, { maletas: ['Bodega'] });
+      await page.click('text=Ver mis viajes');
+      await page.waitForSelector('text=Mis viajes');
+    }
+    await page.click('text=Nuevo viaje');
+    await page.waitForTimeout(150);
+    const hasForm = await page.locator('text=¿A dónde?').count();
+    assert(hasForm === 1, 'Con Pro no hay tope de viajes: el formulario se sigue mostrando después de 3', `form=${hasForm}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 26) Free vs Pro: en la versión gratis no se ven "Agregar ítem",
+  // "Aplicar plantilla" ni "Repetir este viaje" (pero sí "Compartir
+  // checklist", que es gratis siempre); con Pro los tres aparecen
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser); // gratis
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const hasAddItemInput = await page.locator('input[placeholder="Agregar ítem…"]').count();
+    const hasApplyTemplate = await page.locator('text=Aplicar una plantilla').count();
+    const hasClone = await page.locator('text=Repetir este viaje').count();
+    assert(
+      hasAddItemInput === 0 && hasApplyTemplate === 0 && hasClone === 0,
+      'Versión gratis: no se ven "Agregar ítem", "Aplicar plantilla" ni "Repetir este viaje"',
+      `addItem=${hasAddItemInput} template=${hasApplyTemplate} clone=${hasClone}`,
+    );
+    const hasShare = await page.locator('text=Compartir checklist').count();
+    assert(hasShare === 1, 'Compartir checklist sigue disponible en la versión gratis', `share=${hasShare}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const hasAddItemInput = await page.locator('input[placeholder="Agregar ítem…"]').count();
+    const hasApplyTemplate = await page.locator('text=Aplicar una plantilla').count();
+    const hasClone = await page.locator('text=Repetir este viaje').count();
+    assert(
+      hasAddItemInput > 0 && hasApplyTemplate === 1 && hasClone === 1,
+      'Con Pro: "Agregar ítem", "Aplicar plantilla" y "Repetir este viaje" están disponibles',
+      `addItem=${hasAddItemInput} template=${hasApplyTemplate} clone=${hasClone}`,
+    );
     await ctx.close();
   }
 } catch (err) {
