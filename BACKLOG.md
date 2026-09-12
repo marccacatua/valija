@@ -28,7 +28,7 @@ Los ítems agregados así (`isCustom: true`) se pueden borrar con una ×;
 los generados por `buildItems()` siguen sin poder borrarse, solo
 destildarse. Usa el feature flag `customItems` (sigue en `pro: false`).
 
-## ~~"Valijas tipo" — plantillas de ítems propios~~ ✅ v0.10.0 (parcial)
+## ~~"Valijas tipo" — plantillas de ítems propios~~ ✅ v0.10.0 (parcial) + v0.14.1 (completo)
 
 Se implementó la mitad de esta idea, la de mayor pedido real (caso de
 uso concreto: EPP de yacimiento): guardar un grupo de ítems agregados a
@@ -36,17 +36,12 @@ mano como plantilla con nombre (`useTemplates`, `ItemTemplate`), y
 aplicarla en cualquier viaje futuro. Queda gateada detrás de
 `tripTemplates` en `features/flags.ts`.
 
-**Sigue pendiente** la otra mitad, distinta: clonar un viaje anterior
-COMPLETO (todas las elecciones del formulario — destino, clima, motivo,
-etc.) para no tener que volver a tildar todo. Notas de cuando se pensó:
-
-- El modelo de datos ya lo permite sin cambios: `Trip.form` tiene todas
-  las elecciones. "Clonar" = `addTrip(tripAntiguo.form)` para crear un
-  viaje nuevo con esa misma configuración (probablemente reseteando
-  `dias` o dejando que el usuario lo ajuste antes de generar).
-- Candidato a sumarse también a `unlimitedTrips` o un flag propio si se
-  quiere limitar cuántos "viajes tipo" completos puede guardar un
-  usuario free.
+La otra mitad ("repetir un viaje anterior COMPLETO sin volver a tildar
+todo el formulario") se hizo en v0.14.1: `cloneTrip` en `useTrips.ts`
+copia `form` + `items` + `homeChecklist` (con lo agregado a mano
+incluido) reseteando `done` a `false` en todo, y el botón "Repetir este
+viaje" en `Checklist.tsx` te deja directo en el viaje nuevo. No se
+limitó a ningún feature flag — es gratis, como el resto del generador.
 
 ## Pregunta "¿vas a hacer deporte en este viaje?"
 

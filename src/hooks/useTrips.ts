@@ -188,6 +188,29 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Duplica un viaje: mismo form, mismos ítems y tareas de casa (con sus
+   * cantidades y los agregados a mano — es "el mismo viaje de nuevo", no
+   * un formulario en blanco), pero recién armado: todo sin tildar, sin
+   * finalizar, y con id/fecha propios. Pensado para "quiero ir al mismo
+   * lugar otra vez" sin tener que rehacer el formulario ni los ítems
+   * puntuales que agregó la vez pasada. */
+  const cloneTrip = useCallback(
+    (id: string): Trip | undefined => {
+      const original = trips.find((t) => t.id === id);
+      if (!original) return undefined;
+      const clone: Trip = {
+        id: crypto.randomUUID(),
+        createdAt: new Date().toISOString(),
+        form: original.form,
+        items: original.items.map((item) => ({ ...item, done: false })),
+        homeChecklist: original.homeChecklist.map((task) => ({ ...task, done: false })),
+      };
+      setTrips((prev) => [clone, ...prev]);
+      return clone;
+    },
+    [trips, setTrips],
+  );
+
   const getTrip = useCallback((id: string | undefined) => trips.find((t) => t.id === id), [trips]);
 
   return {
@@ -206,6 +229,7 @@ export function useTrips() {
     removeTrip,
     removeAllTrips,
     toggleTripFinished,
+    cloneTrip,
     getTrip,
   };
 }

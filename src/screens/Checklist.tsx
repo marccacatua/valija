@@ -22,8 +22,19 @@ import styles from './Checklist.module.css';
 export function Checklist() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
-  const { getTrip, toggleItem, bumpItem, setItemsDone, renameTrip, toggleHomeTask, addHomeTask, removeHomeTask, addCustomItem, removeItem } =
-    useTrips();
+  const {
+    getTrip,
+    toggleItem,
+    bumpItem,
+    setItemsDone,
+    renameTrip,
+    toggleHomeTask,
+    addHomeTask,
+    removeHomeTask,
+    addCustomItem,
+    removeItem,
+    cloneTrip,
+  } = useTrips();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
@@ -84,6 +95,17 @@ export function Checklist() {
   const saveEditingName = () => {
     renameTrip(trip.id, nameDraft);
     setEditingName(false);
+  };
+
+  // "Quiero ir al mismo lugar otra vez": duplica form + ítems + tareas de
+  // casa (con lo agregado a mano incluido) pero recién armado, sin nada
+  // tildado, y te deja directo en el viaje nuevo.
+  const handleClone = () => {
+    const clone = cloneTrip(trip.id);
+    if (clone) {
+      setLastTripId(clone.id);
+      navigate(`/viaje/${clone.id}`);
+    }
   };
 
   // título que se ve si el usuario deja el nombre vacío — mismo fallback
@@ -309,6 +331,9 @@ export function Checklist() {
             Aplicar una plantilla
           </Button>
         )}
+        <Button variant="inverted" onClick={handleClone}>
+          Repetir este viaje
+        </Button>
         <Button variant="teal" className={styles.saveButton} onClick={() => navigate('/viajes')}>
           Ver mis viajes
         </Button>

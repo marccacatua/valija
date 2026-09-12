@@ -819,6 +819,42 @@ try {
     );
     await ctx.close();
   }
+
+  // ============================================================
+  // 23) Repetir un viaje: arranca sin nada tildado pero conserva los
+  // ítems y tareas agregados a mano, y aparece como un viaje nuevo
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('button:has-text("Cinturón")');
+    const input = page.locator('input[placeholder="Agregar ítem…"]').first();
+    await input.fill('Mameluco EPP');
+    await input.press('Enter');
+    await page.waitForTimeout(100);
+    const packedBefore = await progressNumLocator(page).textContent();
+    assert(packedBefore.trim() !== '0', 'El viaje original tiene progreso antes de repetirlo', `packed=${packedBefore}`);
+
+    await page.click('text=Repetir este viaje');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    await page.waitForTimeout(100);
+
+    const packedAfter = await progressNumLocator(page).textContent();
+    const hasMameluco = await page.locator('button', { hasText: 'Mameluco EPP' }).count();
+    const cinturonStillChecked = await page.locator('button', { hasText: 'Cinturón' }).locator('[class*="checkboxDone"]').count();
+    assert(
+      packedAfter.trim() === '0' && hasMameluco === 1 && cinturonStillChecked === 0,
+      'Repetir un viaje arranca en 0 empacado pero conserva el ítem agregado a mano',
+      `packed=${packedAfter} mameluco=${hasMameluco} cinturonChecked=${cinturonStillChecked}`,
+    );
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    const tripCount = await page.locator('[class*="tripCard"]').count();
+    assert(tripCount === 2, 'Repetir un viaje crea uno nuevo (no reemplaza el original)', `count=${tripCount}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

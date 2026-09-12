@@ -5,6 +5,20 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.14.1
+
+- **Repetir un viaje**: nuevo botón "Repetir este viaje" en la
+  checklist — crea un viaje nuevo con la misma configuración (destino,
+  clima, todo el formulario) y los mismos ítems y tareas de casa
+  agregados a mano, pero recién armado: nada tildado, sin finalizar.
+  Pensado para "quiero ir al mismo lugar otra vez" sin rehacer el
+  formulario ni recordar qué habías agregado a mano la vez pasada.
+  Era la mitad pendiente de la idea de "valijas tipo" (ver
+  `BACKLOG.md`) — la otra mitad (plantillas de ítems sueltos) ya
+  estaba desde v0.10.0.
+  - `cloneTrip` en `useTrips.ts`. Gratis, sin feature flag.
+  - QA: 3 casos nuevos de Playwright — 59/59 en total.
+
 ## v0.14.0
 
 - **Marcar un viaje como finalizado**: en "Mis viajes" ahora hay un
