@@ -2,7 +2,7 @@
 // coral). Correr con `node scripts/generate-icons.mjs` si hace falta
 // regenerarlos (cambio de paleta, etc).
 import sharp from 'sharp';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -53,4 +53,25 @@ for (const t of targets) {
   const svg = mascotSvg(t);
   await sharp(Buffer.from(svg)).png().toFile(path.join(outDir, t.file));
   console.log('generated', t.file);
+}
+
+// Ícono para App Store / iOS: 1024x1024, sin esquinas redondeadas (Apple aplica
+// su propia máscara) y sin canal alfa (App Store Connect rechaza PNGs con
+// transparencia en este ícono).
+const iosIconDir = path.join(
+  __dirname,
+  '..',
+  'ios',
+  'App',
+  'App',
+  'Assets.xcassets',
+  'AppIcon.appiconset',
+);
+if (existsSync(iosIconDir)) {
+  const appStoreSvg = mascotSvg({ size: 1024, mascotScale: 1.35, cornerRadius: 0 });
+  await sharp(Buffer.from(appStoreSvg))
+    .flatten({ background: '#E0431F' })
+    .png()
+    .toFile(path.join(iosIconDir, 'AppIcon-512@2x.png'));
+  console.log('generated AppIcon-512@2x.png (App Store, 1024x1024)');
 }

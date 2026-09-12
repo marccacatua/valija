@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Xcode (generado al abrir/compilar ios/App.xcworkspace, no aporta nada versionado)
+ios/App/App/public
+xcuserdata/
+*.xcuserstate
+DerivedData/
