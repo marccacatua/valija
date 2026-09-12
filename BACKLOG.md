@@ -157,10 +157,12 @@ en vez de una única paleta fija para todas.
 Investigado en el App Store (2026-09) para no reinventar la rueda. Anotado
 por si sirve de referencia al priorizar, no todo es para hacer ya.
 
-- **Compartir/exportar la checklist como texto.** Ya existe el flag
-  `exportChecklist` en `features/flags.ts` sin conectar a nada. Es chico:
-  armar un string a partir de `trip.items` agrupado por categoría y usar
-  `navigator.share` (con fallback a copiar al portapapeles).
+- ~~Compartir/exportar la checklist como texto~~ ✅ hecho (v0.15.0):
+  `shareText()` en `data/trip.ts` arma el texto agrupado por categoría
+  más la sección de casa aparte; el botón "Compartir checklist" en
+  `Checklist.tsx` usa `navigator.share` cuando está disponible y si no
+  cae a copiar al portapapeles con feedback "Copiado ✓". Gateado detrás
+  de `exportChecklist` (sigue en `pro: false`).
 - **Filtrar/buscar ítems** dentro de la checklist (packed/sin empacar, por
   categoría, o buscar por nombre). Útil cuando la lista crece con ítems
   a mano. Bajo esfuerzo, todo el estado ya está en `trip.items`.

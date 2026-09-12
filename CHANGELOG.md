@@ -5,6 +5,23 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.15.0
+
+- **Proyecto iOS con Capacitor**: primer paso hacia la publicación en el
+  App Store. `capacitor.config.ts` (bundle id `com.valija.app`),
+  proyecto Xcode generado en `ios/` (usa Swift Package Manager, sin
+  CocoaPods), e ícono 1024x1024 para App Store Connect generado desde
+  la misma mascota que ya usan los íconos de la PWA
+  (`scripts/generate-icons.mjs`). Todavía no se compiló ni se probó en
+  un dispositivo — eso requiere Xcode en una Mac.
+- **Compartir checklist**: nuevo botón "Compartir checklist" en la
+  checklist de un viaje — arma un texto agrupado por categoría (más la
+  sección de casa aparte) y lo manda al share sheet nativo
+  (`navigator.share`) cuando está disponible; si no, lo copia al
+  portapapeles con feedback "Copiado ✓". Conecta el flag
+  `exportChecklist` que ya existía sin uso. Gratis (`pro: false`).
+  - QA: 1 caso nuevo de Playwright — 60/60 en total.
+
 ## v0.14.1
 
 - **Repetir un viaje**: nuevo botón "Repetir este viaje" en la

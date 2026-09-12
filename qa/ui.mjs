@@ -41,6 +41,12 @@ function assert(cond, label, detail) {
 
 async function freshPage(browser) {
   const ctx = await browser.newContext({ viewport: { width: 420, height: 900 } });
+  // La app carga la tipografía desde Google Fonts en cada página (ver
+  // index.html) — en un entorno sin salida a esa red (o con la red lenta)
+  // esa request puede colgar el render entero. El QA no depende de tener
+  // la fuente real, así que la cortamos para que la suite sea determinística
+  // sin importar la red del entorno donde corra.
+  await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
   const page = await ctx.newPage();
   await page.goto(`${BASE}/`);
   await page.evaluate(() => localStorage.clear());
@@ -853,6 +859,44 @@ try {
     await page.waitForSelector('text=Mis viajes');
     const tripCount = await page.locator('[class*="tripCard"]').count();
     assert(tripCount === 2, 'Repetir un viaje crea uno nuevo (no reemplaza el original)', `count=${tripCount}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 24) Compartir checklist: sin navigator.share (caso desktop/headless)
+  // cae a copiar al portapapeles el texto agrupado por categoría, con la
+  // sección de casa aparte, y muestra el feedback "Copiado ✓"
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.addInitScript(() => {
+      // fuerza el camino de fallback (Web Share API no existe en Chromium headless,
+      // pero lo dejamos explícito por si algún entorno sí la trae)
+      // @ts-ignore
+      window.navigator.share = undefined;
+      Object.defineProperty(window.navigator, 'clipboard', {
+        value: {
+          writeText: (text) => {
+            // @ts-ignore
+            window.__copiedText = text;
+            return Promise.resolve();
+          },
+        },
+        configurable: true,
+      });
+    });
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('button:has-text("Cinturón")');
+    await page.click('text=Compartir checklist');
+    await page.waitForTimeout(150);
+    const copiedText = await page.evaluate(() => window.__copiedText);
+    assert(
+      typeof copiedText === 'string' && copiedText.includes('Cinturón') && copiedText.includes('¿Quedó todo pronto en casa?'),
+      'Compartir sin navigator.share copia al portapapeles el texto agrupado (ítems + sección de casa)',
+      `texto=${JSON.stringify(copiedText?.slice(0, 120))}`,
+    );
+    const feedbackCount = await page.locator('button', { hasText: 'Copiado' }).count();
+    assert(feedbackCount === 1, 'El botón muestra "Copiado ✓" como feedback tras copiar', `count=${feedbackCount}`);
     await ctx.close();
   }
 } catch (err) {

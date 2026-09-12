@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
 import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
-import { packedCount, progressNote, progressPct, tripMetaChips, tripTitle } from '../data/trip';
+import { packedCount, progressNote, progressPct, shareText, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
 import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
@@ -39,11 +39,13 @@ export function Checklist() {
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
   const canUseTemplates = useFeatureFlag('tripTemplates');
+  const canExport = useFeatureFlag('exportChecklist');
   const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
   const [view, setView] = useState<'detallada' | 'rapida'>('detallada');
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const trip = getTrip(tripId);
 
@@ -105,6 +107,28 @@ export function Checklist() {
     if (clone) {
       setLastTripId(clone.id);
       navigate(`/viaje/${clone.id}`);
+    }
+  };
+
+  // Comparte por el share sheet nativo cuando está disponible (celular); si
+  // no (desktop, o el usuario lo cancela), cae a copiar al portapapeles con
+  // un feedback breve — nunca deja al usuario sin ninguna confirmación.
+  const handleShare = async () => {
+    const text = shareText(trip);
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: tripTitle(trip.form), text });
+      } catch {
+        // el usuario cerró el share sheet sin elegir nada: no es un error
+      }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // sin permiso de portapapeles: no hay fallback mejor que ofrecer
     }
   };
 
@@ -334,6 +358,11 @@ export function Checklist() {
         <Button variant="inverted" onClick={handleClone}>
           Repetir este viaje
         </Button>
+        {canExport && (
+          <Button variant="inverted" onClick={handleShare}>
+            {copied ? 'Copiado ✓' : 'Compartir checklist'}
+          </Button>
+        )}
         <Button variant="teal" className={styles.saveButton} onClick={() => navigate('/viajes')}>
           Ver mis viajes
         </Button>

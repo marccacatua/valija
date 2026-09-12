@@ -1,5 +1,6 @@
 import {
   ALOJ_OPTIONS,
+  CATEGORY_META,
   CATEGORY_ORDER,
   CLIMA_OPTIONS,
   DEST_OPTIONS,
@@ -109,6 +110,33 @@ export function templatePlaceholder(form: TripFormState): string {
   if (form.turismo === 'fiesta') return 'Kit noche de salida';
   if (form.motivo === 'trabajo') return 'Kit oficina';
   return 'Kit museos';
+}
+
+/** Texto plano para compartir por WhatsApp/notas/mail — agrupado igual que
+ * la vista detallada, con la lista de casa al final como sección aparte
+ * (mismo criterio que en la UI: no es parte de "lo que se empaca"). */
+export function shareText(trip: Trip): string {
+  const lines: string[] = [`🧳 ${tripTitle(trip.form)}`, ''];
+
+  for (const key of CATEGORY_ORDER) {
+    const list = trip.items.filter((i) => i.cat === key);
+    if (!list.length) continue;
+    lines.push(CATEGORY_META[key].title);
+    for (const item of list) {
+      const qty = item.noQty || item.qty <= 1 ? '' : ` (x${item.qty})`;
+      lines.push(`${item.done ? '✅' : '☐'} ${item.name}${qty}`);
+    }
+    lines.push('');
+  }
+
+  if (trip.homeChecklist.length) {
+    lines.push('¿Quedó todo pronto en casa?');
+    for (const task of trip.homeChecklist) {
+      lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
+    }
+  }
+
+  return lines.join('\n').trim();
 }
 
 export function tripListMeta(trip: Trip): string {
