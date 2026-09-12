@@ -5,6 +5,17 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.16.1
+
+- **Fix urgente**: activar el paywall dejó sin ver sus viajes/Pro a
+  quienes ya usaban la app instalada en la pantalla de inicio (iOS separa
+  el `localStorage` de Safari del de la app standalone — ver
+  `BACKLOG.md`). Nueva pantalla "Llevar mis datos a otro acceso" en "Mis
+  viajes": exporta los viajes/plantillas/estado Pro a un texto (vía
+  portapapeles) y los importa del otro lado sin duplicar ni pisar nada.
+  - `data/backup.ts`, `components/BackupSheet.tsx`.
+  - QA: 6 casos nuevos de Playwright — 72/72 en total.
+
 ## v0.16.0
 
 - **Modelo de precios definido y activado**: pago único de USD 0,99

@@ -4,6 +4,38 @@ Ideas para próximas versiones, con una nota de cómo encajarían en la
 arquitectura actual (para que cualquier sesión futura pueda retomarlas sin
 tener que releer todo el historial de chat).
 
+## ~~Safari vs. ícono en pantalla de inicio: storage separado~~ ✅ mitigado en v0.16.1
+
+Encontrado en producción (2026-09): iOS le da a la web abierta en Safari
+y a la misma web instalada como ícono en la pantalla de inicio dos
+`localStorage` completamente separados (no es un bug de Valija, es así
+como Safari particiona el storage entre "pestaña" y "app standalone").
+Un usuario que usó la app en Safari y después la instaló como ícono
+(o viceversa) ve la app "vacía" del otro lado — no perdió nada, está
+viendo el otro cajón.
+
+Esto se volvió urgente cuando activamos el paywall (v0.16.0): el atajo
+`?pro=1` (`main.tsx`) solo funciona en Safari, porque el ícono instalado
+arranca siempre en el `start_url` del manifest (vite-plugin-pwa), sin
+query params — no hay address bar en modo standalone para escribir
+`?pro=1` ahí adentro.
+
+**Mitigación implementada** (no resuelve la partición en sí, que es un
+límite de iOS): puente manual vía portapapeles del sistema, que sí cruza
+esa frontera aunque el storage no la cruce.
+- `data/backup.ts`: `exportBackup()` junta `valija:trips`,
+  `valija:templates` y `valija:isPro` en un JSON con versión (`v: 1`);
+  `importBackup()` lo suma a lo que ya hay (dedup por id, nunca
+  reemplaza ni borra) y prende Pro si venía prendido de cualquier lado.
+- `components/BackupSheet.tsx`: pantalla con "Copiar mis datos"
+  (a portapapeles, con fallback a texto seleccionable si falla) y un
+  textarea para pegar y restaurar. Accesible desde "Mis viajes".
+- **Solución real pendiente** (para cuando haya más superficie/tiempo):
+  la versión nativa empaquetada con Capacitor no tiene esta partición
+  (storage único) — una vez publicada en el App Store, este problema
+  desaparece solo para quien la instale desde ahí. Para la web seguiría
+  existiendo mientras no haya una cuenta con sync en un servidor.
+
 ## Analítica de uso (qué features se usan, cuánta gente usa la app)
 
 Pedido del usuario (2026-09): poder ver más adelante cuánta gente usa

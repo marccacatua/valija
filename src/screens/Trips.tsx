@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BackupSheet } from '../components/BackupSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { ConfirmDialog } from '../components/ConfirmDialog';
@@ -22,6 +23,8 @@ export function Trips() {
   const { trips, removeTrip, removeAllTrips, toggleTripFinished } = useTrips();
   const [, setLastTripId] = useLastTripId();
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
+  const [showBackup, setShowBackup] = useState(false);
+  const [didImport, setDidImport] = useState(false);
 
   const openTrip = (id: string) => {
     setLastTripId(id);
@@ -156,6 +159,10 @@ export function Trips() {
           </div>
         )}
 
+        <button type="button" className={styles.backupBtn} onClick={() => setShowBackup(true)}>
+          Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)
+        </button>
+
         {trips.length > 0 && (
           <button type="button" className={styles.deleteAllBtn} onClick={deleteAllTrips}>
             Borrar todos los viajes
@@ -166,6 +173,16 @@ export function Trips() {
 
       <div style={{ flex: 1 }} />
       <BottomNav active="viajes" />
+
+      {showBackup && (
+        <BackupSheet
+          onImported={() => setDidImport(true)}
+          onClose={() => {
+            setShowBackup(false);
+            if (didImport) window.location.reload();
+          }}
+        />
+      )}
 
       {confirm && (
         <ConfirmDialog

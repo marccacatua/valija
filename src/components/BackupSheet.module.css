@@ -1,0 +1,106 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 50;
+  animation: fadeIn 0.15s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  padding: 26px 24px calc(env(safe-area-inset-bottom, 0px) + 26px);
+  box-sizing: border-box;
+  animation: slideUp 0.2s cubic-bezier(0.3, 1.2, 0.5, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.title {
+  font: 1000 20px/1.2 'Nunito', sans-serif;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.hint {
+  font: 700 13px/1.4 'Nunito', sans-serif;
+  color: var(--muted);
+  margin-top: -8px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionTitle {
+  font: 900 14px/1.2 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  background: var(--cream);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  font: 600 13px/1.4 ui-monospace, monospace;
+  color: var(--ink);
+  outline: none;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.textarea:focus {
+  border-color: var(--coral);
+}
+
+.resultOk {
+  font: 800 13px/1.4 'Nunito', sans-serif;
+  color: var(--teal);
+}
+
+.resultError {
+  font: 800 13px/1.4 'Nunito', sans-serif;
+  color: var(--danger);
+}
+
+.closeBtn {
+  padding: 14px;
+  border-radius: 18px;
+  font: 800 15px/1 'Nunito', sans-serif;
+  text-align: center;
+  cursor: pointer;
+  background: var(--cream);
+  color: var(--ink);
+}

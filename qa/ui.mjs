@@ -977,6 +977,83 @@ try {
     );
     await ctx.close();
   }
+
+  // ============================================================
+  // 27) Backup manual (Safari <-> pantalla de inicio): exportar copia un
+  // JSON con los datos actuales; importarlo en otro contexto sin Pro y
+  // sin viajes suma el viaje y desbloquea Pro; reimportar no duplica
+  // ============================================================
+  let backupText;
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await page.addInitScript(() => {
+      Object.defineProperty(window.navigator, 'clipboard', {
+        value: {
+          writeText: (text) => {
+            // @ts-ignore
+            window.__copiedText = text;
+            return Promise.resolve();
+          },
+        },
+        configurable: true,
+      });
+    });
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('text=Ver mis viajes');
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('text=Llevar mis datos a otro acceso');
+    await page.waitForSelector('text=Copiar mis datos');
+    await page.click('text=Copiar mis datos');
+    await page.waitForTimeout(150);
+    backupText = await page.evaluate(() => window.__copiedText);
+    assert(
+      typeof backupText === 'string' && backupText.includes('"trips"') && backupText.includes('"isPro":true'),
+      'Exportar copia un backup en JSON con los viajes actuales y el estado de Pro',
+      `preview=${JSON.stringify(backupText?.slice(0, 80))}`,
+    );
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser); // gratis, sin viajes
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('text=Llevar mis datos a otro acceso');
+    await page.waitForSelector('text=Copiar mis datos');
+    await page.fill('textarea[placeholder^="Pegá acá"]', backupText);
+    await page.click('text="Restaurar"');
+    await page.waitForTimeout(150);
+    const resultCount = await page.locator('text=/Listo: se sumó/').count();
+    assert(resultCount === 1, 'Importar un backup muestra confirmación de lo agregado', `count=${resultCount}`);
+
+    await page.click('text="Cerrar"');
+    await page.waitForTimeout(400); // el cierre recarga la página porque hubo un import
+    await page.waitForSelector('text=Mis viajes');
+    const tripCount = await page.locator('[class*="tripCard"]').count();
+    assert(tripCount === 1, 'El viaje importado aparece en "Mis viajes" tras recargar', `count=${tripCount}`);
+
+    await page.click('[class*="tripCard"]');
+    await page.waitForSelector('text=Tu valija para');
+    const hasAddItem = await page.locator('input[placeholder="Agregar ítem…"]').count();
+    assert(hasAddItem > 0, 'Importar un backup con Pro desbloquea Pro también en este contexto', `count=${hasAddItem}`);
+
+    // reimportar el mismo backup no debería duplicar el viaje
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('text=Llevar mis datos a otro acceso');
+    await page.waitForSelector('text=Copiar mis datos');
+    await page.fill('textarea[placeholder^="Pegá acá"]', backupText);
+    await page.click('text="Restaurar"');
+    await page.waitForTimeout(150);
+    const noNewMsg = await page.locator('text=Ya tenías todo esto').count();
+    assert(noNewMsg === 1, 'Reimportar el mismo backup no duplica nada (dedup por id)', `count=${noNewMsg}`);
+    await page.click('text="Cerrar"');
+    await page.waitForTimeout(200);
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    const tripCountAfter = await page.locator('[class*="tripCard"]').count();
+    assert(tripCountAfter === 1, 'El viaje sigue siendo 1 después de reimportar el mismo backup', `count=${tripCountAfter}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
