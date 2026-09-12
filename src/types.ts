@@ -48,6 +48,10 @@ export interface HomeTask {
   id: string;
   label: string;
   done: boolean;
+  /** true si la agregó el usuario a mano (las generadas por defecto no la
+   * tienen) — solo las propias se ofrecen para guardar en una plantilla,
+   * igual que con los ítems de la valija. */
+  isCustom?: boolean;
 }
 
 export interface Trip {
@@ -64,5 +68,8 @@ export interface ItemTemplate {
   id: string;
   name: string;
   items: { cat: CategoryKey; name: string }[];
+  /** Tareas de casa incluidas en la plantilla (opcional: las plantillas
+   * guardadas antes de esta función no tienen el campo). */
+  homeTasks?: string[];
   createdAt: string;
 }

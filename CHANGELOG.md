@@ -5,6 +5,24 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.13.1
+
+- **Las plantillas ahora también guardan tareas de casa**: hasta ahora
+  una plantilla solo podía llevarse ítems propios de la valija; si
+  alguien agregaba algo como "Llevar al perro a guardería" en la
+  sección de casa, no había forma de reusarlo en el próximo viaje. La
+  hoja de "Guardar como plantilla" ahora ofrece las dos cosas por
+  separado ("De la valija" / "De casa", con subtítulo solo cuando hay
+  de ambas) y el contador de cada plantilla suma los dos tipos.
+  - Solo las tareas de casa agregadas a mano entran como candidatas
+    (las generadas por defecto ya están en todo viaje nuevo, no hace
+    falta guardarlas). Nuevo campo `isCustom` en `HomeTask` para
+    distinguirlas, igual que ya existía en `PackingItem`.
+  - `ItemTemplate.homeTasks` es opcional — las plantillas guardadas
+    antes de esta versión se siguen leyendo bien, solo que no tienen
+    tareas de casa para ofrecer.
+  - QA: 3 casos nuevos de Playwright — 52/52 en total.
+
 ## v0.13.0
 
 - **"¿Quedó todo pronto en casa?"**: idea de un amigo que probó la

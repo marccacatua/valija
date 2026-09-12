@@ -59,6 +59,14 @@
   margin-top: 12px;
 }
 
+.groupLabel {
+  font: 900 11px/1 'Nunito', sans-serif;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding-top: 10px;
+}
+
 .row {
   display: flex;
   align-items: center;

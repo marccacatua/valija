@@ -14,13 +14,14 @@ export function useTemplates() {
   const [templates, setTemplates] = useLocalStorage<ItemTemplate[]>(STORAGE_KEY, []);
 
   const saveTemplate = useCallback(
-    (name: string, items: { cat: CategoryKey; name: string }[]) => {
+    (name: string, items: { cat: CategoryKey; name: string }[], homeTasks: string[] = []) => {
       const trimmed = name.trim();
-      if (!trimmed || items.length === 0) return;
+      if (!trimmed || (items.length === 0 && homeTasks.length === 0)) return;
       const template: ItemTemplate = {
         id: crypto.randomUUID(),
         name: trimmed,
         items,
+        homeTasks,
         createdAt: new Date().toISOString(),
       };
       setTemplates((prev) => [template, ...prev]);

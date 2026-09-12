@@ -23,7 +23,7 @@ export function ApplyTemplateSheet({ templates, onApply, onRemove, onCancel }: A
               <div key={t.id} className={styles.templateRow}>
                 <button type="button" className={styles.templateMain} onClick={() => onApply(t)}>
                   <span className={styles.templateName}>{t.name}</span>
-                  <span className={styles.templateCount}>{t.items.length} ítems</span>
+                  <span className={styles.templateCount}>{t.items.length + (t.homeTasks?.length ?? 0)} ítems</span>
                 </button>
                 <span
                   role="button"

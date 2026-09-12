@@ -16,7 +16,7 @@ import { useFeatureFlag } from '../features/flags';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTemplates } from '../hooks/useTemplates';
 import { useTrips } from '../hooks/useTrips';
-import type { CategoryKey, ItemTemplate, PackingItem } from '../types';
+import type { CategoryKey, HomeTask, ItemTemplate, PackingItem } from '../types';
 import styles from './Checklist.module.css';
 
 export function Checklist() {
@@ -55,11 +55,13 @@ export function Checklist() {
 
   const items = trip.items;
   const customItemsInTrip = items.filter((i) => i.isCustom);
+  const customHomeTasksInTrip = trip.homeChecklist.filter((t) => t.isCustom);
 
-  const handleSaveTemplate = (name: string, chosen: PackingItem[]) => {
+  const handleSaveTemplate = (name: string, chosenItems: PackingItem[], chosenTasks: HomeTask[]) => {
     saveTemplate(
       name,
-      chosen.map((i) => ({ cat: i.cat, name: i.name })),
+      chosenItems.map((i) => ({ cat: i.cat, name: i.name })),
+      chosenTasks.map((t) => t.label),
     );
     setSheet(null);
   };
@@ -67,6 +69,9 @@ export function Checklist() {
   const handleApplyTemplate = (template: ItemTemplate) => {
     for (const it of template.items) {
       addCustomItem(trip.id, it.cat, it.name);
+    }
+    for (const label of template.homeTasks ?? []) {
+      addHomeTask(trip.id, label);
     }
     setSheet(null);
   };
@@ -294,7 +299,7 @@ export function Checklist() {
         {trip.form.maletas.length > 1 && (
           <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>
         )}
-        {canUseTemplates && customItemsInTrip.length > 0 && (
+        {canUseTemplates && (customItemsInTrip.length > 0 || customHomeTasksInTrip.length > 0) && (
           <Button variant="inverted" onClick={() => setSheet('save')}>
             Guardar ítems como plantilla
           </Button>
@@ -316,6 +321,7 @@ export function Checklist() {
       {sheet === 'save' && (
         <SaveTemplateSheet
           items={customItemsInTrip}
+          homeTasks={customHomeTasksInTrip}
           placeholderExample={templatePlaceholder(trip.form)}
           onSave={handleSaveTemplate}
           onCancel={() => setSheet(null)}

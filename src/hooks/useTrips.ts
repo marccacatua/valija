@@ -134,7 +134,7 @@ export function useTrips() {
       if (!trimmed) return;
       updateTrip(tripId, (t) => ({
         ...t,
-        homeChecklist: [...t.homeChecklist, { id: crypto.randomUUID(), label: trimmed, done: false }],
+        homeChecklist: [...t.homeChecklist, { id: crypto.randomUUID(), label: trimmed, done: false, isCustom: true }],
       }));
     },
     [updateTrip],

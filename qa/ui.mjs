@@ -704,6 +704,59 @@ try {
     );
     await ctx.close();
   }
+
+  // ============================================================
+  // 21) Plantillas: incluyen tareas de casa propias, no solo ítems de
+  // la valija (ej. "llevar al perro a guardería")
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const homeSection = page.locator('div', { hasText: /^¿Quedó todo pronto en casa\?/ }).first();
+    const homeInput = homeSection.locator('input[placeholder="Agregar ítem…"]');
+    await homeInput.fill('Llevar al perro a guardería');
+    await homeInput.press('Enter');
+    await page.waitForTimeout(100);
+    const packInput = page.locator('input[placeholder="Agregar ítem…"]').first();
+    await packInput.fill('Cargador de laptop extra');
+    await packInput.press('Enter');
+    await page.waitForTimeout(100);
+
+    await page.click('text=Guardar ítems como plantilla');
+    await page.waitForSelector('text=Guardar como plantilla');
+    // ">0" en vez de "===1": el div contenedor de cada grupo también
+    // matchea el mismo texto que su propio label hijo (texto acumulado)
+    const hasGroupLabels =
+      (await page.locator('text=De la valija').count()) > 0 && (await page.locator('text=De casa').count()) > 0;
+    assert(hasGroupLabels, 'La hoja de guardar separa "De la valija" de "De casa" cuando hay de los dos', `ok=${hasGroupLabels}`);
+    await page.fill('input[placeholder^="Ej."]', 'Kit viaje con perro');
+    await page.click('button:has-text("Guardar plantilla")');
+    await page.waitForTimeout(100);
+
+    // el contador de la plantilla en "Aplicar" suma valija + casa (1 + 1 = 2)
+    await page.click('text=Aplicar una plantilla');
+    await page.waitForSelector('text=Kit viaje con perro');
+    const countText = await page.locator('text=Kit viaje con perro').locator('..').locator('span').last().textContent();
+    assert(countText?.includes('2'), 'El contador de la plantilla suma ítems de valija + tareas de casa', `texto=${countText}`);
+
+    // borrar ambos originales, reaplicar la plantilla y confirmar que vuelven los dos
+    await page.click('text="Cerrar"');
+    await page.click('[aria-label="Borrar Cargador de laptop extra"]');
+    await page.click('[aria-label="Borrar Llevar al perro a guardería"]');
+    await page.waitForTimeout(100);
+    await page.click('text=Aplicar una plantilla');
+    await page.waitForSelector('text=Kit viaje con perro');
+    await page.click('button:has-text("Kit viaje con perro")');
+    await page.waitForTimeout(150);
+    const packBack = await page.locator('button', { hasText: 'Cargador de laptop extra' }).count();
+    const homeBack = await page.locator('button', { hasText: 'Llevar al perro a guardería' }).count();
+    assert(
+      packBack === 1 && homeBack === 1,
+      'Aplicar la plantilla reagrega tanto el ítem de valija como la tarea de casa',
+      `pack=${packBack} home=${homeBack}`,
+    );
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
