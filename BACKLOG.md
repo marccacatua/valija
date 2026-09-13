@@ -1,23 +1,22 @@
 # Backlog
 
-## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (mockup enviado, esperando aprobación)
+## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 
 Pedido del usuario (2026-09) tras probar la v0.19.0: reemplazar el
 estilo actual (pastilla tipo `OptionChip`, igual al resto de las
 opciones de selección única) por el mismo checkbox cuadrado con tilde
-que ya se usa para marcar ítems empacados en la checklist — tiene más
-sentido visualmente porque son las únicas 3 opciones booleanas
-("sí/no", no una elección entre varias) del formulario: "Sumar
-vestidos / pollera", "¿Viajás con bebé o niño chico?" y "Pienso lavar
-ropa en el viaje".
+que ya se usa para marcar ítems empacados en la checklist, para las 3
+opciones booleanas del formulario: "Sumar vestidos / pollera", "¿Viajás
+con bebé o niño chico?" y "Pienso lavar ropa en el viaje".
 
-Se armó un mockup real y se mandaron capturas para aprobar antes de
-construir (pedido explícito del usuario). Implementación: un
-componente `CheckRow` (checkbox 28px + label, mismos tokens que
-`.checkbox`/`.checkboxDone` de `Checklist.module.css`) que reemplaza el
-`OptionChip` en esos 3 lugares de `TripForm.tsx`. El mockup se probó
-temporalmente y se revirtió — no quedó nada de esto en el código
-todavía, falta el OK para dejarlo definitivo.
+Se armó un mockup real (componente `CheckRow` temporal en
+`TripForm.tsx`, mismos tokens que `.checkbox`/`.checkboxDone` de
+`Checklist.module.css`) y se mandaron capturas antes de construir de
+verdad, tal como pidió el usuario. **Resultado: no le convenció como
+quedó visualmente** — queda descartado por ahora, revertido sin
+commitear. Si se retoma más adelante, pensar una alternativa distinta
+al simple checkbox cuadrado (quizás algo a medio camino entre el chip
+actual y el tilde) en vez de repetir el mismo mockup.
 
 ## ~~Ajustes de lógica y UX pedidos tras probar la v0.19.0~~ ✅ hecho en v0.20.0
 

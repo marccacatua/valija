@@ -1383,6 +1383,44 @@ try {
     assert(hasMisViajes > 0, 'El botón de volver en la checklist lleva a "Mis viajes"', `count=${hasMisViajes}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 41) Tildar un ítem lo manda al fondo de su categoría (mismo criterio
+  // que los viajes finalizados en "Mis viajes"), arriba de "Agregar ítem"
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const dni = page.locator('button', { hasText: 'DNI y pasaporte' }).first();
+    const pasajes = page.locator('button', { hasText: 'Pasajes / boarding pass' }).first();
+    const addRow = page.locator('input[placeholder="Agregar ítem…"]').first();
+
+    const beforeDni = (await dni.boundingBox()).y;
+    const beforePasajes = (await pasajes.boundingBox()).y;
+    assert(
+      beforeDni < beforePasajes,
+      'Antes de tildar, "DNI y pasaporte" va antes que "Pasajes / boarding pass"',
+      `dni=${beforeDni} pasajes=${beforePasajes}`,
+    );
+
+    await dni.click();
+    await page.waitForTimeout(100);
+
+    const afterDni = (await dni.boundingBox()).y;
+    const afterPasajes = (await pasajes.boundingBox()).y;
+    const afterAddRow = (await addRow.boundingBox()).y;
+    assert(
+      afterDni > afterPasajes,
+      'Tildar "DNI y pasaporte" lo manda debajo de "Pasajes / boarding pass" dentro de Documentos',
+      `dni=${afterDni} pasajes=${afterPasajes}`,
+    );
+    assert(
+      afterDni < afterAddRow,
+      'El ítem tildado queda arriba de "Agregar ítem" de su propia categoría',
+      `dni=${afterDni} addRow=${afterAddRow}`,
+    );
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

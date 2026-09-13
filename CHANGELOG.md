@@ -5,6 +5,19 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.1
+
+- **Ítems tildados bajan al fondo de su categoría**: mismo criterio que
+  ya usa "Mis viajes" con los viajes finalizados (`Checklist.tsx`,
+  `sort` estable por `done`) — al tildar un ítem, baja debajo de los
+  pendientes de esa misma categoría, quedando arriba de "Agregar ítem".
+  No toca la Vista rápida (ahí no se ven ítems individuales) ni la
+  sección de casa. QA: 100/100 (Playwright), incluye 3 casos nuevos que
+  chequean el orden antes/después de tildar y la posición relativa a
+  "Agregar ítem".
+- El mockup del estilo "tilde" para vestidos/bebé/lavar ropa (backlog)
+  no se implementó — no convenció, queda para pensarlo más adelante.
+
 ## v0.20.0
 
 Ronda de ajustes tras probar la v0.19.0 con un viaje real (bebé + playa

@@ -155,8 +155,13 @@ export function Checklist() {
   };
   const isFiltering = search.trim() !== '' || onlyPending;
 
+  // Mismo criterio que "Mis viajes" con los finalizados: los tildados bajan
+  // al fondo de su categoría (sort estable, no reordena entre sí ni a los
+  // pendientes) — quedan arriba de "Agregar ítem", que sigue siempre último.
   const groups = CATEGORY_ORDER.map((key) => {
-    const list = items.filter((i) => i.cat === key && matchesFilter(i));
+    const list = items
+      .filter((i) => i.cat === key && matchesFilter(i))
+      .sort((a, b) => Number(a.done) - Number(b.done));
     return { key, list };
   }).filter((g) => g.list.length);
 
