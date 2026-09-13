@@ -5,15 +5,15 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
-## v1.0.0
+## v0.20.3
 
-Primera versión candidata a subir al App Store. Mismo código que traía
-v0.20.2 — este número existe para marcar el punto exacto de sincronía
-entre `package.json` (lo que ve la web) y el Version/Build de Xcode
-(lo que va a ver Apple), tal como se explicó en su momento: mientras se
-prueba por web el número sube libremente y no significa nada; el día de
-la primera subida real, ambos quedan alineados en 1.0.0 / build 1, y
-de acá en más cada subida nueva a la tienda sincroniza los dos.
+Preparativos de código para la futura subida al App Store — todavía NO
+es la versión que se sube (eso se decide aparte, recién cuando esté
+todo listo de verdad: cuenta de RevenueCat con API key real, producto
+creado en App Store Connect, firma resuelta en Xcode). Hasta ese
+momento el número de `package.json` sigue subiendo libremente por cada
+tanda de cambios, como siempre — ver la nota de "Versionado" en el
+README.
 
 - **`PrivacyInfo.xcprivacy` sumado al proyecto de Xcode**: el archivo ya
   existía en el repo (`ios/App/App/PrivacyInfo.xcprivacy`) pero nunca
@@ -34,8 +34,10 @@ de acá en más cada subida nueva a la tienda sincroniza los dos.
   terminaba siendo 0 tildados (se destildaban entre sí). Se cambió a
   clickear por nombre de ítem, que no depende del orden. Capturas
   regeneradas para los 3 tamaños de iPhone.
-- Versión bump a 1.0.0 en `package.json`, sin cambios de código más
-  allá de lo de arriba.
+- El Version/Build de Xcode (`ios/App/App.xcodeproj/project.pbxproj`)
+  quedó en 1.0 / build 1 (valor por defecto del scaffold, sin tocar) —
+  no significa nada todavía; recién el día de la subida real se
+  sincroniza con la versión de `package.json` de ese momento.
 
 ## v0.20.2
 
