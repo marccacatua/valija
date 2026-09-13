@@ -1193,7 +1193,7 @@ try {
   // distintos al resto; sin elegirlo, esos ítems no aparecen
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
     await page.click('button:has-text("Camping")');
     await page.click('button:has-text("Bodega")');
@@ -1217,7 +1217,7 @@ try {
   // separada del resto; sin tildarlo, no aparece
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
     await page.click('button:has-text("Sí, sumar su equipaje")');
     await page.click('button:has-text("Bodega")');
@@ -1275,7 +1275,7 @@ try {
   // "Repelente industrial" por separado)
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
     await page.click('button:has-text("Camping")');
     await page.click('button:has-text("Bodega")');
@@ -1293,7 +1293,7 @@ try {
   // 36) Distribución: Camping aparece en su propia sección aparte
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
     await page.click('button:has-text("Camping")');
     await page.click('button:has-text("Bodega")');
@@ -1335,7 +1335,7 @@ try {
   // 38) Bebé + playa: 2 trajes de baño de bebé + chaleco salvavidas
   // ============================================================
   {
-    const { ctx, page } = await freshPage(browser);
+    const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page); // destino por defecto: playa
     await page.click('button:has-text("Sí, sumar su equipaje")');
     await page.click('button:has-text("Bodega")');
@@ -1419,6 +1419,45 @@ try {
       'El ítem tildado queda arriba de "Agregar ítem" de su propia categoría',
       `dni=${afterDni} addRow=${afterAddRow}`,
     );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 42) Bebé y Camping son categorías Pro: sin desbloquear, tocarlas abre
+  // el paywall en vez de seleccionarlas; con Pro, se seleccionan normal
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser); // sin pro
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Sí, sumar su equipaje")');
+    const paywallAfterBebe = await page.locator('text=Desbloqueá todo, para siempre').count();
+    assert(paywallAfterBebe === 1, 'Sin Pro, tocar "bebé" abre el paywall', `count=${paywallAfterBebe}`);
+    await page.click('text=Ahora no');
+    await page.waitForTimeout(100);
+    const bebeSelected = await page
+      .locator('button', { hasText: 'Sí, sumar su equipaje' })
+      .getAttribute('class')
+      .then((c) => c && c.includes('selected'));
+    assert(!bebeSelected, 'Sin Pro, "bebé" no queda seleccionado tras cerrar el paywall', `selected=${bebeSelected}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser); // sin pro
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Camping")');
+    const paywallAfterCamping = await page.locator('text=Desbloqueá todo, para siempre').count();
+    assert(paywallAfterCamping === 1, 'Sin Pro, tocar "Camping" abre el paywall', `count=${paywallAfterCamping}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Camping")');
+    const campingSelected = await page
+      .locator('button', { hasText: 'Camping' })
+      .getAttribute('class')
+      .then((c) => c && c.includes('selected'));
+    assert(campingSelected, 'Con Pro, "Camping" se selecciona normalmente', `selected=${campingSelected}`);
     await ctx.close();
   }
 } catch (err) {

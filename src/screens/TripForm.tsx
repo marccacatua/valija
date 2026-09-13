@@ -19,7 +19,7 @@ import { PaywallSheet } from '../components/PaywallSheet';
 import { SectionLabel } from '../components/SectionLabel';
 import { DurationStepper } from '../components/DurationStepper';
 import { BackArrowIcon, ClimaIcons, DestIcons, MaletaIcons } from '../components/icons';
-import { FREE_TRIP_LIMIT, useIsPro } from '../features/flags';
+import { FREE_TRIP_LIMIT, useFeatureFlag, useIsPro } from '../features/flags';
 import { useTrips } from '../hooks/useTrips';
 import { useLastTripId } from '../hooks/useLastTripId';
 import type { TripFormState } from '../types';
@@ -30,6 +30,7 @@ export function TripForm() {
   const { trips, addTrip } = useTrips();
   const [, setLastTripId] = useLastTripId();
   const [isPro] = useIsPro();
+  const canExtraCategories = useFeatureFlag('extraCategories');
   const [form, setForm] = useState<TripFormState>(DEFAULT_FORM);
   const [showPaywall, setShowPaywall] = useState(false);
 
@@ -58,6 +59,24 @@ export function TripForm() {
       const dest = has ? prev.dest.filter((d) => d !== key) : [...prev.dest, key];
       return { ...prev, dest };
     });
+
+  // Bebé y camping son categorías extra (Pro): sin desbloquear, tocarlas
+  // abre el paywall en vez de seleccionarlas.
+  const selectBebe = () => {
+    if (!canExtraCategories) {
+      setShowPaywall(true);
+      return;
+    }
+    set('bebe', !form.bebe);
+  };
+
+  const selectAloj = (key: TripFormState['aloj']) => {
+    if (key === 'camping' && !canExtraCategories) {
+      setShowPaywall(true);
+      return;
+    }
+    set('aloj', key);
+  };
 
   const handleGenerate = () => {
     const trip = addTrip(form);
@@ -153,7 +172,12 @@ export function TripForm() {
           <div>
             <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
             <div className={styles.wrap}>
-              <OptionChip label="Sí, sumar su equipaje" selected={form.bebe} onSelect={() => set('bebe', !form.bebe)} />
+              <OptionChip
+                label="Sí, sumar su equipaje"
+                selected={form.bebe}
+                locked={!canExtraCategories}
+                onSelect={selectBebe}
+              />
             </div>
           </div>
 
@@ -191,7 +215,13 @@ export function TripForm() {
             <SectionLabel>Alojamiento</SectionLabel>
             <div className={styles.wrap}>
               {ALOJ_OPTIONS.map((opt) => (
-                <OptionChip key={opt.key} label={opt.label} selected={form.aloj === opt.key} onSelect={() => set('aloj', opt.key)} />
+                <OptionChip
+                  key={opt.key}
+                  label={opt.label}
+                  selected={form.aloj === opt.key}
+                  locked={opt.key === 'camping' && !canExtraCategories}
+                  onSelect={() => selectAloj(opt.key)}
+                />
               ))}
             </div>
             <div className={styles.wrap} style={{ marginTop: 8 }}>

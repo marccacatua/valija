@@ -6,10 +6,11 @@ import { useCallback, useSyncExternalStore } from 'react';
  *
  * Decidido (2026-09): modelo de pago único (no suscripción, StoreKit
  * "non-consumable") a USD 0,99 para desbloquear todo lo que está en
- * `pro: true` acá abajo. Gratis: el generador de checklist completo, las
- * 5 pantallas, distribución por valija, y compartir/exportar (a propósito
- * gratis siempre — cada checklist compartida es publicidad gratis de la
- * app para quien la recibe, no tiene sentido trabarlo).
+ * `pro: true` acá abajo. Gratis: el generador de checklist "estándar"
+ * (adulto, sin categorías de nicho), las 5 pantallas, distribución por
+ * valija, y compartir/exportar (a propósito gratis siempre — cada
+ * checklist compartida es publicidad gratis de la app para quien la
+ * recibe, no tiene sentido trabarlo).
  *
  * Importante: esto vive en un simple booleano de localStorage (`isPro`),
  * todavía no hay compra real. El botón "Desbloquear Valija Pro" (ver
@@ -32,7 +33,7 @@ interface FeatureDef {
 
 export const FEATURE_FLAGS: Record<FeatureKey, FeatureDef> = {
   unlimitedTrips: { label: 'Viajes guardados ilimitados', pro: true },
-  extraCategories: { label: 'Categorías extra (deportes, bebé, mascota)', pro: false },
+  extraCategories: { label: 'Categorías extra (bebé/niño chico, camping)', pro: true },
   customItems: { label: 'Agregar ítems personalizados a la checklist', pro: true },
   tripTemplates: { label: 'Guardar ítems propios como plantilla reusable', pro: true },
   exportChecklist: { label: 'Exportar o compartir la checklist', pro: false },

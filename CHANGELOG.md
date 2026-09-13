@@ -5,6 +5,22 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.2
+
+- **Bebé y Camping pasan a ser Pro**: decisión del usuario. Se reusó el
+  flag `extraCategories` (existía en `features/flags.ts` desde el MVP,
+  pero nunca estuvo conectado a nada) y ahora sí gatea "¿Viajás con bebé
+  o niño chico?" y el alojamiento "Camping" en `TripForm.tsx`. Sin
+  Valija Pro, esos dos chips se ven con 🔒 y tocarlos abre el paywall en
+  vez de seleccionarlos; con Pro, se seleccionan normal. Se sumó el
+  beneficio a la lista de `PaywallSheet`. El generador (`buildItems.ts`)
+  no cambió — sigue generando esas categorías igual si el campo viene en
+  `true`, el control de acceso vive solo en la UI del formulario, mismo
+  criterio que el resto de las features Pro (ítems propios, plantillas,
+  repetir viaje). QA: 104/104 (Playwright), incluye 4 casos nuevos que
+  chequean el gating en ambos sentidos (sin Pro abre paywall y no
+  selecciona; con Pro selecciona normal).
+
 ## v0.20.1
 
 - **Ítems tildados bajan al fondo de su categoría**: mismo criterio que
