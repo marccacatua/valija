@@ -75,6 +75,27 @@ export const CampingIcon = (
   </svg>
 );
 
+// Reemplazan a los emoji 🔒/🔓 que se usaban antes: en el WebView nativo de
+// iOS (Capacitor) esos glyphs no renderizaban (aparecía un "?" en un
+// cuadrado) — encontrado probando la primera build real en Xcode. `currentColor`
+// a propósito (a diferencia del resto de los íconos de este archivo, que fijan
+// un color con `var(--token)`): estos aparecen mezclados en distinto texto
+// (chip bloqueado, botón de desbloquear, badge del paywall), cada uno con su
+// propio color, así que conviene que hereden el color del texto que acompañan.
+export const LockIcon = (
+  <svg width="13" height="15" viewBox="0 0 13 15" style={{ verticalAlign: '-1.5px' }}>
+    <path d="M3 6.5V4.5a3.5 3.5 0 017 0v2" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <rect x="1.5" y="6.5" width="10" height="7.5" rx="2" fill="currentColor" />
+  </svg>
+);
+
+export const UnlockIcon = (
+  <svg width="13" height="15" viewBox="0 0 13 15" style={{ verticalAlign: '-1.5px' }}>
+    <path d="M3 6.5V4.5a3.5 3.5 0 016.5-1.8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <rect x="1.5" y="6.5" width="10" height="7.5" rx="2" fill="currentColor" />
+  </svg>
+);
+
 export const BackArrowIcon = (
   <svg width="12" height="18" viewBox="0 0 12 18">
     <path d="M9 2L3 9l6 7" stroke="var(--ink)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />

@@ -9,7 +9,7 @@ import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { BackArrowIcon, EditIcon } from '../components/icons';
+import { BackArrowIcon, EditIcon, LockIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
@@ -421,7 +421,7 @@ export function Checklist() {
         )}
         {!canAddCustomItems && (
           <Button variant="inverted" onClick={() => setShowPaywall(true)}>
-            🔒 Desbloquear ítems propios, plantillas y repetir viaje
+            {LockIcon} Desbloquear ítems propios, plantillas y repetir viaje
           </Button>
         )}
         {canExport && (

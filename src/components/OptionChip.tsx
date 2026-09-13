@@ -1,3 +1,4 @@
+import { LockIcon } from './icons';
 import styles from './OptionChip.module.css';
 
 interface OptionChipProps {
@@ -12,7 +13,7 @@ export function OptionChip({ label, selected, locked, onSelect }: OptionChipProp
   return (
     <button type="button" className={classes} onClick={onSelect} aria-pressed={selected}>
       {label}
-      {locked ? ' 🔒' : ''}
+      {locked ? <> {LockIcon}</> : null}
     </button>
   );
 }

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { LockIcon } from './icons';
 import styles from './OptionCard.module.css';
 
 interface OptionCardProps {
@@ -18,7 +19,7 @@ export function OptionCard({ label, icon, selected, locked, compact, onSelect }:
     <button type="button" className={classes} onClick={onSelect} aria-pressed={selected}>
       {icon}
       {label}
-      {locked ? ' 🔒' : ''}
+      {locked ? <> {LockIcon}</> : null}
     </button>
   );
 }

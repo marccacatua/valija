@@ -104,6 +104,12 @@ esa frontera aunque el storage no la cruce.
   (storage único) — una vez publicada en el App Store, este problema
   desaparece solo para quien la instale desde ahí. Para la web seguiría
   existiendo mientras no haya una cuenta con sync en un servidor.
+- **Actualizado en v0.20.5**: el botón "Llevar mis datos a otro acceso"
+  se ocultó en la app nativa (`Capacitor.isNativePlatform()` en
+  `Trips.tsx`) — ahí no aplica, es un único storage. Sigue visible en
+  la web/PWA mientras siga en uso. Si en algún momento se discontinúa
+  la web (o se resuelve con una cuenta real), ahí sí conviene borrar
+  `BackupSheet.tsx`/`data/backup.ts` del todo en vez de solo ocultarlos.
 
 ## Analítica de uso (qué features se usan, cuánta gente usa la app)
 

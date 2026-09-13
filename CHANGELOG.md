@@ -5,6 +5,30 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.5
+
+Encontrado probando la primera build real en Xcode (¡primera vez corriendo
+en un iPhone/simulador de verdad!).
+
+- **Fix: el emoji 🔒/🔓 no renderizaba en el WebView nativo de iOS**
+  (aparecía un "?" en un cuadrado en su lugar) — se veía bien en Chrome/la
+  web, pero no en el WKWebView que usa la app empaquetada. Se reemplazó por
+  íconos SVG propios (`LockIcon`/`UnlockIcon` en `components/icons.tsx`,
+  con `currentColor` para adaptarse al color del texto de cada lugar donde
+  aparecen) en: el chip bloqueado de bebé/camping (`OptionChip`,
+  `OptionCard`), el botón "Desbloquear ítems propios..." de la Checklist, y
+  el badge del paywall.
+- **"Llevar mis datos a otro acceso" ya no aparece en la app nativa**: ese
+  botón (puente Safari ↔ ícono instalado) resuelve un problema que es
+  específico de la web — iOS separa el storage entre la pestaña de Safari y
+  el ícono instalado, algo que no existe en la app empaquetada (un único
+  storage). De paso tenía el mismo problema de renderizado (el símbolo "↔"
+  tampoco se veía bien nativo). Sigue disponible en la versión web/PWA para
+  quien todavía la use así. Gateado con `Capacitor.isNativePlatform()` en
+  `Trips.tsx`, mismo patrón que ya usa `features/purchase.ts`.
+- QA: 106/106 (Playwright) — se ajustó un test que buscaba el botón de
+  desbloquear por su texto exacto (incluía el emoji viejo).
+
 ## v0.20.4
 
 - **Aviso de espacio también en la Checklist**: el aviso ⚠️ de "bulto vs.

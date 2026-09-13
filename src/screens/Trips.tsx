@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackupSheet } from '../components/BackupSheet';
@@ -159,9 +160,15 @@ export function Trips() {
           </div>
         )}
 
-        <button type="button" className={styles.backupBtn} onClick={() => setShowBackup(true)}>
-          Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)
-        </button>
+        {/* Puente Safari <-> ícono instalado: solo tiene sentido en la web (dos
+            storages separados por iOS). La app nativa ya tiene un único storage,
+            así que este botón no aplica ahí — y de paso evita el "↔" que no
+            renderiza bien en el WebView nativo (ver LockIcon/UnlockIcon arriba). */}
+        {!Capacitor.isNativePlatform() && (
+          <button type="button" className={styles.backupBtn} onClick={() => setShowBackup(true)}>
+            Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)
+          </button>
+        )}
 
         {trips.length > 0 && (
           <button type="button" className={styles.deleteAllBtn} onClick={deleteAllTrips}>

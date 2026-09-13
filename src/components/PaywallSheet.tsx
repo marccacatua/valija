@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { PRO_PRICE_LABEL, usePurchase } from '../features/purchase';
 import { Button } from './Button';
+import { UnlockIcon } from './icons';
 import styles from './PaywallSheet.module.css';
 
 interface PaywallSheetProps {
@@ -71,7 +72,7 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
   return (
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.card} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.badge}>🔓 Valija Pro</div>
+        <div className={styles.badge}>{UnlockIcon} Valija Pro</div>
         <div className={styles.title}>Desbloqueá todo, para siempre</div>
         <ul className={styles.benefits}>
           {BENEFITS.map((b) => (

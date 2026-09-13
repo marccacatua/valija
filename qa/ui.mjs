@@ -1110,7 +1110,7 @@ try {
     const hasApplyBefore = await page.locator('text=Aplicar una plantilla').count();
     assert(hasApplyBefore === 0, 'Antes de comprar, no se ve "Aplicar una plantilla"', `count=${hasApplyBefore}`);
 
-    await page.click('text=🔒 Desbloquear ítems propios, plantillas y repetir viaje');
+    await page.click('text=Desbloquear ítems propios, plantillas y repetir viaje');
     await page.waitForSelector('text=Valija Pro');
     await page.click('button:has-text("Desbloquear —")');
     await page.waitForTimeout(150);
