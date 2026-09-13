@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
+import { isPackingTight } from '../data/distribute';
 import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
 import { packedCount, progressNote, progressPct, shareText, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
@@ -318,6 +319,13 @@ export function Checklist() {
           <Mascot size={56} />
         </div>
       </div>
+
+      {isPackingTight(items, trip.form.maletas) && (
+        <div className={styles.spaceNote}>
+          ⚠️ Tenés bastantes ítems que ocupan lugar para las valijas que elegiste — quizás convenga sumar una
+          valija más, o una más grande.
+        </div>
+      )}
 
       <div className={styles.viewToggle}>
         <button

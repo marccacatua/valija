@@ -5,6 +5,23 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.4
+
+- **Aviso de espacio también en la Checklist**: el aviso ⚠️ de "bulto vs.
+  cantidad de valijas" (v0.20.0) solo vivía en la pantalla de
+  Distribución, que no existe con una sola valija — justo el caso donde
+  más falta hace poder avisarlo, porque no hay una segunda valija a la
+  que mover algo. Ahora se muestra en las dos pantallas (debajo de la
+  barra de progreso en la Checklist, y donde ya estaba en Distribución),
+  reusando la misma `isPackingTight()` de `distribute.ts` — mismo texto,
+  mismo estilo. Mockup mostrado y aprobado antes de commitear.
+- Fix de un test flaky en `qa/ui.mjs` ("Hay 2 viajes guardados antes de
+  borrar"): `.count()` no reintenta como `waitForSelector`, así que a
+  veces corría antes de que la segunda tarjeta terminara de montarse.
+- QA: 106/106 (Playwright), incluye 2 casos nuevos para el aviso en la
+  Checklist (aparece con 1 sola valija cuando hay bulto real; no
+  aparece en un viaje liviano).
+
 ## v0.20.3
 
 Preparativos de código para la futura subida al App Store — todavía NO

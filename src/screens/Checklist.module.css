@@ -121,6 +121,15 @@
   z-index: 3;
 }
 
+.spaceNote {
+  margin: 14px 22px 0;
+  background: var(--selected-bg);
+  border-radius: 18px;
+  padding: 14px 16px;
+  font: 700 13px/1.4 'Nunito', sans-serif;
+  color: var(--coral-dark);
+}
+
 .progressCard {
   background: var(--surface);
   border: 2px solid var(--line);

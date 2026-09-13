@@ -350,6 +350,9 @@ try {
     await page.waitForURL(/\/viaje\//);
     await page.click('text=Ver mis viajes');
     await page.waitForSelector('text=Mis viajes');
+    // .count() no reintenta como waitForSelector — sin esto, a veces corre
+    // antes de que la 2da tarjeta termine de montarse (flaky).
+    await page.waitForFunction(() => document.querySelectorAll('[aria-label^="Borrar "]').length >= 2);
 
     const cardsBefore = await page.locator('[aria-label^="Borrar "]').count();
     assert(cardsBefore === 2, 'Hay 2 viajes guardados antes de borrar', `cards=${cardsBefore}`);
@@ -1458,6 +1461,33 @@ try {
       .getAttribute('class')
       .then((c) => c && c.includes('selected'));
     assert(campingSelected, 'Con Pro, "Camping" se selecciona normalmente', `selected=${campingSelected}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 43) Aviso de espacio (⚠️) también en la Checklist, no solo en
+  // Distribución — funciona incluso con 1 sola valija (donde no existe
+  // pantalla de distribución para mostrarlo)
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Sí, sumar su equipaje")'); // bebé
+    await page.click('button:has-text("Frío")');
+    await page.click('button:has-text("Auto")');
+    // 1 sola valija (Carry-on, el default) — sin botón de distribución
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
+    assert(hasWarning === 1, 'Aviso de espacio aparece en la Checklist incluso con 1 sola valija', `count=${hasWarning}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser); // viaje liviano por defecto
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
+    assert(hasWarning === 0, 'Sin bulto real, no aparece el aviso de espacio en la Checklist', `count=${hasWarning}`);
     await ctx.close();
   }
 } catch (err) {
