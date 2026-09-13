@@ -50,6 +50,7 @@ export const ALOJ_OPTIONS: CatalogOption<AlojKey>[] = [
   { key: 'depto', label: 'Depto / Airbnb' },
   { key: 'hostel', label: 'Hostel' },
   { key: 'amigos', label: 'Casa de amigos' },
+  { key: 'camping', label: 'Camping' },
 ];
 
 export const TRANSPORTE_OPTIONS: CatalogOption<TransporteKey>[] = [
@@ -74,14 +75,18 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
   docs: { title: 'Documentos', color: 'var(--violet)' },
   tech: { title: 'Electrónica', color: 'var(--mustard-dark)' },
   extras: { title: 'Extras', color: 'var(--sky)' },
+  bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
+  camping: { title: 'Camping', color: 'var(--forest)' },
 };
 
 // Documentos primero: coincide con el mensaje de progreso ("Arrancá por
 // los documentos") y es lo más importante de no olvidar. Higiene antes
 // que ropa para que coincida con el orden de QUICK_GROUP_ORDER (vista
 // rápida) — mismo orden en las dos vistas, y con el mensaje de progreso
-// que invita a seguir con la próxima categoría.
-export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'ropa', 'tech', 'extras'];
+// que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
+// (temáticamente superpuesta); "Camping" al final por ser la más
+// situacional de todas (solo aparece si el alojamiento es camping).
+export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'bebe', 'ropa', 'tech', 'extras', 'camping'];
 
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';

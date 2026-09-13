@@ -5,11 +5,13 @@ export type DestKey = 'playa' | 'montana' | 'ciudad';
 export type ClimaKey = 'calor' | 'templado' | 'frio' | 'lluvia';
 export type MotivoKey = 'placer' | 'trabajo';
 export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta';
-export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos';
+/** 'camping' es alojamiento (define cómo/dónde dormís), no destino — se
+ * puede acampar en la playa, la montaña o el campo por igual. */
+export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos' | 'camping';
 export type TransporteKey = 'avion' | 'auto' | 'bus' | 'tren';
 export type MaletaKey = 'carry' | 'bodega' | 'mochila';
 
-export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras';
+export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'camping';
 
 export interface TripFormState {
   name: string;
@@ -27,6 +29,13 @@ export interface TripFormState {
   /** Sumar vestidos/pollera a la checklist. Independiente de todo lo demás:
    * no le preguntamos género a nadie, es una preferencia de vestuario. */
   vestidos: boolean;
+  /** Si se va a lavar ropa durante el viaje: baja el cálculo de mudas
+   * (remeras/interior/medias) a un tope fijo en vez de escalar con `dias`,
+   * sin importar cuánto dure el viaje completo. */
+  lavaRopa: boolean;
+  /** Viaja con bebé o niño chico: suma la categoría "Bebé" completa,
+   * separada del resto (no se mezcla con la ropa/higiene del adulto). */
+  bebe: boolean;
 }
 
 export interface PackingItem {

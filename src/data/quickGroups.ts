@@ -1,6 +1,17 @@
 import type { CategoryKey, PackingItem } from '../types';
 
-export type QuickGroupKey = 'documentos' | 'higiene' | 'ropa' | 'trabajo' | 'salir' | 'abrigo' | 'calzado' | 'electronica' | 'extras';
+export type QuickGroupKey =
+  | 'documentos'
+  | 'higiene'
+  | 'ropa'
+  | 'trabajo'
+  | 'salir'
+  | 'abrigo'
+  | 'calzado'
+  | 'electronica'
+  | 'extras'
+  | 'bebe'
+  | 'camping';
 
 export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: string }> = {
   documentos: { title: 'Documentos', color: 'var(--violet)' },
@@ -12,11 +23,14 @@ export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: str
   calzado: { title: 'Calzado', color: 'var(--muted)' },
   electronica: { title: 'Electrónica', color: 'var(--mustard-dark)' },
   extras: { title: 'Extras', color: 'var(--sky)' },
+  bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
+  camping: { title: 'Camping', color: 'var(--forest)' },
 };
 
 export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
   'documentos',
   'higiene',
+  'bebe',
   'ropa',
   'trabajo',
   'salir',
@@ -24,6 +38,7 @@ export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
   'calzado',
   'electronica',
   'extras',
+  'camping',
 ];
 
 /**
@@ -77,6 +92,8 @@ const CATEGORY_FALLBACK: Record<CategoryKey, QuickGroupKey> = {
   docs: 'documentos',
   tech: 'electronica',
   extras: 'extras',
+  bebe: 'bebe',
+  camping: 'camping',
 };
 
 export function quickGroupFor(item: PackingItem): QuickGroupKey {

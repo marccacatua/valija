@@ -151,6 +151,13 @@ export function TripForm() {
           </div>
 
           <div>
+            <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
+            <div className={styles.wrap}>
+              <OptionChip label="Sí, sumar su equipaje" selected={form.bebe} onSelect={() => set('bebe', !form.bebe)} />
+            </div>
+          </div>
+
+          <div>
             <SectionLabel>Motivo</SectionLabel>
             <div className={styles.wrap}>
               {MOTIVO_OPTIONS.map((opt) => (
@@ -186,6 +193,13 @@ export function TripForm() {
               {ALOJ_OPTIONS.map((opt) => (
                 <OptionChip key={opt.key} label={opt.label} selected={form.aloj === opt.key} onSelect={() => set('aloj', opt.key)} />
               ))}
+            </div>
+            <div className={styles.wrap} style={{ marginTop: 8 }}>
+              <OptionChip
+                label="Pienso lavar ropa en el viaje"
+                selected={form.lavaRopa}
+                onSelect={() => set('lavaRopa', !form.lavaRopa)}
+              />
             </div>
           </div>
 

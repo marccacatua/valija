@@ -70,9 +70,13 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // turismo que el usuario nunca eligió.
   const leisure = f.motivo !== 'trabajo';
 
-  add('ropa', 'Remeras', cap(d, 8));
-  add('ropa', 'Ropa interior', cap(d + 1, 10));
-  add('ropa', 'Medias', cap(d, 8));
+  // Si se va a lavar ropa, las mudas no escalan con la duración completa
+  // del viaje — alcanza con un tope fijo bajo (se van reponiendo). Un
+  // viaje corto no se ve afectado (ya estaba por debajo del tope).
+  const mudaDias = f.lavaRopa ? Math.min(d, 4) : d;
+  add('ropa', 'Remeras', cap(mudaDias, 8));
+  add('ropa', 'Ropa interior', cap(mudaDias + 1, 10));
+  add('ropa', 'Medias', cap(mudaDias, 8));
   add('ropa', 'Pantalones', Math.max(1, Math.ceil(d / 4)));
   add('ropa', 'Pijama', d > 5 ? 2 : 1);
   add('ropa', 'Cinturón');
@@ -184,6 +188,46 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.clima === 'lluvia') addSingle('extras', 'Paraguas plegable');
   if (f.dest.includes('playa')) addSingle('extras', 'Toallón de playa');
   if (leisure && f.turismo === 'relax') addSingle('extras', 'Libro o e-reader');
+
+  // Categoría propia y separada del resto (no se mezcla con la ropa/
+  // higiene del adulto) — mismo criterio que llevó a separar "¿Quedó
+  // todo pronto en casa?" de la checklist de empaque.
+  if (f.bebe) {
+    addSingle('bebe', 'Pañales');
+    addSingle('bebe', 'Toallitas húmedas');
+    addSingle('bebe', 'Crema para la irritación');
+    addSingle('bebe', 'Termómetro');
+    addSingle('bebe', 'Medicación habitual y antifebril infantil');
+    addSingle('bebe', 'Botiquín pediátrico básico (suero fisiológico, curitas chicas)');
+    addSingle('bebe', 'Mamadera o vasito');
+    addSingle('bebe', 'Babero');
+    addSingle('bebe', 'Utensilios de comida');
+    addSingle('bebe', 'Chupete y mordillo');
+    addSingle('bebe', 'Mantita o saco de dormir');
+    add('bebe', 'Mudas de ropa de bebé', cap(d + 2, 10));
+    add('bebe', 'Pijamas de bebé', d > 5 ? 2 : 1);
+    if (f.dest.includes('playa') || f.clima === 'calor') {
+      addSingle('bebe', 'Traje de baño de bebé');
+      addSingle('bebe', 'Gorro y protector solar de bebé');
+    }
+    if (f.transporte === 'auto') addSingle('bebe', 'Butaca para auto');
+    addSingle('bebe', 'Cochecito o mochila portabebé');
+    addSingle('bebe', 'Entretenimiento para el viaje');
+  }
+
+  // Solo si el alojamiento es "Camping" — ítems bien distintos al resto,
+  // por eso su propia categoría en vez de mezclarlos en Extras.
+  if (f.aloj === 'camping') {
+    addSingle('camping', 'Carpa');
+    addSingle('camping', 'Bolsa de dormir');
+    addSingle('camping', 'Colchoneta o aislante');
+    addSingle('camping', 'Linterna o frontal');
+    addSingle('camping', 'Encendedor o fósforos');
+    addSingle('camping', 'Cuerda');
+    addSingle('camping', 'Hacha o machete');
+    addSingle('camping', 'Repelente industrial');
+    addSingle('camping', 'Anafe o cocina portátil');
+  }
 
   const ropaRank = (name: string) => {
     const idx = ROPA_ORDER.indexOf(name);

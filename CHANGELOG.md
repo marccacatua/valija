@@ -5,6 +5,36 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.19.0
+
+- **Tres pedidos del backlog, implementados de punta a punta**:
+  - **"¿Pensás lavar ropa en el viaje?"**: nuevo toggle junto a
+    Alojamiento en `TripForm.tsx`. Con lavaRopa activo, remeras/ropa
+    interior/medias dejan de escalar con la duración completa del
+    viaje y se topean en ~4 días (se van reponiendo lavando) — el
+    resto de la ropa (abrigo, calzado, pantalones) no cambia.
+  - **Alojamiento "Camping"**: quinta opción de `AlojKey`. Trae su
+    propia categoría "Camping" (carpa, bolsa de dormir, colchoneta,
+    linterna, encendedor, cuerda, hacha o machete, repelente
+    industrial, anafe) — separada del resto, no mezclada en Extras.
+  - **"¿Viajás con bebé o niño chico?"**: toggle nuevo, junto a
+    Vestuario. Trae la categoría "Bebé" (pañales, higiene, alimentación,
+    descanso, mudas de ropa propias) con condicionales que reusan
+    campos existentes (traje de baño con playa/calor, butaca con
+    transporte auto).
+  - Dos categorías nuevas (`bebe`, `camping`) con sus propios colores
+    (`--baby-pink`, `--forest` en `index.css`) y sus grupos en la vista
+    rápida — el resto de la UI (Checklist, plantillas, distribución) ya
+    las soporta sin cambios, por iterar sobre `CATEGORY_ORDER`
+    genéricamente.
+  - QA combinatorio: `lavaRopa`/`bebe` se prueban en bloques dedicados
+    (cruzados solo contra los campos de los que depende su lógica) en
+    vez de sumarlos al gran cruce de todo — eso multiplicaba el total
+    x4 para probar dos campos con dependencias chicas. `camping` sí
+    entra en el cruce grande (solo agrega una opción más a `aloj`).
+    752.640 combinaciones probadas, 0 errores.
+  - QA de Playwright: 5 casos nuevos — 89/89 en total.
+
 ## v0.18.1
 
 - **Fix: el buscador de la checklist hacía zoom en iOS** — el input nuevo

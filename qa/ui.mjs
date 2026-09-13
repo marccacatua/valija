@@ -1187,6 +1187,86 @@ try {
     await assertNoTinyInputs(page, 'Guardar como plantilla');
     await ctx.close();
   }
+
+  // ============================================================
+  // 32) Alojamiento "Camping": agrega su propia categoría con ítems
+  // distintos al resto; sin elegirlo, esos ítems no aparecen
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Camping")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasCarpa = await page.locator('button', { hasText: 'Carpa' }).count();
+    assert(hasCarpa === 1, 'Elegir alojamiento "Camping" agrega la categoría con sus ítems (ej. Carpa)', `carpa=${hasCarpa}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // aloj por defecto: depto
+    const hasCarpa = await page.locator('button', { hasText: 'Carpa' }).count();
+    assert(hasCarpa === 0, 'Sin elegir "Camping", no aparecen sus ítems', `carpa=${hasCarpa}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 33) "¿Viajás con bebé o niño chico?": agrega la categoría Bebé,
+  // separada del resto; sin tildarlo, no aparece
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Sí, sumar su equipaje")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasPanales = await page.locator('button', { hasText: 'Pañales' }).count();
+    assert(hasPanales === 1, 'Tildar "bebé" agrega la categoría Bebé con sus ítems (ej. Pañales)', `panales=${hasPanales}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // sin bebé
+    const hasPanales = await page.locator('button', { hasText: 'Pañales' }).count();
+    assert(hasPanales === 0, 'Sin tildar "bebé", no aparecen sus ítems', `panales=${hasPanales}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 34) "Pienso lavar ropa en el viaje": baja la cantidad de mudas
+  // calculadas respecto del mismo viaje sin marcarlo
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const remerasRow = page.locator('button', { hasText: 'Remeras' }).first();
+    const qtyBefore = await remerasRow.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
+    await ctx.close();
+
+    const { ctx: ctx2, page: page2 } = await freshPage(browser);
+    await goToNewTripForm(page2);
+    await page2.click('button:has-text("Pienso lavar ropa en el viaje")');
+    await page2.click('button:has-text("Bodega")');
+    await page2.click('button:has-text("Armar mi valija")');
+    await page2.waitForURL(/\/viaje\//);
+    await page2.waitForSelector('text=Tu valija para');
+    const remerasRow2 = page2.locator('button', { hasText: 'Remeras' }).first();
+    const qtyAfter = await remerasRow2.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
+    assert(
+      parseInt(qtyAfter, 10) < parseInt(qtyBefore, 10),
+      'Con "lavar ropa", la cantidad de remeras baja respecto del mismo viaje sin marcarlo',
+      `antes=${qtyBefore} después=${qtyAfter}`,
+    );
+    await ctx2.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

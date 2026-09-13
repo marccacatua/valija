@@ -21,10 +21,12 @@ const ALL_DEST: DestKey[] = ['playa', 'montana', 'ciudad'];
 const CLIMA: ClimaKey[] = ['calor', 'templado', 'frio', 'lluvia'];
 const MOTIVO: MotivoKey[] = ['placer', 'trabajo'];
 const TURISMO: TurismoKey[] = ['relax', 'aventura', 'cultura', 'fiesta'];
-const ALOJ: AlojKey[] = ['hotel', 'depto', 'hostel', 'amigos'];
+const ALOJ: AlojKey[] = ['hotel', 'depto', 'hostel', 'amigos', 'camping'];
 const TRANSPORTE: TransporteKey[] = ['avion', 'auto', 'bus', 'tren'];
 const DIAS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 14, 20, 30];
 const VESTIDOS = [false, true];
+const LAVA_ROPA = [false, true];
+const BEBE = [false, true];
 const ALL_BAGS: MaletaKey[] = ['carry', 'bodega', 'mochila'];
 
 function nonEmptySubsets<T>(arr: T[]): T[][] {
@@ -50,6 +52,12 @@ function fail(f: TripFormState, msg: string) {
   errors.push(`${msg} | form=${JSON.stringify(f)}`);
 }
 
+// lavaRopa y bebe quedan FUERA del gran cruce combinatorio a propósito:
+// cruzarlos contra las ~11 dimensiones existentes multiplicaba el total
+// x4 (a ~3M combos / 21M chequeos de distribución) para probar dos
+// campos cuya lógica depende de muy pocos otros campos (bebe: dest/
+// clima/transporte; lavaRopa: solo dias) — ver los bloques dedicados
+// más abajo, mucho más rápidos y con la misma cobertura real.
 for (const dest of DEST_SUBSETS)
   for (const clima of CLIMA)
     for (const motivo of MOTIVO)
@@ -71,9 +79,18 @@ for (const dest of DEST_SUBSETS)
                     maletas,
                     dias,
                     vestidos,
+                    lavaRopa: false,
+                    bebe: false,
                   };
 
                   const raw = buildRawItems(form);
+
+                  // Invariante: la categoría "camping" aparece si y solo si el
+                  // alojamiento es camping.
+                  const hasCampingItems = raw.some((it) => it.cat === 'camping');
+                  if (hasCampingItems !== (aloj === 'camping')) {
+                    fail(form, `Categoría "camping": presente=${hasCampingItems} pero aloj=${aloj}`);
+                  }
 
                   // Invariante: sin duplicados de nombre dentro de la misma categoría
                   const seenByCat = new Map<string, Set<string>>();
@@ -200,6 +217,85 @@ for (const dest of DEST_SUBSETS)
                     }
                   }
                 }
+
+// ============================================================
+// Bloque dedicado: "bebe" — cruza solo contra los campos de los que
+// depende su lógica (dest, clima, transporte), no contra todo.
+// ============================================================
+const BEBE_DIAS = [1, 5, 10, 30];
+for (const dest of DEST_SUBSETS)
+  for (const clima of CLIMA)
+    for (const transporte of TRANSPORTE)
+      for (const bebe of BEBE)
+        for (const dias of BEBE_DIAS) {
+          const form: TripFormState = {
+            name: 'QA-bebe',
+            dest,
+            clima,
+            motivo: 'placer',
+            turismo: 'relax',
+            aloj: 'depto',
+            transporte,
+            maletas: ['carry'],
+            dias,
+            vestidos: false,
+            lavaRopa: false,
+            bebe,
+          };
+          const raw = buildRawItems(form);
+          const bebeItems = raw.filter((it) => it.cat === 'bebe');
+          if (bebeItems.length > 0 !== bebe) {
+            fail(form, `Categoría "bebe": presente=${bebeItems.length > 0} pero bebe=${bebe}`);
+          }
+          if (bebe) {
+            const names = bebeItems.map((it) => it.name);
+            if (new Set(names).size !== names.length) fail(form, `Categoría "bebe" tiene ítems duplicados: ${names}`);
+            const hasButaca = names.includes('Butaca para auto');
+            if (hasButaca !== (transporte === 'auto')) {
+              fail(form, `"Butaca para auto" presente=${hasButaca} pero transporte=${transporte}`);
+            }
+            const hasTrajeBaño = names.includes('Traje de baño de bebé');
+            if (hasTrajeBaño !== (dest.includes('playa') || clima === 'calor')) {
+              fail(form, `"Traje de baño de bebé" presente=${hasTrajeBaño} pero dest=${dest} clima=${clima}`);
+            }
+          }
+        }
+
+// ============================================================
+// Bloque dedicado: "lavaRopa" — su lógica depende solo de `dias`,
+// así que alcanza con cruzarla contra eso.
+// ============================================================
+for (const dias of DIAS)
+  for (const lavaRopa of LAVA_ROPA) {
+    const form: TripFormState = {
+      name: 'QA-lavaRopa',
+      dest: ['ciudad'],
+      clima: 'templado',
+      motivo: 'placer',
+      turismo: 'relax',
+      aloj: 'depto',
+      transporte: 'avion',
+      maletas: ['carry'],
+      dias,
+      vestidos: false,
+      lavaRopa,
+      bebe: false,
+    };
+    const raw = buildRawItems(form);
+    const tope = lavaRopa ? Math.min(dias, 4) : dias;
+    for (const nombre of ['Remeras', 'Medias']) {
+      const it = raw.find((r) => r.cat === 'ropa' && r.name === nombre);
+      const esperado = Math.min(tope, 8);
+      if (it && it.qty !== esperado) {
+        fail(form, `lavaRopa=${lavaRopa}: "${nombre}" qty=${it.qty}, esperado ${esperado}`);
+      }
+    }
+    const interior = raw.find((r) => r.cat === 'ropa' && r.name === 'Ropa interior');
+    const esperadoInterior = Math.min(tope + 1, 10);
+    if (interior && interior.qty !== esperadoInterior) {
+      fail(form, `lavaRopa=${lavaRopa}: "Ropa interior" qty=${interior.qty}, esperado ${esperadoInterior}`);
+    }
+  }
 
 console.log(`Combinaciones de formulario probadas: ${combos}`);
 console.log(`Chequeos de distribución (combo x subconjunto de valijas): ${distributionChecks}`);

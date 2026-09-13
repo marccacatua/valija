@@ -118,7 +118,7 @@ ratos libres).
 - Requiere sumar el control al formulario (`TripForm.tsx`) — probablemente
   un toggle simple, no un grupo de opciones como el resto.
 
-## Viajar con bebé o niño pequeño
+## ~~Viajar con bebé o niño pequeño~~ ✅ hecho en v0.19.0
 
 Pedido del usuario (2026-09): sumar la posibilidad de armar la parte de
 la valija de un bebé/niño chico — pañales, termómetro, su ropa, etc.
@@ -178,7 +178,7 @@ en vez de mezclarlo con la checklist de empaque.
   un `if (f.bebe) { add(...) }` bloque, no dispersarlo por todo
   `buildRawItems`.
 
-## "¿Pensás lavar ropa en el viaje?"
+## ~~"¿Pensás lavar ropa en el viaje?"~~ ✅ hecho en v0.19.0
 
 Pedido del usuario (2026-09): hoy no se pregunta nada sobre esto — la
 cantidad de mudas se calcula solo en función de `dias`, asumiendo que
@@ -201,7 +201,7 @@ con `aloj`), deja elegir esto sin importar dónde te alojás.
   campo a las combinaciones y verificar que con `lavaRopa: true` la
   cantidad de mudas nunca supere el tope reducido, sin importar `dias`.
 
-## Destino "Camping"
+## ~~Destino "Camping"~~ ✅ hecho en v0.19.0 (como alojamiento, no destino)
 
 Pedido del usuario (2026-09), marcado como importante: acampar trae
 ítems bien distintos al resto (cuerda, hacha, machete, encendedor,

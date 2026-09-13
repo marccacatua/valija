@@ -49,6 +49,14 @@
   --mascot-strap: #f3a81e;
   --mountain-dark: #0e8377;
   --cloud: #bfd3d9;
+
+  /* categorías nuevas (camping, bebé) — elegidos para no chocar con los
+     5 tokens de categoría que ya estaban en uso (coral/teal/violeta/
+     mostaza/cielo) */
+  --forest: #5a8f4f;
+  --forest-dark: #3e6837;
+  --baby-pink: #ef83a8;
+  --baby-pink-dark: #d8547f;
 }
 
 * {

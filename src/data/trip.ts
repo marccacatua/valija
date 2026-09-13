@@ -24,6 +24,8 @@ export const DEFAULT_FORM: TripFormState = {
   maletas: ['carry'],
   dias: 5,
   vestidos: false,
+  lavaRopa: false,
+  bebe: false,
 };
 
 export function tripTitle(form: TripFormState): string {
@@ -76,6 +78,8 @@ const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
   higiene: 'la higiene',
   tech: 'la electrónica',
   extras: 'los extras',
+  bebe: 'lo del bebé',
+  camping: 'lo de camping',
 };
 
 export function progressNote(items: PackingItem[]): string {

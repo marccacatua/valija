@@ -10,7 +10,14 @@ Recorre el producto cartesiano de **todas** las opciones del formulario
 (cientos de miles de combinaciones) y verifica invariantes de
 `buildRawItems`, `distributeItems` y `quickGroupFor`: sin ítems
 duplicados, ninguna cantidad inválida, nada se pierde al repartir entre
-valijas, etc. Es lógica pura — no abre un navegador, corre en segundos.
+valijas, etc. Es lógica pura — no abre un navegador, tarda entre unos
+segundos y un par de minutos según la máquina.
+
+Ojo con sumar un campo nuevo al `TripFormState` directo al gran cruce
+de todas las opciones: cada campo booleano que se agrega ahí **duplica**
+el total. Si el campo nuevo depende de pocos otros (como pasó con
+`lavaRopa`/`bebe`), mejor un bloque de QA aparte que lo cruce solo
+contra esos — mucho más rápido, misma cobertura real.
 
 ## `npm run qa:ui`
 
