@@ -68,6 +68,13 @@ export const MaletaIcons = {
   ),
 };
 
+export const CampingIcon = (
+  <svg width="26" height="26" viewBox="0 0 26 26">
+    <polygon points="13,3 24,23 2,23" fill="var(--forest)" />
+    <polygon points="13,3 17,23 9,23" fill="var(--forest-dark)" />
+  </svg>
+);
+
 export const BackArrowIcon = (
   <svg width="12" height="18" viewBox="0 0 12 18">
     <path d="M9 2L3 9l6 7" stroke="var(--ink)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />

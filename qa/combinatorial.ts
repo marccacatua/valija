@@ -42,7 +42,14 @@ const MALETA_SUBSETS = nonEmptySubsets(ALL_BAGS);
 // valor individual.
 const DEST_SUBSETS = nonEmptySubsets(ALL_DEST);
 
-const ALWAYS_WITH_YOU = ['Lentes de sol', 'Cepillo de dientes', 'Pasta de dientes (mini, <100 ml)', 'Shampoo (mini, <100 ml)'];
+const ALWAYS_WITH_YOU = [
+  'Lentes de sol',
+  'Cepillo de dientes',
+  'Pasta de dientes (mini, <100 ml)',
+  'Shampoo (mini, <100 ml)',
+  'Almohada de viaje',
+  'Libro o e-reader',
+];
 
 const errors: string[] = [];
 let combos = 0;
@@ -115,6 +122,44 @@ for (const dest of DEST_SUBSETS)
                     }
                   }
 
+                  // Invariante: "Repelente" (higiene) aparece si y solo si aventura,
+                  // playa o camping; el nombre viejo "Repelente industrial" ya no
+                  // debería existir en ningún lado.
+                  const leisure = motivo !== 'trabajo';
+                  const expectRepelente = (leisure && turismo === 'aventura') || dest.includes('playa') || aloj === 'camping';
+                  const hasRepelente = raw.some((it) => it.cat === 'higiene' && it.name === 'Repelente');
+                  if (hasRepelente !== expectRepelente) {
+                    fail(form, `"Repelente" presente=${hasRepelente} pero turismo=${turismo} dest=${dest} aloj=${aloj}`);
+                  }
+                  if (raw.some((it) => it.name === 'Repelente industrial')) {
+                    fail(form, '"Repelente industrial" ya no debería generarse (se unificó en "Repelente")');
+                  }
+
+                  // Invariante: zapatillas cómodas para caminar — ciudad siempre las
+                  // suma; sin ciudad, solo si es playa y el viaje dura 7+ días.
+                  const expectZapatillas = dest.includes('ciudad') ? true : dest.includes('playa') && dias >= 7;
+                  const hasZapatillas = raw.some((it) => it.name === 'Zapatillas cómodas para caminar');
+                  if (hasZapatillas !== expectZapatillas) {
+                    fail(form, `"Zapatillas cómodas para caminar" presente=${hasZapatillas} pero dest=${dest} dias=${dias}`);
+                  }
+
+                  // Invariante: candados — con bodega+carry van 2 candados nombrados
+                  // (y nunca el genérico); si no, el genérico solo con hostel/mochila.
+                  const rawNames = raw.map((it) => it.name);
+                  const hasBothLocks = rawNames.includes('Candado para la valija de bodega') && rawNames.includes('Candado para el carry-on');
+                  const hasGenericLock = rawNames.includes('Candado');
+                  if (maletas.includes('bodega') && maletas.includes('carry')) {
+                    if (!hasBothLocks || hasGenericLock) {
+                      fail(form, `Se esperaban 2 candados nombrados (bodega+carry) y ninguno genérico; maletas=${maletas}`);
+                    }
+                  } else if (aloj === 'hostel' || maletas.includes('mochila')) {
+                    if (!hasGenericLock || hasBothLocks) {
+                      fail(form, `Se esperaba 1 candado genérico (hostel/mochila); maletas=${maletas} aloj=${aloj}`);
+                    }
+                  } else if (hasGenericLock || hasBothLocks) {
+                    fail(form, `No se esperaba ningún candado; maletas=${maletas} aloj=${aloj}`);
+                  }
+
                   // Invariante: todo ítem de "ropa" está en ROPA_ORDER (si no, el sort
                   // lo manda al final silenciosamente y probablemente sea un typo nuevo)
                   for (const it of raw) {
@@ -176,23 +221,39 @@ for (const dest of DEST_SUBSETS)
 
                   for (const bags of MALETA_SUBSETS) {
                     distributionChecks++;
-                    const dist = distributeItems(items, bags);
+                    const { byBag, campingItems } = distributeItems(items, bags);
 
                     // Invariante: bolsas no seleccionadas quedan vacías
                     for (const bag of ALL_BAGS) {
-                      if (!bags.includes(bag) && dist[bag].length > 0) {
+                      if (!bags.includes(bag) && byBag[bag].length > 0) {
                         fail(form, `Valija "${bag}" no seleccionada (bags=${bags}) mantiene ítems`);
                       }
                     }
 
+                    // Invariante: los ítems de "camping" nunca entran en ninguna valija;
+                    // van aparte, completos, en campingItems.
+                    for (const bag of ALL_BAGS) {
+                      if (byBag[bag].some((d) => d.item.cat === 'camping')) {
+                        fail(form, `Ítem de camping asignado a una valija (bags=${bags})`);
+                      }
+                    }
+                    const campingExpected = items.filter((it) => it.cat === 'camping').map((it) => it.name).sort();
+                    const campingGot = campingItems.map((it) => it.name).sort();
+                    if (JSON.stringify(campingExpected) !== JSON.stringify(campingGot)) {
+                      fail(form, `campingItems (${campingGot}) no coincide con la categoría camping (${campingExpected})`);
+                    }
+
+                    const packableItems = items.filter((it) => it.cat !== 'camping');
+
                     // Invariante: la suma de qty distribuida por ítem == qty original
+                    // (solo ítems "empacables" — camping queda afuera del reparto)
                     const totalByItemId = new Map<string, number>();
                     for (const bag of ALL_BAGS) {
-                      for (const d of dist[bag]) {
+                      for (const d of byBag[bag]) {
                         totalByItemId.set(d.item.id, (totalByItemId.get(d.item.id) ?? 0) + d.qty);
                       }
                     }
-                    for (const it of items) {
+                    for (const it of packableItems) {
                       const total = totalByItemId.get(it.id) ?? 0;
                       if (total !== it.qty) {
                         fail(form, `Distribución no cuadra para "${it.name}" (qty=${it.qty}, repartido=${total}, bags=${bags})`);
@@ -202,7 +263,7 @@ for (const dest of DEST_SUBSETS)
                     // Invariante: docs/tech/ALWAYS_WITH_YOU nunca se dividen (isSplit=false)
                     // y van enteros en una sola valija
                     for (const bag of ALL_BAGS) {
-                      for (const d of dist[bag]) {
+                      for (const d of byBag[bag]) {
                         const keepWithYou = d.item.cat === 'docs' || d.item.cat === 'tech' || ALWAYS_WITH_YOU.includes(d.item.name);
                         if (keepWithYou && d.isSplit) {
                           fail(form, `Ítem "with you" "${d.item.name}" aparece dividido (bags=${bags})`);
@@ -210,10 +271,24 @@ for (const dest of DEST_SUBSETS)
                       }
                     }
 
-                    // Invariante: cada ítem aparece en al menos 1 valija (nunca se pierde)
-                    for (const it of items) {
-                      const appears = ALL_BAGS.some((bag) => dist[bag].some((d) => d.item.id === it.id));
+                    // Invariante: cada ítem empacable aparece en al menos 1 valija
+                    for (const it of packableItems) {
+                      const appears = ALL_BAGS.some((bag) => byBag[bag].some((d) => d.item.id === it.id));
                       if (!appears) fail(form, `Ítem "${it.name}" no aparece en ninguna valija (bags=${bags})`);
+                    }
+
+                    // Invariante: los candados nombrados van a su valija dueña cuando
+                    // esa valija está entre las elegidas.
+                    const lockOwners: [string, MaletaKey][] = [
+                      ['Candado para la valija de bodega', 'bodega'],
+                      ['Candado para el carry-on', 'carry'],
+                    ];
+                    for (const [lockName, ownerBag] of lockOwners) {
+                      const existsInTrip = items.some((it) => it.name === lockName);
+                      if (existsInTrip && bags.includes(ownerBag)) {
+                        const inOwner = byBag[ownerBag].some((d) => d.item.name === lockName);
+                        if (!inOwner) fail(form, `"${lockName}" no quedó en "${ownerBag}" (bags=${bags})`);
+                      }
                     }
                   }
                 }
@@ -254,9 +329,17 @@ for (const dest of DEST_SUBSETS)
             if (hasButaca !== (transporte === 'auto')) {
               fail(form, `"Butaca para auto" presente=${hasButaca} pero transporte=${transporte}`);
             }
-            const hasTrajeBaño = names.includes('Traje de baño de bebé');
-            if (hasTrajeBaño !== (dest.includes('playa') || clima === 'calor')) {
-              fail(form, `"Traje de baño de bebé" presente=${hasTrajeBaño} pero dest=${dest} clima=${clima}`);
+            const trajeBebe = bebeItems.find((it) => it.name === 'Traje de baño de bebé');
+            const expectTraje = dest.includes('playa') || clima === 'calor';
+            if (!!trajeBebe !== expectTraje) {
+              fail(form, `"Traje de baño de bebé" presente=${!!trajeBebe} pero dest=${dest} clima=${clima}`);
+            }
+            if (trajeBebe && trajeBebe.qty !== 2) {
+              fail(form, `"Traje de baño de bebé" qty=${trajeBebe.qty}, esperado 2`);
+            }
+            const hasChaleco = names.includes('Chaleco salvavidas de bebé');
+            if (hasChaleco !== dest.includes('playa')) {
+              fail(form, `"Chaleco salvavidas de bebé" presente=${hasChaleco} pero dest=${dest}`);
             }
           }
         }
@@ -282,18 +365,34 @@ for (const dias of DIAS)
       bebe: false,
     };
     const raw = buildRawItems(form);
-    const tope = lavaRopa ? Math.min(dias, 4) : dias;
-    for (const nombre of ['Remeras', 'Medias']) {
-      const it = raw.find((r) => r.cat === 'ropa' && r.name === nombre);
-      const esperado = Math.min(tope, 8);
-      if (it && it.qty !== esperado) {
-        fail(form, `lavaRopa=${lavaRopa}: "${nombre}" qty=${it.qty}, esperado ${esperado}`);
-      }
+    const mudaDias = lavaRopa ? Math.min(dias, 4) : dias;
+    // Las remeras usan un tope propio, más alto que el resto de las mudas.
+    const remerasDias = lavaRopa ? Math.min(dias, 6) : dias;
+
+    const remeras = raw.find((r) => r.cat === 'ropa' && r.name === 'Remeras');
+    const esperadoRemeras = Math.min(remerasDias, 8);
+    if (remeras && remeras.qty !== esperadoRemeras) {
+      fail(form, `lavaRopa=${lavaRopa}: "Remeras" qty=${remeras.qty}, esperado ${esperadoRemeras}`);
     }
+
+    const medias = raw.find((r) => r.cat === 'ropa' && r.name === 'Medias');
+    const esperadoMedias = Math.min(mudaDias, 8);
+    if (medias && medias.qty !== esperadoMedias) {
+      fail(form, `lavaRopa=${lavaRopa}: "Medias" qty=${medias.qty}, esperado ${esperadoMedias}`);
+    }
+
     const interior = raw.find((r) => r.cat === 'ropa' && r.name === 'Ropa interior');
-    const esperadoInterior = Math.min(tope + 1, 10);
+    const esperadoInterior = Math.min(mudaDias + 1, 10);
     if (interior && interior.qty !== esperadoInterior) {
       fail(form, `lavaRopa=${lavaRopa}: "Ropa interior" qty=${interior.qty}, esperado ${esperadoInterior}`);
+    }
+
+    // Lavando ropa, los pantalones no escalan con la duración (se reusan);
+    // sin lavar, siguen el tope general de siempre.
+    const pantalones = raw.find((r) => r.cat === 'ropa' && r.name === 'Pantalones');
+    const esperadoPantalones = lavaRopa ? 2 : Math.max(1, Math.ceil(dias / 4));
+    if (pantalones && pantalones.qty !== esperadoPantalones) {
+      fail(form, `lavaRopa=${lavaRopa}: "Pantalones" qty=${pantalones.qty}, esperado ${esperadoPantalones}`);
     }
   }
 

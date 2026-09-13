@@ -5,6 +5,44 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.0
+
+Ronda de ajustes tras probar la v0.19.0 con un viaje real (bebé + playa
++ camping + varias valijas). Todo lógica/UX, sin tocar el estilo visual
+del formulario (esa parte queda como mockup pendiente de aprobación,
+ver `BACKLOG.md`).
+
+- **Camping**: "Repelente industrial" se unificó con el "Repelente" de
+  Higiene (mismo ítem). En "Cómo repartir tu equipaje", los ítems de
+  camping ya no se reparten dentro de ninguna valija — aparecen en su
+  propia sección aparte (`distributeItems()` ahora devuelve
+  `{ byBag, campingItems }`).
+- **Pantalones y remeras con "lavar ropa"**: dejan de compartir el
+  mismo tope que ropa interior/medias. Pantalones baja a un fijo de 2
+  (se reusan mucho más antes de lavarse); remeras sube a un tope propio
+  de 6 (se ensucian más rápido, incluye margen para salir).
+- **Bebé + playa**: traje de baño de bebé pasa a cantidad 2 (antes 1) y
+  se suma "Chaleco salvavidas de bebé".
+- **Playa + 7 días o más**: suma "Zapatillas cómodas para caminar",
+  antes solo aparecía por ciudad o montaña/aventura.
+- **Candados**: con bodega + carry-on elegidos juntos, se piden 2
+  candados nombrados (uno por valija) en vez de uno genérico, y cada
+  uno se reparte a su valija dueña (`PREFERRED_BAG` en
+  `distribute.ts`). El candado pasa a ser el primer ítem de "Extras" en
+  la checklist.
+- **Almohada de viaje y libro/e-reader**: misma prioridad que
+  documentos/electrónica al repartir entre valijas (mochila primero).
+- **Aviso de espacio en distribución**: heurística simple de "bulto"
+  por ítem vs. cantidad de valijas elegidas; si da alto, aparece un
+  segundo aviso ⚠️ debajo del de siempre, misma estética.
+- **Botón de volver en "Tu valija para..."**: la checklist no tenía
+  forma de volver atrás; ahora lleva a "Mis viajes".
+- QA: `qa/combinatorial.ts` cubre todo lo anterior (repelente,
+  zapatillas, candados en el cruce principal; traje de baño/chaleco de
+  bebé y las nuevas fórmulas de pantalones/remeras en los bloques
+  dedicados) — 752.640 combinaciones, 0 errores. `qa/ui.mjs` suma 6
+  casos nuevos (97/97 OK).
+
 ## v0.19.0
 
 - **Tres pedidos del backlog, implementados de punta a punta**:

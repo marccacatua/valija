@@ -24,6 +24,27 @@
   background: color-mix(in srgb, var(--mustard) 24%, transparent);
 }
 
+.heroTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.backBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+
 .heroLabel {
   font: 900 12px/1 'Nunito', sans-serif;
   color: color-mix(in srgb, var(--paper) 82%, transparent);

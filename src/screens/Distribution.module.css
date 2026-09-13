@@ -55,6 +55,12 @@
   color: var(--tip-text);
 }
 
+.noteWarning {
+  margin-top: 10px;
+  background: var(--selected-bg);
+  color: var(--coral-dark);
+}
+
 .body {
   padding: 18px 22px 32px;
   display: flex;

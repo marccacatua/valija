@@ -8,7 +8,7 @@ import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { EditIcon } from '../components/icons';
+import { BackArrowIcon, EditIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
@@ -262,7 +262,12 @@ export function Checklist() {
     <div className={styles.screen}>
       <div className={styles.hero}>
         <div className={styles.heroBlob} />
-        <div className={styles.heroLabel}>Tu valija para</div>
+        <div className={styles.heroTop}>
+          <button type="button" className={styles.backBtn} onClick={() => navigate('/viajes')} aria-label="Volver a mis viajes">
+            {BackArrowIcon}
+          </button>
+          <div className={styles.heroLabel}>Tu valija para</div>
+        </div>
         {editingName ? (
           <input
             autoFocus

@@ -1,5 +1,72 @@
 # Backlog
 
+## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (mockup enviado, esperando aprobación)
+
+Pedido del usuario (2026-09) tras probar la v0.19.0: reemplazar el
+estilo actual (pastilla tipo `OptionChip`, igual al resto de las
+opciones de selección única) por el mismo checkbox cuadrado con tilde
+que ya se usa para marcar ítems empacados en la checklist — tiene más
+sentido visualmente porque son las únicas 3 opciones booleanas
+("sí/no", no una elección entre varias) del formulario: "Sumar
+vestidos / pollera", "¿Viajás con bebé o niño chico?" y "Pienso lavar
+ropa en el viaje".
+
+Se armó un mockup real y se mandaron capturas para aprobar antes de
+construir (pedido explícito del usuario). Implementación: un
+componente `CheckRow` (checkbox 28px + label, mismos tokens que
+`.checkbox`/`.checkboxDone` de `Checklist.module.css`) que reemplaza el
+`OptionChip` en esos 3 lugares de `TripForm.tsx`. El mockup se probó
+temporalmente y se revirtió — no quedó nada de esto en el código
+todavía, falta el OK para dejarlo definitivo.
+
+## ~~Ajustes de lógica y UX pedidos tras probar la v0.19.0~~ ✅ hecho en v0.20.0
+
+Ronda de feedback del usuario (2026-09) usando la app real con bebé +
+playa + camping + varias valijas. Todos chicos y de bajo riesgo,
+implementados directo sin mockup previo:
+
+- **Repelente de camping**: "Repelente industrial" se unificó con el
+  "Repelente" que ya sumaba Higiene por aventura/playa — mismo ítem, no
+  tiene sentido tenerlo separado. Camping ya no genera su propio
+  repelente.
+- **Camping en "Cómo repartir tu equipaje"**: sus ítems ya no se
+  reparten dentro de ninguna valija (no tiene sentido meter una carpa
+  "en" el carry-on) — `distributeItems()` los devuelve aparte
+  (`campingItems`) y la pantalla los muestra en su propia sección, con
+  la aclaración "Va aparte, no entra en ninguna valija".
+- **Pantalones y remeras con "lavar ropa"**: separados del tope general
+  de mudas. Pantalones baja a un tope fijo de 2 (se reusan mucho más
+  que el resto antes de lavarse); remeras usa un tope propio más alto
+  (6 en vez del general de 4) porque se ensucian/transpiran más rápido.
+- **Bebé en la playa**: traje de baño de bebé pasa a cantidad 2 (antes
+  1) y se suma "Chaleco salvavidas de bebé".
+- **Zapatillas en viajes largos de playa**: si el destino es solo playa
+  (sin ciudad) y dura 7+ días, se suma "Zapatillas cómodas para
+  caminar" — antes solo aparecía por ciudad o montaña/aventura.
+- **Candados por valija**: con bodega + carry-on elegidos a la vez, se
+  piden 2 candados nombrados ("Candado para la valija de bodega" /
+  "Candado para el carry-on"), y cada uno se reparte a su valija dueña
+  en la pantalla de distribución (`PREFERRED_BAG` en `distribute.ts`).
+  Sin esa combinación, sigue el candado genérico de siempre (hostel o
+  mochila). Además el candado pasó a ser lo primero de "Extras" en la
+  checklist, no algo perdido en el medio.
+- **Almohada de viaje y libro/e-reader**: ahora tienen la misma
+  prioridad que documentos/electrónica al repartir entre valijas
+  (mochila primero, después carry-on) — sumados a `ALWAYS_WITH_YOU` en
+  `distribute.ts`.
+- **Aviso de espacio ("bulto") en distribución**: heurística simple por
+  ítem (`BULK_WEIGHTS` en `distribute.ts` — campera abrigada, botas,
+  cochecito de bebé, butaca para auto, etc.) comparada contra la
+  cantidad de valijas elegidas; si da alto, aparece una segunda nota
+  tipo ⚠️ debajo de la de "Separamos alguna unidad...", misma estética.
+  Es orientativa, no una cuenta real de volumen — fácil de ajustar los
+  pesos/umbral con más feedback de uso real.
+- **Botón de volver en "Tu valija para..."**: la pantalla de checklist
+  no tenía forma de volver atrás; se sumó una flecha en el header
+  (mismo estilo que "Nuevo viaje"/Distribución) que lleva a "Mis
+  viajes" — desde ahí se puede borrar el viaje mal armado y empezar de
+  nuevo.
+
 Ideas para próximas versiones, con una nota de cómo encajarían en la
 arquitectura actual (para que cualquier sesión futura pueda retomarlas sin
 tener que releer todo el historial de chat).

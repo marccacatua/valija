@@ -1238,7 +1238,9 @@ try {
 
   // ============================================================
   // 34) "Pienso lavar ropa en el viaje": baja la cantidad de mudas
-  // calculadas respecto del mismo viaje sin marcarlo
+  // calculadas respecto del mismo viaje sin marcarlo (las remeras tienen
+  // tope propio más alto — ver test 41 — así que acá se chequea con
+  // "Medias", que sí usa el tope general de mudas)
   // ============================================================
   {
     const { ctx, page } = await freshPage(browser);
@@ -1247,8 +1249,8 @@ try {
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
-    const remerasRow = page.locator('button', { hasText: 'Remeras' }).first();
-    const qtyBefore = await remerasRow.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
+    const mediasRow = page.locator('button', { hasText: 'Medias' }).first();
+    const qtyBefore = await mediasRow.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
     await ctx.close();
 
     const { ctx: ctx2, page: page2 } = await freshPage(browser);
@@ -1258,14 +1260,128 @@ try {
     await page2.click('button:has-text("Armar mi valija")');
     await page2.waitForURL(/\/viaje\//);
     await page2.waitForSelector('text=Tu valija para');
-    const remerasRow2 = page2.locator('button', { hasText: 'Remeras' }).first();
-    const qtyAfter = await remerasRow2.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
+    const mediasRow2 = page2.locator('button', { hasText: 'Medias' }).first();
+    const qtyAfter = await mediasRow2.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
     assert(
       parseInt(qtyAfter, 10) < parseInt(qtyBefore, 10),
-      'Con "lavar ropa", la cantidad de remeras baja respecto del mismo viaje sin marcarlo',
+      'Con "lavar ropa", la cantidad de medias baja respecto del mismo viaje sin marcarlo',
       `antes=${qtyBefore} después=${qtyAfter}`,
     );
     await ctx2.close();
+  }
+
+  // ============================================================
+  // 35) Camping: "Repelente" queda unificado en Higiene (ya no existe
+  // "Repelente industrial" por separado)
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Camping")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasRepelenteIndustrial = await page.locator('button', { hasText: 'Repelente industrial' }).count();
+    const hasRepelente = await page.locator('button', { hasText: 'Repelente' }).count();
+    assert(hasRepelenteIndustrial === 0, 'Camping ya no genera "Repelente industrial"', `count=${hasRepelenteIndustrial}`);
+    assert(hasRepelente === 1, 'Camping suma "Repelente" una sola vez (unificado en Higiene)', `count=${hasRepelente}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 36) Distribución: Camping aparece en su propia sección aparte
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Camping")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Mochila")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    await page.click('text=Ver cómo repartir en tus valijas');
+    await page.waitForURL(/distribucion/);
+    const hasCampingSection = await page.locator('text=Camping').count();
+    const hasCarpa = await page.locator('text=Carpa').count();
+    assert(
+      hasCampingSection > 0 && hasCarpa > 0,
+      'Distribución muestra una sección aparte de Camping',
+      `seccion=${hasCampingSection} carpa=${hasCarpa}`,
+    );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 37) Playa sola + 7 días o más: suma "Zapatillas cómodas para caminar"
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page); // destino por defecto: playa
+    const stepperPlus = page.locator('text=días de viaje').locator('..').locator('..').locator('button').last();
+    await stepperPlus.click();
+    await stepperPlus.click(); // 5 -> 7 días
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasZapatillas = await page.locator('button', { hasText: 'Zapatillas cómodas para caminar' }).count();
+    assert(hasZapatillas === 1, 'Playa sola de 7+ días suma "Zapatillas cómodas para caminar"', `count=${hasZapatillas}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 38) Bebé + playa: 2 trajes de baño de bebé + chaleco salvavidas
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page); // destino por defecto: playa
+    await page.click('button:has-text("Sí, sumar su equipaje")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasChaleco = await page.locator('button', { hasText: 'Chaleco salvavidas de bebé' }).count();
+    const trajeRow = page.locator('button', { hasText: 'Traje de baño de bebé' }).first();
+    const trajeQty = await trajeRow.locator('span').filter({ hasText: /^\d+$/ }).first().textContent();
+    assert(hasChaleco === 1, 'Bebé + playa suma "Chaleco salvavidas de bebé"', `count=${hasChaleco}`);
+    assert(trajeQty === '2', 'Traje de baño de bebé arranca en cantidad 2', `qty=${trajeQty}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 39) Bodega + carry-on: 2 candados nombrados (uno por valija)
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page); // Carry-on ya viene tildado por defecto
+    await page.click('button:has-text("Bodega")'); // ahora carry + bodega
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const lockButtons = await page.locator('button', { hasText: 'Candado' }).count();
+    const hasBodegaLock = await page.locator('button', { hasText: 'Candado para la valija de bodega' }).count();
+    const hasCarryLock = await page.locator('button', { hasText: 'Candado para el carry-on' }).count();
+    assert(
+      lockButtons === 2 && hasBodegaLock === 1 && hasCarryLock === 1,
+      'Bodega + carry-on suman 2 candados nombrados, uno por valija',
+      `total=${lockButtons} bodega=${hasBodegaLock} carry=${hasCarryLock}`,
+    );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 40) Botón de volver en "Tu valija para..." lleva a Mis viajes
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('[aria-label="Volver a mis viajes"]');
+    await page.waitForURL(/\/viajes/);
+    const hasMisViajes = await page.locator('text=Mis viajes').count();
+    assert(hasMisViajes > 0, 'El botón de volver en la checklist lleva a "Mis viajes"', `count=${hasMisViajes}`);
+    await ctx.close();
   }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));

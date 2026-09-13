@@ -74,10 +74,17 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // del viaje — alcanza con un tope fijo bajo (se van reponiendo). Un
   // viaje corto no se ve afectado (ya estaba por debajo del tope).
   const mudaDias = f.lavaRopa ? Math.min(d, 4) : d;
-  add('ropa', 'Remeras', cap(mudaDias, 8));
+  // Las remeras se ensucian/transpiran más rápido que el resto de las
+  // mudas — conviene un tope algo más alto que el general al lavar ropa,
+  // para tener alguna de sobra (incluida una para salir).
+  const remerasDias = f.lavaRopa ? Math.min(d, 6) : d;
+  add('ropa', 'Remeras', cap(remerasDias, 8));
   add('ropa', 'Ropa interior', cap(mudaDias + 1, 10));
   add('ropa', 'Medias', cap(mudaDias, 8));
-  add('ropa', 'Pantalones', Math.max(1, Math.ceil(d / 4)));
+  // Lavando ropa los pantalones no necesitan escalar con la duración del
+  // viaje: se reusan varios días antes de lavarse, a diferencia de
+  // remeras/interior/medias.
+  add('ropa', 'Pantalones', f.lavaRopa ? 2 : Math.max(1, Math.ceil(d / 4)));
   add('ropa', 'Pijama', d > 5 ? 2 : 1);
   add('ropa', 'Cinturón');
   if (f.clima === 'frio') {
@@ -102,6 +109,9 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Short o pantalón de trekking');
   }
   if (f.dest.includes('ciudad')) add('ropa', 'Zapatillas cómodas para caminar');
+  // Viaje solo de playa pero largo: en algún momento del viaje hace falta
+  // un calzado cómodo que no sea ojota (paseos, terminal, un día nublado).
+  else if (f.dest.includes('playa') && d >= 7) add('ropa', 'Zapatillas cómodas para caminar');
   if (f.motivo === 'trabajo') {
     add('ropa', 'Camisas', 2);
     add('ropa', 'Saco o blazer');
@@ -141,7 +151,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('higiene', 'Afeitadora, pinza y corta uñas');
   add('higiene', 'Botiquín básico');
   if (f.dest.includes('playa') || f.clima === 'calor') add('higiene', 'Protector solar');
-  if ((leisure && f.turismo === 'aventura') || f.dest.includes('playa')) add('higiene', 'Repelente');
+  if ((leisure && f.turismo === 'aventura') || f.dest.includes('playa') || f.aloj === 'camping') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
   // El resto de los líquidos (protector solar, skincare, repelente,
   // enjuague bucal) no tienen versión mini propia; si no hay bodega les
@@ -168,14 +178,25 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.motivo === 'trabajo') addSingle('tech', 'Notebook y cargador');
   if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) addSingle('tech', 'Cámara y memoria');
 
+  // El candado va primero en "extras" a propósito: conviene tenerlo bien
+  // visible y no perdido en el medio de la lista. Con bodega + carry-on
+  // juntos van 2 candados nombrados (uno por valija, ver distribute.ts
+  // para cómo se reparten) — si no, alcanza con uno genérico por
+  // seguridad en hostel o mochila.
+  if (f.maletas.includes('bodega') && f.maletas.includes('carry')) {
+    addSingle('extras', 'Candado para la valija de bodega');
+    addSingle('extras', 'Candado para el carry-on');
+  } else if (f.aloj === 'hostel' || f.maletas.includes('mochila')) {
+    addSingle('extras', 'Candado');
+  }
+
   // Extras evaluado ítem por ítem: lo que se "consume" o se usa en más de
   // una unidad (bolsas, snacks) conserva el +/-; lo que es un objeto único
-  // (botella, antifaz, candado...) va con addSingle.
+  // (botella, antifaz...) va con addSingle.
   addSingle('extras', 'Lentes de sol');
   addSingle('extras', 'Bolsa para ropa sucia');
   add('extras', 'Bolsas ziploc');
   addSingle('extras', 'Botella reutilizable');
-  if (f.aloj === 'hostel' || f.maletas.includes('mochila')) addSingle('extras', 'Candado');
   if (f.transporte === 'avion' || f.transporte === 'bus') {
     addSingle('extras', 'Antifaz y tapones');
     addSingle('extras', 'Almohada de viaje');
@@ -207,9 +228,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('bebe', 'Mudas de ropa de bebé', cap(d + 2, 10));
     add('bebe', 'Pijamas de bebé', d > 5 ? 2 : 1);
     if (f.dest.includes('playa') || f.clima === 'calor') {
-      addSingle('bebe', 'Traje de baño de bebé');
+      add('bebe', 'Traje de baño de bebé', 2);
       addSingle('bebe', 'Gorro y protector solar de bebé');
     }
+    if (f.dest.includes('playa')) addSingle('bebe', 'Chaleco salvavidas de bebé');
     if (f.transporte === 'auto') addSingle('bebe', 'Butaca para auto');
     addSingle('bebe', 'Cochecito o mochila portabebé');
     addSingle('bebe', 'Entretenimiento para el viaje');
@@ -225,7 +247,6 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('camping', 'Encendedor o fósforos');
     addSingle('camping', 'Cuerda');
     addSingle('camping', 'Hacha o machete');
-    addSingle('camping', 'Repelente industrial');
     addSingle('camping', 'Anafe o cocina portátil');
   }
 
