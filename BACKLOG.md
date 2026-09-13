@@ -178,6 +178,64 @@ en vez de mezclarlo con la checklist de empaque.
   un `if (f.bebe) { add(...) }` bloque, no dispersarlo por todo
   `buildRawItems`.
 
+## "¿Pensás lavar ropa en el viaje?"
+
+Pedido del usuario (2026-09): hoy no se pregunta nada sobre esto — la
+cantidad de mudas se calcula solo en función de `dias`, asumiendo que
+no se lava ropa en ningún lado. Un toggle explícito, independiente del
+alojamiento (se puede lavar en un hotel con lavandería, en depto de
+amigos, o no poder en un hostel sin esa comodidad — no correlaciona 1:1
+con `aloj`), deja elegir esto sin importar dónde te alojás.
+
+- `TripFormState`: sumar `lavaRopa: boolean` (default `false`).
+- UI en `TripForm.tsx`: un checkbox/chip chico al lado de la sección
+  "Alojamiento" (mismo patrón que `OptionChip` ya usado para
+  "Sumar vestidos / pollera") — no un grupo de opciones aparte.
+- En `buildItems.ts`: donde hoy se calculan las mudas con algo como
+  `cap(dias + 1, 10)`, agregar una rama cuando `f.lavaRopa` es true que
+  tope el cálculo mucho más bajo (ej. alcanza con mudas para ~3-4 días
+  sin importar cuánto dure el viaje completo, porque se van reponiendo
+  lavando). Aplica a remeras/ropa interior/medias — no a lo que no tiene
+  sentido lavar seguido (abrigo, calzado).
+- Barato de probar en el QA combinatorio existente: agregar el nuevo
+  campo a las combinaciones y verificar que con `lavaRopa: true` la
+  cantidad de mudas nunca supere el tope reducido, sin importar `dias`.
+
+## Destino "Camping"
+
+Pedido del usuario (2026-09), marcado como importante: acampar trae
+ítems bien distintos al resto (cuerda, hacha, machete, encendedor,
+carpa, bolsa de dormir, colchoneta, linterna, repelente industrial,
+kit de fuego) que no tiene sentido mezclar con ninguna categoría
+existente. Pidió explícitamente que aparezca como su propia lista
+separada, no repartida en Ropa/Higiene/Extras.
+
+**Cómo encaja en la arquitectura**: incluirlo como un valor más de
+`AlojKey` (hoy `'hotel' | 'depto' | 'hostel' | 'amigos'`) en vez de
+como un toggle aparte o un valor de `DestKey` — "cómo vas a dormir" es
+exactamente lo que ya representa `aloj`, y se puede acampar en la
+playa, la montaña o el campo por igual, así que no depende de
+`dest`. Selección única, como el resto de las opciones de alojamiento
+(no tiene sentido combinar "hotel" y "camping" en el mismo viaje).
+
+- `AlojKey`: sumar `'camping'`. `ALOJ_OPTIONS`: nueva opción "Camping"
+  con ícono propio.
+- `CategoryKey`: sumar `'camping'` (una categoría nueva, no una
+  sub-lista de Extras) — es la parte que cumple el pedido de "que se
+  vea como su propia lista". `CATEGORY_META`: título "Camping" + un
+  color nuevo. `CATEGORY_ORDER`: agregarla al final (es la más
+  situacional de todas, igual que hoy "Extras" queda última).
+  `quickGroups.ts`: un solo grupo rápido `camping`, sin dividir.
+- En `buildItems.ts`, un bloque `if (f.aloj === 'camping') { add(...) }`
+  con los ítems de acampar — mismo patrón que ya usa `vestidos`/`bebe`
+  (propuesto), nada disperso por el resto del generador. Al ser
+  alojamiento exclusivo, cuando `aloj === 'camping'` tiene sentido
+  *no* agregar algunos ítems que si asumen "hotel/depto" (ej. no hace
+  falta "toallón" de las de higiene si ya se suma uno de camping,
+  a revisar caso por caso al implementar para no duplicar).
+- Como es su propia categoría, ya queda automáticamente separada de
+  las demás en ambas vistas (detallada y rápida) sin tocar nada más.
+
 ## Modo oscuro
 
 Toggle de tema (claro/oscuro/según sistema), guardado en localStorage.

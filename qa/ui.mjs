@@ -60,6 +60,19 @@ async function freshPage(browser, { pro = false } = {}) {
   return { ctx, page };
 }
 
+// Blindaje contra el zoom automático de Safari en iOS: pasó dos veces
+// (v0.10.1 y el buscador de la checklist) porque un input nuevo se olvidó
+// de respetar el piso de 16px. En vez de acordarse a mano cada vez,
+// cualquier test puede llamar esto para chequear TODOS los inputs
+// visibles en la pantalla actual de una sola vez.
+async function assertNoTinyInputs(page, label) {
+  const sizes = await page.evaluate(() =>
+    Array.from(document.querySelectorAll('input')).map((el) => parseFloat(getComputedStyle(el).fontSize)),
+  );
+  const tooSmall = sizes.filter((s) => s < 16);
+  assert(tooSmall.length === 0, `Ningún input tiene menos de 16px de fuente (${label})`, `sizes=${JSON.stringify(sizes)}`);
+}
+
 async function goToNewTripForm(page) {
   await page.goto(`${BASE}/nuevo`);
   await page.waitForSelector('text=Nuevo viaje');
@@ -1150,6 +1163,28 @@ try {
       '"Sin empacar" oculta los ítems tildados sin afectar el progreso real',
       `cinturonVisible=${hasCinturonAfterPendingFilter} packed=${packedLabel}`,
     );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 31) Ningún input queda por debajo de 16px de fuente, en ninguna
+  // pantalla — evita el zoom automático de Safari en iOS (ya pasó dos
+  // veces: v0.10.1 y el buscador de la checklist)
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await assertNoTinyInputs(page, 'Nuevo viaje');
+
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await assertNoTinyInputs(page, 'Checklist');
+
+    await page.fill('input[placeholder="Agregar ítem…"]', 'Mameluco');
+    await page.press('input[placeholder="Agregar ítem…"]', 'Enter');
+    await page.waitForTimeout(80);
+    await page.click('text=Guardar ítems como plantilla');
+    await page.waitForSelector('text=Guardar como plantilla');
+    await assertNoTinyInputs(page, 'Guardar como plantilla');
     await ctx.close();
   }
 } catch (err) {

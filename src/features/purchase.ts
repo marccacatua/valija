@@ -1,37 +1,68 @@
+import { Capacitor } from '@capacitor/core';
 import { useIsPro } from './flags';
 
 export const PRO_PRICE_LABEL = 'USD 0,99';
 
+/** Tienen que coincidir exactamente con lo que se cree en App Store Connect
+ * y en el dashboard de RevenueCat (mismo identificador de producto, mismo
+ * identificador de entitlement) — ver la Ficha de App Store Connect. */
+const PRODUCT_ID = 'valija_pro_unlock';
+const ENTITLEMENT_ID = 'pro';
+
 /**
- * Capa de compra, separada de la UI para que conectar el proveedor real
- * sea un cambio contenido acá adentro y no una búsqueda por todo el
- * código. Hoy no hay compra real (eso espera a que exista la cuenta de
- * Apple Developer activa + el producto creado en App Store Connect, ver
- * el roadmap de publicación): purchasePro() prende el flag `isPro` local,
- * el mismo mecanismo que ya se usaba para probar la UI condicionada.
- *
- * Para conectar RevenueCat (recomendado — dashboard propio, maneja
- * restaurar compra y validación de recibo sin que tengamos que
- * implementarlo a mano):
- * 1. npm install @revenuecat/purchases-capacitor
- * 2. Crear el producto "valija_pro_unlock" (no-consumible) en App Store
- *    Connect, y el mismo identificador en el dashboard de RevenueCat.
- * 3. Reemplazar el cuerpo de purchasePro()/restorePurchases() de acá
- *    abajo por las llamadas reales al SDK. La firma no cambia, así que
- *    ningún componente que use este hook necesita tocarse.
+ * TODO antes de publicar: pegar acá la API key pública de RevenueCat (se
+ * genera sola en su dashboard al crear el proyecto — es segura de embeber
+ * en el cliente, no es un secreto como una API key de servidor).
+ */
+const REVENUECAT_API_KEY = 'TU-API-KEY-PUBLICA-DE-REVENUECAT';
+
+let configuring: Promise<typeof import('@revenuecat/purchases-capacitor')> | null = null;
+
+/** Carga el SDK y lo configura una sola vez, la primera vez que hace falta
+ * (nunca en el bundle web: solo se importa cuando corre en la app nativa). */
+function loadPurchases() {
+  if (!configuring) {
+    configuring = import('@revenuecat/purchases-capacitor').then(async (mod) => {
+      await mod.Purchases.configure({ apiKey: REVENUECAT_API_KEY });
+      return mod;
+    });
+  }
+  return configuring;
+}
+
+/**
+ * Capa de compra, separada de la UI para que el proveedor real quede
+ * contenido acá adentro. En la app nativa (Capacitor) usa RevenueCat de
+ * verdad; en la web/PWA —donde no existe StoreKit— sigue siendo un
+ * desbloqueo local sin cobro, igual que antes: es el único canal donde una
+ * compra real nunca va a ser posible, así que no tiene sentido intentar
+ * llamar al SDK ahí.
  */
 export function usePurchase() {
   const [isPro, setIsPro] = useIsPro();
 
   const purchasePro = async (): Promise<boolean> => {
-    // TODO(RevenueCat): Purchases.purchaseProduct({ productIdentifier: 'valija_pro_unlock' })
-    setIsPro(true);
-    return true;
+    if (!Capacitor.isNativePlatform()) {
+      setIsPro(true);
+      return true;
+    }
+    const { Purchases } = await loadPurchases();
+    const { products } = await Purchases.getProducts({ productIdentifiers: [PRODUCT_ID] });
+    const product = products[0];
+    if (!product) return false;
+    const { customerInfo } = await Purchases.purchaseStoreProduct({ product });
+    const unlocked = Boolean(customerInfo.entitlements.active[ENTITLEMENT_ID]);
+    if (unlocked) setIsPro(true);
+    return unlocked;
   };
 
   const restorePurchases = async (): Promise<boolean> => {
-    // TODO(RevenueCat): Purchases.restorePurchases() y leer el entitlement "pro"
-    return isPro;
+    if (!Capacitor.isNativePlatform()) return isPro;
+    const { Purchases } = await loadPurchases();
+    const { customerInfo } = await Purchases.restorePurchases();
+    const unlocked = Boolean(customerInfo.entitlements.active[ENTITLEMENT_ID]);
+    if (unlocked) setIsPro(true);
+    return unlocked;
   };
 
   return { isPro, purchasePro, restorePurchases };

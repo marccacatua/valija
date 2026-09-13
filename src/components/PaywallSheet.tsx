@@ -9,6 +9,13 @@ interface PaywallSheetProps {
   onUnlocked?: () => void;
 }
 
+// RevenueCat rechaza la promesa con { userCancelled: true } cuando el
+// usuario cierra el cartel nativo de compra sin elegir nada — no es un
+// error real, no hace falta mostrar ningún mensaje en ese caso.
+function isUserCancelled(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'userCancelled' in error && (error as { userCancelled?: boolean }).userCancelled === true;
+}
+
 const BENEFITS = [
   'Viajes guardados ilimitados',
   'Agregar tus propios ítems y tareas',
@@ -32,6 +39,11 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
       } else {
         setError('No se pudo completar la compra. Probá de nuevo.');
       }
+    } catch (e) {
+      // RevenueCat rechaza la promesa (no la resuelve en false) ante un
+      // error real o una compra cancelada — lo segundo no es un error,
+      // el usuario simplemente cerró el cartel nativo de Apple.
+      if (!isUserCancelled(e)) setError('No se pudo completar la compra. Probá de nuevo.');
     } finally {
       setBusy(false);
     }
@@ -48,6 +60,8 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
       } else {
         setError('No encontramos ninguna compra anterior para restaurar.');
       }
+    } catch {
+      setError('No se pudo restaurar la compra. Probá de nuevo.');
     } finally {
       setBusy(false);
     }

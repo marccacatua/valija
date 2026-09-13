@@ -5,6 +5,25 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.18.1
+
+- **Fix: el buscador de la checklist hacía zoom en iOS** — el input nuevo
+  de v0.18.0 pisaba sin querer el piso global de 16px con un
+  `font: 700 14px` explícito (el mismo problema de v0.10.1, reintroducido
+  sin darse cuenta). Corregido, y agregado un chequeo de QA que revisa
+  **todos** los inputs de la app de una sola vez, para que una tercera
+  vez no pase desapercibida.
+- **RevenueCat conectado**: `features/purchase.ts` ahora usa el SDK real
+  en la app nativa (Capacitor) para comprar y restaurar, con la API real
+  verificada contra sus propios tipos publicados. En la web/PWA sigue
+  siendo el desbloqueo local sin cobro de antes — no cambia nada para
+  quienes ya la usan por Safari. Falta pegar la API key de RevenueCat y
+  crear el producto `valija_pro_unlock` (entitlement `pro`) una vez que
+  exista la cuenta.
+- **Mail de contacto real** en `data/contact.ts` (privacidad y soporte).
+- QA: 3 casos nuevos de Playwright (ningún input queda por debajo de
+  16px en ninguna pantalla) — 84/84 en total.
+
 ## v0.18.0
 
 - **Buscar/filtrar ítems en la checklist**: nueva barra de búsqueda por

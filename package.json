@@ -1,7 +1,7 @@
 {
   "name": "valija",
   "private": true,
-  "version": "0.18.0",
+  "version": "0.18.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
   "dependencies": {
     "@capacitor/core": "^8.5.2",
     "@capacitor/ios": "^8.5.2",
+    "@revenuecat/purchases-capacitor": "^13.5.1",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.3",
