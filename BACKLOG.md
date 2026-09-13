@@ -59,7 +59,10 @@ implementados directo sin mockup previo:
   cantidad de valijas elegidas; si da alto, aparece una segunda nota
   tipo ⚠️ debajo de la de "Separamos alguna unidad...", misma estética.
   Es orientativa, no una cuenta real de volumen — fácil de ajustar los
-  pesos/umbral con más feedback de uso real.
+  pesos/umbral con más feedback de uso real. **Refinado en v0.20.4**: el
+  mismo aviso se sumó también a la Checklist (debajo de la barra de
+  progreso) — con 1 sola valija no existe pantalla de Distribución
+  donde mostrarlo, y era justo el caso donde más hace falta.
 - **Botón de volver en "Tu valija para..."**: la pantalla de checklist
   no tenía forma de volver atrás; se sumó una flecha en el header
   (mismo estilo que "Nuevo viaje"/Distribución) que lleva a "Mis
