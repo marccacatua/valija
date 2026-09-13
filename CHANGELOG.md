@@ -5,6 +5,17 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.6
+
+- **Conectado RevenueCat con la key real de Apple**: se reemplazó el
+  placeholder `TU-API-KEY-PUBLICA-DE-REVENUECAT` en `features/purchase.ts`
+  por la API key pública real del proyecto "Valija" en RevenueCat (App
+  Store), obtenida tras crear ahí el In-App Purchase Key (P8 + Key ID +
+  Issuer ID) que reemplaza al secreto legacy. Sin código nuevo, solo el
+  valor de la constante. No cambia nada en la versión web/PWA (sigue
+  desbloqueando Pro localmente, sin tocar RevenueCat, gracias al gateo
+  por `Capacitor.isNativePlatform()`).
+
 ## v0.20.5
 
 Encontrado probando la primera build real en Xcode (¡primera vez corriendo

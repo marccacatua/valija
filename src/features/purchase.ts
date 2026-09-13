@@ -9,12 +9,7 @@ export const PRO_PRICE_LABEL = 'USD 0,99';
 const PRODUCT_ID = 'valija_pro_unlock';
 const ENTITLEMENT_ID = 'pro';
 
-/**
- * TODO antes de publicar: pegar acá la API key pública de RevenueCat (se
- * genera sola en su dashboard al crear el proyecto — es segura de embeber
- * en el cliente, no es un secreto como una API key de servidor).
- */
-const REVENUECAT_API_KEY = 'TU-API-KEY-PUBLICA-DE-REVENUECAT';
+const REVENUECAT_API_KEY = 'appl_asPDlNRUsWojPQrRVrYANasmfdI';
 
 let configuring: Promise<typeof import('@revenuecat/purchases-capacitor')> | null = null;
 
