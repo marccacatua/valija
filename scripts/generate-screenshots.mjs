@@ -73,12 +73,16 @@ try {
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
-    // tildar algunos ítems para que se vea progreso real, sin completar todo
-    const rows = page.locator('.itemName, [class*="itemName"]');
-    const count = await rows.count();
-    for (let i = 0; i < Math.min(count, 6); i++) {
-      await rows.nth(i).click();
+    // Tildar algunos ítems por NOMBRE (no por posición): desde que los
+    // tildados bajan al fondo de su categoría, clickear por índice
+    // corrido termina clickeando el mismo ítem dos veces (lo destilda) —
+    // ver v0.20.1.
+    for (const nombre of ['DNI y pasaporte', 'Pasajes / boarding pass', 'Billetera', 'Reserva de alojamiento', 'Cepillo de dientes', 'Cargador del celular']) {
+      await page.click(`button:has-text("${nombre}")`, { noWaitAfter: true });
     }
+    // Los clicks de arriba auto-scrollean al último ítem tildado — volvemos
+    // arriba para que la captura muestre el encabezado, no el medio de la lista.
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(150);
     await page.screenshot({ path: join(OUT_DIR, `${device.name}-01-checklist.png`) });
 

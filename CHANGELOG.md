@@ -5,6 +5,38 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v1.0.0
+
+Primera versión candidata a subir al App Store. Mismo código que traía
+v0.20.2 — este número existe para marcar el punto exacto de sincronía
+entre `package.json` (lo que ve la web) y el Version/Build de Xcode
+(lo que va a ver Apple), tal como se explicó en su momento: mientras se
+prueba por web el número sube libremente y no significa nada; el día de
+la primera subida real, ambos quedan alineados en 1.0.0 / build 1, y
+de acá en más cada subida nueva a la tienda sincroniza los dos.
+
+- **`PrivacyInfo.xcprivacy` sumado al proyecto de Xcode**: el archivo ya
+  existía en el repo (`ios/App/App/PrivacyInfo.xcprivacy`) pero nunca
+  había quedado agregado a `project.pbxproj` — sin eso, Xcode no lo
+  empaqueta en el `.ipa` aunque el archivo esté en la carpeta. Se agregó
+  a mano la referencia (`PBXFileReference`, `PBXBuildFile`, grupo y fase
+  de Resources) con el mismo patrón que usa el resto de los recursos del
+  proyecto.
+- **`ios/App/App/public` resincronizado**: `npm run build && npx cap
+  sync ios` para que el proyecto nativo tenga el build de producción
+  con todos los cambios hasta v0.20.2 (esa carpeta es generada, no se
+  versiona — hay que repetir este paso antes de cualquier Archive).
+- **Fix en `scripts/generate-screenshots.mjs`**: el generador de
+  capturas para App Store Connect tildaba ítems por posición en la
+  lista (`rows.nth(i)`) — desde que los tildados bajan al fondo de su
+  categoría (v0.20.1), esa posición cambia con cada click, y con
+  exactamente 6 clicks sobre una categoría de 6 ítems el resultado neto
+  terminaba siendo 0 tildados (se destildaban entre sí). Se cambió a
+  clickear por nombre de ítem, que no depende del orden. Capturas
+  regeneradas para los 3 tamaños de iPhone.
+- Versión bump a 1.0.0 en `package.json`, sin cambios de código más
+  allá de lo de arriba.
+
 ## v0.20.2
 
 - **Bebé y Camping pasan a ser Pro**: decisión del usuario. Se reusó el
