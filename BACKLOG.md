@@ -94,10 +94,19 @@ iPhone real y se apruebe mergear.
   siguiente era seco — el fondo anaranjado desaparecía de golpe justo
   cuando arrancaba el morph del logo. Ahora `goNow` en `Welcome.tsx`
   arma el morph (con la mascota todavía intacta, sin desvanecer),
-  después agrega la clase `.fadingOut` (opacity 0, transition 240ms) y
-  recién cuando termina ese fade navega de verdad — en los dos casos
-  (usuario nuevo y que vuelve). Se salta entero con reduced-motion,
-  igual que el resto de las animaciones de esta pantalla.
+  después agrega la clase `.fadingOut` y recién cuando termina ese fade
+  navega de verdad — en los dos casos (usuario nuevo y que vuelve). Se
+  salta entero con reduced-motion, igual que el resto de las
+  animaciones de esta pantalla.
+  - Primera versión: se desvanecía toda la pantalla junta (`.screen`),
+    incluida la mascota — se veía bien el fade del naranja, pero la
+    mascota se apagaba con todo lo demás en vez de seguir viéndose
+    mientras viaja. Se separó en capas: `.bg` (el gradiente + los
+    blobs) y `.content` (título/subtítulo del usuario nuevo) se
+    desvanecen en 240ms; `.mascotMorph` queda afuera de esa capa, con
+    z-index por encima, y nunca baja de opacidad 1. Verificado
+    midiendo ambas opacidades cada 50ms durante el fade: el fondo baja
+    de ~0.7 a 0 mientras la mascota se mantiene siempre en 1.
 - QA actualizado: 113/113 tests de Playwright (7 nuevos para la
   bienvenida, 2 de ellos verificando que el morph realmente anima en
   vuelo y no es un salto seco) + 752.640 combinaciones sin errores. Se

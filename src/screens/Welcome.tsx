@@ -73,28 +73,34 @@ export function Welcome() {
 
   return (
     <div
-      className={`${styles.screen} ${fadingOut ? styles.fadingOut : ''}`}
+      className={styles.screen}
       onClick={goNow}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goNow()}
       role="button"
       tabIndex={0}
       aria-label="Continuar"
     >
-      <div className={styles.blobTop} />
-      <div className={styles.blobBottom} />
+      {/* Fondo anaranjado + blobs en su propia capa, separada de la
+          mascota: así el fade de salida (ver goNow) se lleva puesto el
+          color y la decoración, pero la mascota queda siempre nítida y
+          visible por encima — es la que sigue de largo en el morph. */}
+      <div className={`${styles.bg} ${fadingOut ? styles.bgFadingOut : ''}`}>
+        <div className={styles.blobTop} />
+        <div className={styles.blobBottom} />
+      </div>
       <div style={{ flex: 1 }} />
       <div className={styles.mascotMorph} ref={mascotRef}>
         <Mascot size={150} animated />
       </div>
       {!hasTrips && (
-        <>
+        <div className={`${styles.content} ${fadingOut ? styles.contentFadingOut : ''}`}>
           <h1 className={styles.title}>
             A partir de ahora
             <br />
             no te olvidás más nada
           </h1>
           <p className={styles.subtitle}>Armá la valija perfecta en 30 segundos. Vos elegís el viaje, nosotros la lista.</p>
-        </>
+        </div>
       )}
       <div style={{ flex: 1 }} />
     </div>
