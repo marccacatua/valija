@@ -9,6 +9,14 @@
   text-align: center;
   position: relative;
   overflow: hidden;
+  opacity: 1;
+  transition: opacity 240ms ease;
+}
+
+/* Se agrega justo antes de navegar (ver goNow en Welcome.tsx) — sin esto
+ * el naranja corta seco justo cuando arranca el morph del logo. */
+.fadingOut {
+  opacity: 0;
 }
 
 .blobTop {

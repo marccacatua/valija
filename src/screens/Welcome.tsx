@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mascot } from '../components/Mascot';
 import { armMascotMorph } from '../features/mascotMorph';
@@ -18,6 +18,11 @@ const RETURNING_HOLD_MS = 1100;
 // useMascotMorphTarget). Al que vuelve no hace falta pisarle nada: ese
 // caso ya se sentía bien con el default.
 const NEW_USER_MORPH_MS = 840;
+
+// Cuánto tarda en desvanecerse el fondo anaranjado antes de navegar —
+// sin esto, la pantalla corta seca justo cuando arranca el morph del
+// logo, y se siente brusco.
+const FADE_OUT_MS = 240;
 
 export function Welcome() {
   const navigate = useNavigate();
@@ -41,11 +46,19 @@ export function Welcome() {
   // décima vez: tocar la pantalla saltea la espera y va directo.
   const navigatedRef = useRef(false);
   const mascotRef = useRef<HTMLDivElement>(null);
+  const [fadingOut, setFadingOut] = useState(false);
   const goNow = () => {
     if (navigatedRef.current) return;
     navigatedRef.current = true;
+    // Se captura ANTES de empezar a desvanecer la pantalla — el morph
+    // necesita la posición/tamaño reales, no a mitad de un fade.
     if (mascotRef.current) armMascotMorph(mascotRef.current, hasTrips ? undefined : NEW_USER_MORPH_MS);
-    navigate(destination);
+    if (prefersReducedMotion()) {
+      navigate(destination);
+      return;
+    }
+    setFadingOut(true);
+    setTimeout(() => navigate(destination), FADE_OUT_MS);
   };
 
   useEffect(() => {
@@ -60,7 +73,7 @@ export function Welcome() {
 
   return (
     <div
-      className={styles.screen}
+      className={`${styles.screen} ${fadingOut ? styles.fadingOut : ''}`}
       onClick={goNow}
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goNow()}
       role="button"

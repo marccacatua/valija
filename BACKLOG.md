@@ -77,6 +77,27 @@ iPhone real y se apruebe mergear.
     la hace *verse* en el origen; se anima ese transform hasta la
     identidad. Verificado comparando el rect real contra el de la copia
     ya terminada: coinciden exacto (diferencia 0.00px) en los dos casos.
+  - Ese arreglo no alcanzó del todo — seguía quedando un saltito
+    "muy poquito" hacia abajo, en los dos casos. Causa real, distinta
+    de las anteriores: `Mascot.tsx` nunca le puso `display: block` al
+    `<svg>` — por default es `inline`, y un elemento inline reemplazado
+    (como una `<img>`) deja un huequito debajo por alineación a la
+    línea de base. La mascota real ocupa un poco menos que su propio
+    contenedor; la copia, en cambio, fuerza el svg a `width/height:
+    100%`, así que rellena ESE huequito y termina un pelín más alta —
+    visualmente, más abajo respecto de un punto de referencia
+    compartido. Con `display: block` en el `<svg>` de Mascot.tsx, el
+    contenedor mide exactamente lo que mide el dibujo, en la mascota
+    real y en la copia por igual. Reverificado: ahora coincide en
+    posición Y en ancho/alto (antes solo se había chequeado posición).
+- **Fade de la pantalla de bienvenida al salir**: el corte a la pantalla
+  siguiente era seco — el fondo anaranjado desaparecía de golpe justo
+  cuando arrancaba el morph del logo. Ahora `goNow` en `Welcome.tsx`
+  arma el morph (con la mascota todavía intacta, sin desvanecer),
+  después agrega la clase `.fadingOut` (opacity 0, transition 240ms) y
+  recién cuando termina ese fade navega de verdad — en los dos casos
+  (usuario nuevo y que vuelve). Se salta entero con reduced-motion,
+  igual que el resto de las animaciones de esta pantalla.
 - QA actualizado: 113/113 tests de Playwright (7 nuevos para la
   bienvenida, 2 de ellos verificando que el morph realmente anima en
   vuelo y no es un salto seco) + 752.640 combinaciones sin errores. Se
