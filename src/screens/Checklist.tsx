@@ -324,7 +324,9 @@ export function Checklist() {
             </div>
             <div className={styles.progressNote}>{progressNote(items)}</div>
           </div>
-          <Mascot size={56} />
+          <div className={styles.mascotMorph}>
+            <Mascot size={56} />
+          </div>
         </div>
       </div>
 

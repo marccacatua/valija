@@ -50,3 +50,13 @@
   z-index: 2;
 }
 
+/* Mismo nombre que en Checklist.module.css: si el usuario que vuelve
+ * cae en el checklist de su viaje, el browser morphea esta mascota
+ * grande hasta la chica de la tarjeta de progreso, en vez de cortar
+ * seco de una pantalla a la otra (ver navigateWithMorph en motion.ts). */
+.mascotMorph {
+  view-transition-name: valu-mascot;
+  position: relative;
+  z-index: 2;
+}
+

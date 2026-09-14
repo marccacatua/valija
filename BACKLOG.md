@@ -31,6 +31,17 @@ iPhone real y se apruebe mergear.
   activo). Tocar la pantalla saltea la espera en cualquier caso. La
   versión y los links de Privacidad/Soporte, que vivían en esta
   pantalla, se mudaron a un pie discreto en "Mis viajes".
+- **Morph del logo entre Bienvenida y el viaje** (`features/motion.ts`,
+  `navigateWithMorph`): en vez del corte seco anterior, se usa la View
+  Transitions API nativa del browser (sin librería). La mascota grande
+  de la bienvenida y la chica de la tarjeta de progreso del checklist
+  comparten `view-transition-name: valu-mascot`, así que cuando un
+  usuario que vuelve cae directo en su viaje, el browser la transforma
+  de una en la otra en vez de aparecer/desaparecer. Si el destino no
+  tiene mascota (Intro, "Mis viajes") queda un fade de pantalla
+  completa igual. Sin soporte del browser o con reduced-motion, navega
+  directo como antes (sin transición). Duración 420ms, misma curva que
+  el FLIP para que se sienta consistente.
 - QA actualizado: 111/111 tests de Playwright (5 nuevos para la
   bienvenida) + 752.640 combinaciones sin errores. Se ajustó el test de
   reordenamiento para esperar a que termine la animación antes de medir

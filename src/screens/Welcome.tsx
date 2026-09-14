@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mascot } from '../components/Mascot';
-import { prefersReducedMotion } from '../features/motion';
+import { navigateWithMorph, prefersReducedMotion } from '../features/motion';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
 import styles from './Welcome.module.css';
@@ -36,7 +36,7 @@ export function Welcome() {
   const goNow = () => {
     if (navigatedRef.current) return;
     navigatedRef.current = true;
-    navigate(destination);
+    navigateWithMorph(navigate, destination);
   };
 
   useEffect(() => {
@@ -61,7 +61,9 @@ export function Welcome() {
       <div className={styles.blobTop} />
       <div className={styles.blobBottom} />
       <div style={{ flex: 1 }} />
-      <Mascot size={150} animated />
+      <div className={styles.mascotMorph}>
+        <Mascot size={150} animated />
+      </div>
       {!hasTrips && (
         <>
           <h1 className={styles.title}>

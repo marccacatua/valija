@@ -141,6 +141,12 @@
   gap: 16px;
 }
 
+/* Mismo view-transition-name que en Welcome.module.css — ver ese archivo. */
+.mascotMorph {
+  view-transition-name: valu-mascot;
+  flex: none;
+}
+
 .progressCount {
   display: flex;
   align-items: baseline;
