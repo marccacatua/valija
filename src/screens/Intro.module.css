@@ -7,10 +7,22 @@
   flex-direction: column;
 }
 
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
 .dots {
   display: flex;
   gap: 7px;
-  margin-bottom: 30px;
+}
+
+/* Mismo view-transition-name que en Welcome.module.css / Checklist.module.css. */
+.mascotMorph {
+  view-transition-name: valu-mascot;
+  flex: none;
 }
 
 .dot {

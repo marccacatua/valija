@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
+import { Mascot } from '../components/Mascot';
 import styles from './Intro.module.css';
 
 const STEPS = [
@@ -42,9 +43,18 @@ export function Intro() {
   const navigate = useNavigate();
   return (
     <div className={styles.screen}>
-      <div className={styles.dots}>
-        <span className={styles.dot} />
-        <span className={`${styles.dot} ${styles.dotActive}`} />
+      <div className={styles.headerRow}>
+        <div className={styles.dots}>
+          <span className={styles.dot} />
+          <span className={`${styles.dot} ${styles.dotActive}`} />
+        </div>
+        {/* Mismo view-transition-name que la mascota de Welcome/Checklist: si
+            se llega acá vía navigateWithMorph (usuario nuevo, desde la
+            bienvenida), esta mascota chica es el destino del morph en vez de
+            un fade de pantalla completa. */}
+        <div className={styles.mascotMorph}>
+          <Mascot size={44} />
+        </div>
       </div>
       <h2 className={styles.title}>Tres toques y tu valija está lista</h2>
 

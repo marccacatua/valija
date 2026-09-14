@@ -37,10 +37,13 @@ iPhone real y se apruebe mergear.
   de la bienvenida y la chica de la tarjeta de progreso del checklist
   comparten `view-transition-name: valu-mascot`, así que cuando un
   usuario que vuelve cae directo en su viaje, el browser la transforma
-  de una en la otra en vez de aparecer/desaparecer. Si el destino no
-  tiene mascota (Intro, "Mis viajes") queda un fade de pantalla
-  completa igual. Sin soporte del browser o con reduced-motion, navega
-  directo como antes (sin transición). Duración 420ms, misma curva que
+  de una en la otra en vez de aparecer/desaparecer. El caso de usuario
+  nuevo (Bienvenida → Intro) también morphea: se agregó una mascota
+  chica arriba a la derecha en `screens/Intro.tsx`, junto a los puntos
+  de progreso, con el mismo nombre. Si el destino no tiene mascota
+  ("Mis viajes") queda un fade de pantalla completa igual. Sin soporte
+  del browser o con reduced-motion, navega directo como antes (sin
+  transición). Duración 420ms, misma curva que
   el FLIP para que se sienta consistente.
 - QA actualizado: 111/111 tests de Playwright (5 nuevos para la
   bienvenida) + 752.640 combinaciones sin errores. Se ajustó el test de
