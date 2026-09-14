@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { buildItems } from '../data/buildItems';
 import { buildHomeChecklist } from '../data/homeTasks';
+import { hapticTap, hapticMedium } from '../features/haptics';
 import type { CategoryKey, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
@@ -72,6 +73,7 @@ export function useTrips() {
 
   const toggleItem = useCallback(
     (tripId: string, itemId: string) => {
+      hapticTap();
       updateTrip(tripId, (t) => ({
         ...t,
         items: t.items.map((i) => (i.id === itemId ? { ...i, done: !i.done } : i)),
@@ -96,6 +98,7 @@ export function useTrips() {
    * toca dos grupos seguido). */
   const setItemsDone = useCallback(
     (tripId: string, itemIds: string[], done: boolean) => {
+      hapticTap();
       const ids = new Set(itemIds);
       updateTrip(tripId, (t) => ({
         ...t,
@@ -118,6 +121,7 @@ export function useTrips() {
    * de los ítems de la valija, no afecta el progreso de empaque. */
   const toggleHomeTask = useCallback(
     (tripId: string, taskId: string) => {
+      hapticTap();
       updateTrip(tripId, (t) => ({
         ...t,
         homeChecklist: t.homeChecklist.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
@@ -183,6 +187,7 @@ export function useTrips() {
    * sin querer. No borra nada: sigue disponible para volver a mirarlo. */
   const toggleTripFinished = useCallback(
     (id: string) => {
+      hapticMedium();
       updateTrip(id, (t) => ({ ...t, finishedAt: t.finishedAt ? undefined : new Date().toISOString() }));
     },
     [updateTrip],
