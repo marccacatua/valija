@@ -15,9 +15,12 @@ const RETURNING_HOLD_MS = 1100;
 
 // El usuario nuevo recién está conociendo a Valu — que el morph hacia
 // Intro sea más pausado que el default de useMascotMorphTarget. Al que
-// vuelve no hace falta pisarle nada: ese caso ya se sentía bien con el
-// default.
-const NEW_USER_MORPH_MS = 1680;
+// vuelve no hace falta pisarle nada: ese caso ya se sentía bien con los
+// defaults.
+const NEW_USER_TRAVEL_MS = 1680;
+// El fade dura más que el viaje de la mascota (50% más), a pedido del
+// usuario, para probar cómo se siente — en los dos casos.
+const NEW_USER_FADE_MS = NEW_USER_TRAVEL_MS * 1.5;
 
 export function Welcome() {
   const navigate = useNavigate();
@@ -50,7 +53,11 @@ export function Welcome() {
     // hooks/useMascotMorphTarget.ts), así arrancan los dos juntos en vez
     // de que el fade termine antes de que la mascota se empiece a mover.
     if (mascotRef.current && bgRef.current) {
-      armMascotMorph(mascotRef.current, bgRef.current, hasTrips ? undefined : NEW_USER_MORPH_MS);
+      armMascotMorph(
+        mascotRef.current,
+        bgRef.current,
+        hasTrips ? undefined : { travelMs: NEW_USER_TRAVEL_MS, fadeMs: NEW_USER_FADE_MS },
+      );
     }
     navigate(destination);
   };

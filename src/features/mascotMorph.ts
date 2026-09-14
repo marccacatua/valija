@@ -4,7 +4,16 @@ interface PendingMorph {
   fromRect: DOMRect;
   html: string;
   bgHtml: string;
-  durationMs?: number;
+  travelMs?: number;
+  fadeMs?: number;
+}
+
+interface ArmMorphOptions {
+  /** Cuánto tarda la mascota en llegar a destino. */
+  travelMs?: number;
+  /** Cuánto tarda en desvanecerse la copia del fondo. Independiente del
+   * viaje de la mascota — puede durar más, menos o lo mismo. */
+  fadeMs?: number;
 }
 
 // Puente entre Welcome (que arma esto justo antes de desmontarse al
@@ -17,14 +26,19 @@ let pending: PendingMorph | null = null;
  * antes de `navigate(...)`. Guarda una foto de los dos (posición + markup
  * de la mascota; solo markup del fondo) para que la pantalla de destino
  * pueda animar una copia de cada uno desde ahí — el vuelo de la mascota y
- * el desvanecido del naranja arrancan juntos y duran lo mismo (ver
- * hooks/useMascotMorphTarget.ts), así el fade termina justo cuando la
- * mascota llega a destino, no antes ni después.
- * `durationMs` es opcional — cada pantalla de destino trae su propio
- * default si no se pisa acá. */
-export function armMascotMorph(mascotEl: HTMLElement, bgEl: HTMLElement, durationMs?: number) {
+ * el desvanecido del naranja arrancan siempre juntos (ver
+ * hooks/useMascotMorphTarget.ts), aunque duren distinto. `travelMs`/
+ * `fadeMs` son opcionales — cada pantalla de destino trae sus propios
+ * defaults si no se pisan acá. */
+export function armMascotMorph(mascotEl: HTMLElement, bgEl: HTMLElement, opts?: ArmMorphOptions) {
   if (prefersReducedMotion()) return;
-  pending = { fromRect: mascotEl.getBoundingClientRect(), html: mascotEl.outerHTML, bgHtml: bgEl.outerHTML, durationMs };
+  pending = {
+    fromRect: mascotEl.getBoundingClientRect(),
+    html: mascotEl.outerHTML,
+    bgHtml: bgEl.outerHTML,
+    travelMs: opts?.travelMs,
+    fadeMs: opts?.fadeMs,
+  };
 }
 
 /** Llamar en la pantalla de destino al montar. Se consume una sola vez:

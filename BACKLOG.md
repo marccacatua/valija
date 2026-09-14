@@ -149,6 +149,17 @@ iPhone real y se apruebe mergear.
   de la mascota en cada caso, sin tener que mantener dos números
   sincronizados a mano. Verificado que las dos copias (fondo y
   mascota) desaparecen en la misma ventana de tiempo en los dos casos.
+- **Vuelta a independizarlos**: el usuario pidió probar el fade 50% más
+  lento SIN tocar el viaje de la mascota — así que se separaron nuevo.
+  `armMascotMorph` ahora recibe un objeto de opciones (`{ travelMs,
+  fadeMs }` en vez de un solo `durationMs`), y `useMascotMorphTarget`
+  guarda `DEFAULT_TRAVEL_MS` (840ms) y `DEFAULT_FADE_MS` (1260ms, 50%
+  más) por separado, cada uno animando su propia copia con su propia
+  duración. El usuario nuevo pisa los dos explícitamente en
+  `Welcome.tsx`: viaje 1680ms (sin cambios) y fade
+  `NEW_USER_TRAVEL_MS * 1.5` = 2520ms. Verificado que la mascota llega
+  a destino en los tiempos de siempre (840/1680ms) mientras el fondo
+  sigue desvaneciéndose 50% más (1260/2520ms) en cada caso.
 - QA actualizado: 114/114 tests de Playwright (8 nuevos para la
   bienvenida — incluye uno que verifica específicamente que el fade y
   el viaje de la mascota arrancan en el mismo instante) + 752.640
