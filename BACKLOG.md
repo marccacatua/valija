@@ -1,5 +1,52 @@
 # Backlog
 
+## Pendientes para retomar tras el envío a revisión (v1.0.0, 2026-09-14)
+
+El usuario va a estar de licencia ~15 días desde acá. Anotado para
+retomar a la vuelta, en este orden sugerido:
+
+1. **Resultado de la revisión de Apple**: si aprobaron o rechazaron
+   Valija (ver mail de Apple), y resolver lo que pidan si hay rechazo.
+2. **Publicación en Google Play**: arrancar el mismo proceso que
+   hicimos para iOS pero del lado de Android (cuenta de Google Play
+   Console, ficha, capturas, revisar si Capacitor necesita algo
+   especial para Android que no tocamos en esta ronda).
+3. **Animación fluida al tildar ítems**: hoy cuando se tilda un ítem
+   (y baja al fondo de su categoría, ver v0.20.4) el cambio de posición
+   es instantáneo — "desaparece" de un lugar y "aparece" en el otro.
+   El usuario quiere que se sienta como que el ítem "viaja" a su nueva
+   posición (una animación tipo FLIP — First/Last/Invert/Play — o una
+   librería como Framer Motion / `react-flip-toolkit`). Mejora de
+   sensación de uso, no de lógica.
+4. **Rediseño de la pantalla de bienvenida, estilo Headspace**: hoy
+   requiere apretar un botón para pasar a la app. La idea es que
+   transicione sola, sin que el usuario tenga que tocar nada:
+   - Usuario nuevo (sin viajes guardados): mensaje de bienvenida corto
+     tipo "a partir de ahora no te olvidás más nada", y de ahí pasa
+     solo a crear el primer viaje.
+   - Usuario que ya usó la app: solo ve el logo un instante y
+     transiciona directo a "Mis viajes".
+   **Pendiente de decidir**: si esto se diseña directo acá en código,
+   o si conviene pasar primero por un mockup/proceso de diseño más
+   cuidado (Design) antes de construirlo, dado que es una primera
+   impresión importante.
+5. **Estrategia de promoción de la app**: pensar dónde y cómo
+   promocionarla (¿desde esta misma conversación, desde claude.ai,
+   desde Cowork?). Foco inicial: **países de habla hispana**, hasta
+   que exista una versión en inglés (ítem aparte, ver abajo).
+6. **Español neutro o selector de idioma** (para cuando se piense la
+   promoción/expansión): evaluar si conviene neutralizar un poco el
+   español actual (hoy tiene modismos rioplatenses: "boarding pass",
+   "carry-on", etc.) o dejar que el usuario elija idioma/variante.
+   Importante: **evitar agregarle fricción al usuario** — la esencia
+   de Valija es ser rápida y cómoda, así que si se agrega selección de
+   idioma tiene que ser mínima (por ejemplo, autodetectada del
+   dispositivo, sin una pantalla extra que haya que completar).
+7. **Versión en inglés**: traducir la app para poder promocionarla
+   fuera del mundo hispanohablante — depende de resolver primero el
+   punto anterior (neutralizar/decidir variantes) para no traducir dos
+   veces.
+
 ## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 
 Pedido del usuario (2026-09) tras probar la v0.19.0: reemplazar el
