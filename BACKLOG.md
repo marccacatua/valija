@@ -50,9 +50,22 @@ iPhone real y se apruebe mergear.
   hubo que forzar `width:100%;height:100%` en el `<svg>` clonado para
   que seguiera al contenedor. Si el destino no tiene mascota ("Mis
   viajes"), no pasa nada especial (ni falla ni deja nada colgado).
-  Duración 420ms, misma curva que el FLIP para que se sienta
-  consistente. Andá con confianza en cualquier browser — no depende de
-  ninguna API experimental.
+  Duración 420ms por defecto, misma curva que el FLIP para que se
+  sienta consistente. Andá con confianza en cualquier browser — no
+  depende de ninguna API experimental. Ya probado en un iPhone real
+  (iOS 26) y ajustado dos veces con feedback directo del usuario:
+  - Usuario nuevo (Bienvenida → Intro): se sentía demasiado rápido —
+    ahora dura el doble, 840ms (`NEW_USER_MORPH_MS` en `Welcome.tsx`,
+    pisa el default vía el segundo argumento de `armMascotMorph`). El
+    caso de usuario que vuelve se dejó en 420ms, que ya andaba bien.
+  - Usuario que vuelve (Bienvenida → Checklist): quedaba un glitch de
+    un frame al terminar — un instante en el que ni la copia animada ni
+    la mascota real estaban visibles. Causa: ocultar/mostrar la real se
+    hacía con estado de React (`setHidden`), que no es síncrono con
+    sacar la copia del DOM. Se cambió a escribir `style.visibility`
+    directo sobre el nodo en el mismo tick que se agrega/saca la copia
+    — verificado midiendo cuadro por cuadro (cada 20ms) que siempre hay
+    exactamente una mascota visible, nunca cero.
 - QA actualizado: 113/113 tests de Playwright (7 nuevos para la
   bienvenida, 2 de ellos verificando que el morph realmente anima en
   vuelo y no es un salto seco) + 752.640 combinaciones sin errores. Se

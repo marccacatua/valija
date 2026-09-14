@@ -1574,7 +1574,9 @@ try {
     );
     const midFlight = midSizes.some((w) => w > 50 && w < 140);
     assert(midFlight, 'El morph de la mascota se ve en pleno viaje (no un salto seco)', `sizes=${JSON.stringify(midSizes)}`);
-    await page.waitForTimeout(500);
+    // Usuario nuevo viaja a media velocidad (840ms) — hay que esperar más
+    // que en el caso general para que termine de verdad.
+    await page.waitForTimeout(750);
     const finalSizes = await page.evaluate(() =>
       Array.from(document.querySelectorAll('svg[aria-label="Valu, la valija mascota"]')).map((el) => Math.round(el.getBoundingClientRect().width)),
     );

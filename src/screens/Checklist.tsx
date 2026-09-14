@@ -86,7 +86,7 @@ export function Checklist() {
   // cualquier return, con el id de cada ítem tal como aparece hoy en la
   // vista detallada (categoría por categoría, tildados al fondo).
   const registerItemNode = useFlipReorder(groups.flatMap((g) => g.list.map((i) => i.id)));
-  const mascotMorph = useMascotMorphTarget<HTMLDivElement>();
+  const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
 
   if (!trip) {
     return (
@@ -326,7 +326,7 @@ export function Checklist() {
             </div>
             <div className={styles.progressNote}>{progressNote(items)}</div>
           </div>
-          <div className={styles.mascotMorph} ref={mascotMorph.ref} style={mascotMorph.hidden ? { visibility: 'hidden' } : undefined}>
+          <div className={styles.mascotMorph} ref={mascotMorphRef}>
             <Mascot size={56} />
           </div>
         </div>

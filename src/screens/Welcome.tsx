@@ -13,6 +13,12 @@ import styles from './Welcome.module.css';
 const NEW_USER_HOLD_MS = 1800;
 const RETURNING_HOLD_MS = 1100;
 
+// El usuario nuevo recién está conociendo a Valu — que el morph hacia
+// Intro sea más pausado (la mitad de velocidad que el default de
+// useMascotMorphTarget). Al que vuelve no hace falta pisarle nada: ese
+// caso ya se sentía bien con el default.
+const NEW_USER_MORPH_MS = 840;
+
 export function Welcome() {
   const navigate = useNavigate();
   const { trips } = useTrips();
@@ -38,7 +44,7 @@ export function Welcome() {
   const goNow = () => {
     if (navigatedRef.current) return;
     navigatedRef.current = true;
-    if (mascotRef.current) armMascotMorph(mascotRef.current);
+    if (mascotRef.current) armMascotMorph(mascotRef.current, hasTrips ? undefined : NEW_USER_MORPH_MS);
     navigate(destination);
   };
 

@@ -42,7 +42,7 @@ const STEPS = [
 
 export function Intro() {
   const navigate = useNavigate();
-  const mascotMorph = useMascotMorphTarget<HTMLDivElement>();
+  const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
   return (
     <div className={styles.screen}>
       <div className={styles.headerRow}>
@@ -53,7 +53,7 @@ export function Intro() {
         {/* Si se llega acá desde la bienvenida (usuario nuevo), esta mascota
             chica es el destino del morph armado en Welcome.tsx (ver
             hooks/useMascotMorphTarget). */}
-        <div className={styles.mascotMorph} ref={mascotMorph.ref} style={mascotMorph.hidden ? { visibility: 'hidden' } : undefined}>
+        <div className={styles.mascotMorph} ref={mascotMorphRef}>
           <Mascot size={44} />
         </div>
       </div>

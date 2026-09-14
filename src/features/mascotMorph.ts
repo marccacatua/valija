@@ -3,6 +3,7 @@ import { prefersReducedMotion } from './motion';
 interface PendingMorph {
   fromRect: DOMRect;
   html: string;
+  durationMs?: number;
 }
 
 // Puente entre Welcome (que arma esto justo antes de desmontarse al
@@ -13,10 +14,12 @@ let pending: PendingMorph | null = null;
 
 /** Llamar en Welcome, con el wrapper de la mascota, justo antes de
  * `navigate(...)`. Guarda una foto (posición + markup) para que la
- * pantalla de destino pueda animar una copia desde ahí hasta la suya. */
-export function armMascotMorph(el: HTMLElement) {
+ * pantalla de destino pueda animar una copia desde ahí hasta la suya.
+ * `durationMs` es opcional — cada pantalla de destino trae su propio
+ * default si no se pisa acá (ver hooks/useMascotMorphTarget.ts). */
+export function armMascotMorph(el: HTMLElement, durationMs?: number) {
   if (prefersReducedMotion()) return;
-  pending = { fromRect: el.getBoundingClientRect(), html: el.outerHTML };
+  pending = { fromRect: el.getBoundingClientRect(), html: el.outerHTML, durationMs };
 }
 
 /** Llamar en la pantalla de destino al montar. Se consume una sola vez:
