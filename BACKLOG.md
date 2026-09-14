@@ -312,6 +312,65 @@ lleve equipo propio lo agregue como ítem suyo.
 - A definir: si ski + clima cálido es una combinación válida (existe el
   ski de primavera) o si conviene bloquearla.
 
+## Viajes en velero / navegar (próxima versión, dentro de Pro)
+
+Pedido del usuario (2026-09-14). Va **dentro de la versión paga**, igual
+que ski/bebé/camping. Lo distinto acá: no es solo "qué empacar" — el
+usuario pidió específicamente **dos listas separadas**: la valija de la
+persona, y un chequeo de la embarcación antes de zarpar (seguridad y
+logística del barco, no pertenencias personales).
+
+**Cómo modelarlo:** mismo patrón que se recomendó para ski —
+`TurismoKey: 'navegar'` (al lado de relax/aventura/cultura/fiesta/ski),
+sin agregar una pregunta nueva al formulario. Combina con `dest: playa`
+como es esperable, pero no depende de él (hay navegación en lagos/ríos
+también, y el formulario ya no obliga esa relación para otras
+combinaciones). Para el equipo personal, una `CategoryKey: 'nautica'`
+nueva — mismo patrón que camping/ski.
+
+**Ítems personales** (borrador): calzado náutico antideslizante,
+campera rompeviento/impermeable, gafas de sol con cordón flotante
+(para que no se hundan si caen al agua), gorra con barbijo, protector
+solar de factor alto (el reflejo del agua quema más que en tierra),
+guantes de vela, un abrigo extra en capas (en el mar hace más frío y
+viento que en tierra aunque el clima elegido sea "calor"), una muda de
+recambio por si se moja, bolsa estanca para celular/documentos, y
+pastillas para el mareo.
+
+**La segunda lista — chequeo del barco — es la parte nueva de verdad.**
+Ya existe en la app un mecanismo casi idéntico: `homeChecklist`
+(`useTrips.ts`), la lista de tareas de "¿Quedó todo pronto en casa?"
+que hoy vive separada de los ítems para empacar. Es exactamente el
+mismo tipo de cosa — una lista de tareas, no de objetos — solo que para
+un barco en vez de una casa. Recomiendo **generalizar esa lista en vez
+de crear una tercera estructura de datos**: mismo hook, misma UI,
+mismo botón de agregar tarea propia, pero con:
+- Un título dinámico según `turismo`: "¿Está todo listo en el barco?"
+  en vez de "¿Quedó todo pronto en casa?" cuando `turismo === 'navegar'`.
+- Tareas por default propias en vez de las de agua/gas/plantas:
+  chalecos salvavidas (uno por tripulante), botiquín, extintor,
+  bengalas, ancla y cabo en condiciones, nivel de combustible, batería
+  cargada, radio VHF u otro medio de comunicación, pronóstico
+  meteorológico revisado, plan de navegación avisado a alguien en
+  tierra, documentación/matrícula de la embarcación, luces de
+  navegación, bomba de achique.
+- **Ojo**: no debería *reemplazar* la lista de casa — quien sale a
+  navegar probablemente también tenga que dejar algo pronto en su
+  casa. A definir con el usuario si conviene que aparezcan las DOS
+  listas (casa + barco) cuando `turismo === 'navegar'`, o si el barco
+  la reemplaza del todo.
+
+**Enganches con lo que ya existe:**
+- Gateado con el flag `extraCategories`, igual que bebé/camping/ski.
+- Actualizar el texto del paywall (`PaywallSheet.tsx`).
+- Sumar una opción más a `TurismoKey` agrega otro salto en el QA
+  combinatorio (ver la misma nota en la sección de ski) — hay que medir
+  el total actualizado antes de sumar ski Y navegar juntos.
+- Si se generaliza `homeChecklist`, conviene primero decidirlo también
+  para ski (¿tiene sentido una "segunda lista" para ski, tipo "¿la
+  campera está seca, el equipo alquilado confirmado?"), para no
+  generalizar el mecanismo dos veces con criterios distintos.
+
 ## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 
 Pedido del usuario (2026-09) tras probar la v0.19.0: reemplazar el
