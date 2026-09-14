@@ -7,7 +7,7 @@ export const PRO_PRICE_LABEL = 'USD 0,99';
  * y en el dashboard de RevenueCat (mismo identificador de producto, mismo
  * identificador de entitlement) — ver la Ficha de App Store Connect. */
 const PRODUCT_ID = 'valija_pro_unlock';
-const ENTITLEMENT_ID = 'pro';
+const ENTITLEMENT_ID = 'valija_pro';
 
 const REVENUECAT_API_KEY = 'appl_asPDlNRUsWojPQrRVrYANasmfdI';
 

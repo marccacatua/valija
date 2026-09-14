@@ -5,6 +5,16 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v0.20.7
+
+- **Fix: identificador de entitlement de RevenueCat** — el código usaba
+  `ENTITLEMENT_ID = 'pro'`, pero el entitlement ya creado en el dashboard
+  de RevenueCat tiene el identificador `valija_pro` (no se puede renombrar
+  ahí sin recrearlo). Se corrigió el código para usar `valija_pro`, así
+  coincide con lo real. Sin este fix, una compra se cobraba pero
+  `customerInfo.entitlements.active` nunca daba `true` — el Pro no se
+  desbloqueaba nunca, ni siquiera con una compra exitosa.
+
 ## v0.20.6
 
 - **Conectado RevenueCat con la key real de Apple**: se reemplazó el
