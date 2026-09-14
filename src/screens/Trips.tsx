@@ -181,7 +181,9 @@ export function Trips() {
             (ver Welcome.tsx). "Mis viajes" es la pantalla estable a la
             que siempre se puede volver por el bottom nav. */}
         <div className={styles.footer}>
-          <div className={styles.version}>v{__APP_VERSION__}</div>
+          <div className={styles.version}>
+            v{__APP_VERSION__} · {__BUILD_ID__}
+          </div>
           <div className={styles.legalLinks}>
             <Link to="/privacidad">Privacidad</Link>
             <Link to="/soporte">Soporte</Link>

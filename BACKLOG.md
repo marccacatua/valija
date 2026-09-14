@@ -66,11 +66,28 @@ iPhone real y se apruebe mergear.
     directo sobre el nodo en el mismo tick que se agrega/saca la copia
     — verificado midiendo cuadro por cuadro (cada 20ms) que siempre hay
     exactamente una mascota visible, nunca cero.
+  - En los dos casos, el usuario vio un "saltito" justo al terminar: el
+    destino final no coincidía exactamente con dónde queda la mascota
+    real. Causa: se animaba `left/top/width/height` directo, que son
+    propiedades de layout — cada cuadro reacomoda la página y puede
+    quedar una diferencia de sub-píxel justo al final. Se cambió a la
+    técnica FLIP clásica con `transform` (compuesto por GPU, sin
+    relayout en cada cuadro): la copia queda parada desde el arranque
+    en el tamaño y posición finales reales, y un `transform` invertido
+    la hace *verse* en el origen; se anima ese transform hasta la
+    identidad. Verificado comparando el rect real contra el de la copia
+    ya terminada: coinciden exacto (diferencia 0.00px) en los dos casos.
 - QA actualizado: 113/113 tests de Playwright (7 nuevos para la
   bienvenida, 2 de ellos verificando que el morph realmente anima en
   vuelo y no es un salto seco) + 752.640 combinaciones sin errores. Se
   ajustó el test de reordenamiento para esperar a que termine la
   animación antes de medir posiciones.
+- **Identificador de build en el pie de "Mis viajes"**: como en esta
+  rama no se sube la versión en cada push (se sube recién al mergear a
+  `main`), se agregó `__BUILD_ID__` (hash corto del commit — lo toma de
+  `VERCEL_GIT_COMMIT_SHA` en el deploy, o de `git rev-parse` en local)
+  al lado de la versión, para poder confirmar a simple vista que se
+  está viendo el último push sin tener que preguntar.
 
 **Sin tocar todavía (decidido explícitamente por el usuario, 2026-09-14):**
 - Fichas por país (ASO) y español neutro/selector de idioma: esperar a
