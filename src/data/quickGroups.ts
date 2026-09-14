@@ -11,7 +11,9 @@ export type QuickGroupKey =
   | 'electronica'
   | 'extras'
   | 'bebe'
-  | 'camping';
+  | 'camping'
+  | 'ski'
+  | 'nautica';
 
 export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: string }> = {
   documentos: { title: 'Documentos', color: 'var(--violet)' },
@@ -25,6 +27,8 @@ export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: str
   extras: { title: 'Extras', color: 'var(--sky)' },
   bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
   camping: { title: 'Camping', color: 'var(--forest)' },
+  ski: { title: 'Ski', color: 'var(--ice)' },
+  nautica: { title: 'Náutica', color: 'var(--navy)' },
 };
 
 export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
@@ -39,6 +43,8 @@ export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
   'electronica',
   'extras',
   'camping',
+  'ski',
+  'nautica',
 ];
 
 /**
@@ -94,6 +100,8 @@ const CATEGORY_FALLBACK: Record<CategoryKey, QuickGroupKey> = {
   extras: 'extras',
   bebe: 'bebe',
   camping: 'camping',
+  ski: 'ski',
+  nautica: 'nautica',
 };
 
 export function quickGroupFor(item: PackingItem): QuickGroupKey {

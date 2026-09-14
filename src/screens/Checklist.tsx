@@ -388,12 +388,18 @@ export function Checklist() {
 
         <div className={styles.homeSection}>
           <div className={styles.homeSectionHeader}>
-            <span className={styles.homeSectionTitle}>¿Quedó todo pronto en casa?</span>
+            <span className={styles.homeSectionTitle}>
+              {trip.form.turismo === 'navegar' ? '¿Está todo listo en el barco?' : '¿Quedó todo pronto en casa?'}
+            </span>
             <span className={styles.groupCount}>
               {trip.homeChecklist.filter((t) => t.done).length}/{trip.homeChecklist.length}
             </span>
           </div>
-          <div className={styles.homeSectionHint}>No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.</div>
+          <div className={styles.homeSectionHint}>
+            {trip.form.turismo === 'navegar'
+              ? 'No suma al progreso de la valija — chequeos de seguridad antes de zarpar.'
+              : 'No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.'}
+          </div>
           {trip.homeChecklist.map((task) => (
             <button key={task.id} type="button" className={styles.item} onClick={() => toggleHomeTask(trip.id, task.id)}>
               <span className={`${styles.checkbox} ${task.done ? styles.checkboxDone : ''}`}>✓</span>

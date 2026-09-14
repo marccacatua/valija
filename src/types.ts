@@ -4,14 +4,14 @@
 export type DestKey = 'playa' | 'montana' | 'ciudad';
 export type ClimaKey = 'calor' | 'templado' | 'frio' | 'lluvia';
 export type MotivoKey = 'placer' | 'trabajo';
-export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta';
+export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta' | 'navegar';
 /** 'camping' es alojamiento (define cómo/dónde dormís), no destino — se
  * puede acampar en la playa, la montaña o el campo por igual. */
 export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos' | 'camping';
 export type TransporteKey = 'avion' | 'auto' | 'bus' | 'tren';
 export type MaletaKey = 'carry' | 'bodega' | 'mochila';
 
-export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'camping';
+export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'camping' | 'ski' | 'nautica';
 
 export interface TripFormState {
   name: string;
