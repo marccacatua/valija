@@ -15,6 +15,7 @@ import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
+import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTemplates } from '../hooks/useTemplates';
 import { useTrips } from '../hooks/useTrips';
@@ -54,10 +55,36 @@ export function Checklist() {
   const [onlyPending, setOnlyPending] = useState(false);
 
   const trip = getTrip(tripId);
+  const items = trip?.items ?? [];
 
   useEffect(() => {
     if (trip) setLastTripId(trip.id);
   }, [trip, setLastTripId]);
+
+  // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
+  // detallada, nunca el dato de fondo (progreso, vista rápida) — filtrar no
+  // debería poder "perder" un ítem, solo ocultarlo momentáneamente.
+  const matchesFilter = (item: PackingItem) => {
+    const matchesSearch = search.trim() === '' || item.name.toLowerCase().includes(search.trim().toLowerCase());
+    const matchesPending = !onlyPending || !item.done;
+    return matchesSearch && matchesPending;
+  };
+
+  // Mismo criterio que "Mis viajes" con los finalizados: los tildados bajan
+  // al fondo de su categoría (sort estable, no reordena entre sí ni a los
+  // pendientes) — quedan arriba de "Agregar ítem", que sigue siempre último.
+  const groups = CATEGORY_ORDER.map((key) => {
+    const list = items
+      .filter((i) => i.cat === key && matchesFilter(i))
+      .sort((a, b) => Number(a.done) - Number(b.done));
+    return { key, list };
+  }).filter((g) => g.list.length);
+
+  // El hook necesita el orden VISIBLE actual en cada render para poder
+  // compararlo contra el anterior — por eso se llama acá arriba, antes de
+  // cualquier return, con el id de cada ítem tal como aparece hoy en la
+  // vista detallada (categoría por categoría, tildados al fondo).
+  const registerItemNode = useFlipReorder(groups.flatMap((g) => g.list.map((i) => i.id)));
 
   if (!trip) {
     return (
@@ -72,7 +99,6 @@ export function Checklist() {
     );
   }
 
-  const items = trip.items;
   const customItemsInTrip = items.filter((i) => i.isCustom);
   const customHomeTasksInTrip = trip.homeChecklist.filter((t) => t.isCustom);
 
@@ -145,26 +171,7 @@ export function Checklist() {
 
   const packed = packedCount(items);
   const pct = progressPct(items);
-
-  // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
-  // detallada, nunca el dato de fondo (progreso, vista rápida) — filtrar no
-  // debería poder "perder" un ítem, solo ocultarlo momentáneamente.
-  const matchesFilter = (item: PackingItem) => {
-    const matchesSearch = search.trim() === '' || item.name.toLowerCase().includes(search.trim().toLowerCase());
-    const matchesPending = !onlyPending || !item.done;
-    return matchesSearch && matchesPending;
-  };
   const isFiltering = search.trim() !== '' || onlyPending;
-
-  // Mismo criterio que "Mis viajes" con los finalizados: los tildados bajan
-  // al fondo de su categoría (sort estable, no reordena entre sí ni a los
-  // pendientes) — quedan arriba de "Agregar ítem", que sigue siempre último.
-  const groups = CATEGORY_ORDER.map((key) => {
-    const list = items
-      .filter((i) => i.cat === key && matchesFilter(i))
-      .sort((a, b) => Number(a.done) - Number(b.done));
-    return { key, list };
-  }).filter((g) => g.list.length);
 
   // Vista rápida: mismos ítems, agrupados en temas más grandes (ver
   // data/quickGroups.ts) para revisar de un vistazo en vez de ítem por
@@ -198,6 +205,7 @@ export function Checklist() {
         {list.map((item) => (
           <button
             key={item.id}
+            ref={registerItemNode(item.id)}
             type="button"
             className={styles.item}
             onClick={() => toggleItem(trip.id, item.id)}
