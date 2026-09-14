@@ -137,6 +137,8 @@ iPhone real y se apruebe mergear.
   el mismo centrado independiente por ítem que tenían antes de ese
   refactor. De paso, `NEW_USER_HOLD_MS` pasó de 1800ms a 3600ms — no
   daba el tiempo para leer el mensaje completo.
+- `FADE_MS` (el desvanecido del fondo) subió otro 30%: de 480ms a
+  624ms, a pedido del usuario para probar cómo se siente más lento.
 - QA actualizado: 114/114 tests de Playwright (8 nuevos para la
   bienvenida — incluye uno que verifica específicamente que el fade y
   el viaje de la mascota arrancan en el mismo instante) + 752.640

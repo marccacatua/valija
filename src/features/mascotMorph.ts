@@ -16,7 +16,7 @@ let pending: PendingMorph | null = null;
 // Cuánto tarda en desvanecerse la copia del fondo anaranjado, del lado
 // de la pantalla de destino — arranca al mismo tiempo que el viaje de
 // la mascota (ver hooks/useMascotMorphTarget.ts), no antes.
-export const FADE_MS = 480;
+export const FADE_MS = 624;
 
 /** Llamar en Welcome, con el wrapper de la mascota y el del fondo, justo
  * antes de `navigate(...)`. Guarda una foto de los dos (posición + markup
