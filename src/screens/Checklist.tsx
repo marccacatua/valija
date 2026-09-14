@@ -57,6 +57,7 @@ export function Checklist() {
 
   const trip = getTrip(tripId);
   const items = trip?.items ?? [];
+  const homeChecklist = trip?.homeChecklist ?? [];
 
   useEffect(() => {
     if (trip) setLastTripId(trip.id);
@@ -81,11 +82,17 @@ export function Checklist() {
     return { key, list };
   }).filter((g) => g.list.length);
 
+  // Mismo criterio que las categorías de arriba: las tareas tildadas bajan
+  // al fondo de "¿Quedó todo pronto en casa?" (o su variante de barco) en
+  // vez de quedarse mezcladas con las pendientes.
+  const sortedHomeChecklist = [...homeChecklist].sort((a, b) => Number(a.done) - Number(b.done));
+
   // El hook necesita el orden VISIBLE actual en cada render para poder
   // compararlo contra el anterior — por eso se llama acá arriba, antes de
   // cualquier return, con el id de cada ítem tal como aparece hoy en la
-  // vista detallada (categoría por categoría, tildados al fondo).
-  const registerItemNode = useFlipReorder(groups.flatMap((g) => g.list.map((i) => i.id)));
+  // vista detallada (categoría por categoría, tildados al fondo) más las
+  // tareas de casa/barco, que se reordenan con el mismo criterio.
+  const registerItemNode = useFlipReorder([...groups.flatMap((g) => g.list.map((i) => i.id)), ...sortedHomeChecklist.map((t) => t.id)]);
   const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
 
   if (!trip) {
@@ -392,7 +399,7 @@ export function Checklist() {
               {trip.form.turismo === 'navegar' ? '¿Está todo listo en el barco?' : '¿Quedó todo pronto en casa?'}
             </span>
             <span className={styles.groupCount}>
-              {trip.homeChecklist.filter((t) => t.done).length}/{trip.homeChecklist.length}
+              {homeChecklist.filter((t) => t.done).length}/{homeChecklist.length}
             </span>
           </div>
           <div className={styles.homeSectionHint}>
@@ -400,8 +407,14 @@ export function Checklist() {
               ? 'No suma al progreso de la valija — chequeos de seguridad antes de zarpar.'
               : 'No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.'}
           </div>
-          {trip.homeChecklist.map((task) => (
-            <button key={task.id} type="button" className={styles.item} onClick={() => toggleHomeTask(trip.id, task.id)}>
+          {sortedHomeChecklist.map((task) => (
+            <button
+              key={task.id}
+              ref={registerItemNode(task.id)}
+              type="button"
+              className={styles.item}
+              onClick={() => toggleHomeTask(trip.id, task.id)}
+            >
               <span className={`${styles.checkbox} ${task.done ? styles.checkboxDone : ''}`}>✓</span>
               <span className={`${styles.itemName} ${task.done ? styles.itemNameDone : ''}`}>{task.label}</span>
               <span onClick={(e) => e.stopPropagation()}>

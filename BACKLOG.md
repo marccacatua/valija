@@ -175,6 +175,18 @@ iPhone real y se apruebe mergear.
   `VERCEL_GIT_COMMIT_SHA` en el deploy, o de `git rev-parse` en local)
   al lado de la versión, para poder confirmar a simple vista que se
   está viendo el último push sin tener que preguntar.
+- **Fix real (no del mockup de ski/navegar, encontrado mientras se
+  probaba): tildar una tarea de "¿Quedó todo pronto en casa?" no la
+  mandaba al fondo de la lista** — a diferencia de los ítems de la
+  valija, que sí bajan al fondo de su categoría (tildados) desde hace
+  rato. Faltaba aplicarle el mismo criterio: `Checklist.tsx` ahora
+  ordena `homeChecklist` igual que las categorías (`sort` estable por
+  `done`) y las sumó al mismo `useFlipReorder` que ya usan los ítems —
+  misma animación, un solo hook. Bug preexistente en el feature ya
+  shippeado (`homeChecklist`), no específico de ski/navegar, pero
+  afecta también a la futura sección "¿Está todo listo en el barco?"
+  porque es el mismo mecanismo. QA: nuevo test que confirma que tildar
+  una tarea de casa la manda al fondo (116/116 en total).
 
 **Sin tocar todavía (decidido explícitamente por el usuario, 2026-09-14):**
 - Fichas por país (ASO) y español neutro/selector de idioma: esperar a

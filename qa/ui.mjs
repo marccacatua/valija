@@ -699,6 +699,34 @@ try {
   }
 
   // ============================================================
+  // 19b) Tildar una tarea de casa la manda al fondo de esa sección, mismo
+  // criterio (y misma animación FLIP) que los ítems de la valija
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await generateTrip(page, { maletas: ['Bodega'] }); // DEFAULT_FORM: dias=5 -> incluye heladera
+    const luces = page.locator('button', { hasText: 'Apagar las luces' }).first();
+    const agua = page.locator('button', { hasText: 'Cerrar la llave de paso de agua' }).first();
+
+    const beforeLuces = (await luces.boundingBox()).y;
+    const beforeAgua = (await agua.boundingBox()).y;
+    assert(beforeLuces < beforeAgua, 'Antes de tildar, "Apagar las luces" va antes que "Cerrar la llave de paso de agua"', `luces=${beforeLuces} agua=${beforeAgua}`);
+
+    await luces.click();
+    // Mismo FLIP que los ítems de la valija (useFlipReorder) — mismo tiempo de espera.
+    await page.waitForTimeout(650);
+
+    const afterLuces = (await luces.boundingBox()).y;
+    const afterAgua = (await agua.boundingBox()).y;
+    assert(
+      afterLuces > afterAgua,
+      'Tildar "Apagar las luces" la manda debajo de "Cerrar la llave de paso de agua" en la sección de casa',
+      `luces=${afterLuces} agua=${afterAgua}`,
+    );
+    await ctx.close();
+  }
+
+  // ============================================================
   // 20) Home checklist: un viaje guardado antes de esta versión (sin el
   // campo homeChecklist) genera la lista sola al leerlo
   // ============================================================
