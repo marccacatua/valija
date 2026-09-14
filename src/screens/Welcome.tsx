@@ -18,9 +18,10 @@ const RETURNING_HOLD_MS = 1100;
 // vuelve no hace falta pisarle nada: ese caso ya se sentía bien con los
 // defaults.
 const NEW_USER_TRAVEL_MS = 1680;
-// El fade dura más que el viaje de la mascota (50% más), a pedido del
-// usuario, para probar cómo se siente — en los dos casos.
-const NEW_USER_FADE_MS = NEW_USER_TRAVEL_MS * 1.5;
+// El fade dura más que el viaje de la mascota, a pedido del usuario
+// para probar cómo se siente — en los dos casos. Primero 50% más,
+// después otro 25% más sobre eso (1.5 * 1.25 = 1.875).
+const NEW_USER_FADE_MS = NEW_USER_TRAVEL_MS * 1.875;
 
 export function Welcome() {
   const navigate = useNavigate();

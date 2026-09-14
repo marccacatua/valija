@@ -160,6 +160,10 @@ iPhone real y se apruebe mergear.
   `NEW_USER_TRAVEL_MS * 1.5` = 2520ms. Verificado que la mascota llega
   a destino en los tiempos de siempre (840/1680ms) mientras el fondo
   sigue desvaneciéndose 50% más (1260/2520ms) en cada caso.
+- El fade subió otro 25% sobre eso (a pedido del usuario, para seguir
+  probando cómo se siente): `DEFAULT_FADE_MS` de 1260ms a 1575ms;
+  `NEW_USER_FADE_MS` de `NEW_USER_TRAVEL_MS * 1.5` a `* 1.875` (1680ms
+  → 3150ms). El viaje de la mascota no se tocó.
 - QA actualizado: 114/114 tests de Playwright (8 nuevos para la
   bienvenida — incluye uno que verifica específicamente que el fade y
   el viaje de la mascota arrancan en el mismo instante) + 752.640

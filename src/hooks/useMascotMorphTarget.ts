@@ -5,7 +5,7 @@ import { takeMascotMorph } from '../features/mascotMorph';
 // "viaje" con la misma sensación. Se pueden pisar por viaje (ver
 // armMascotMorph) — Welcome usa números distintos para el usuario nuevo.
 const DEFAULT_TRAVEL_MS = 840;
-const DEFAULT_FADE_MS = 1260;
+const DEFAULT_FADE_MS = 1575;
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 
 /**
