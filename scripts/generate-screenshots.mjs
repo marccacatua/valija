@@ -26,6 +26,7 @@ const DEVICES = [
   { name: '6.9-1320x2868', width: 440, height: 956, scale: 3 },
   { name: '6.7-1290x2796', width: 430, height: 932, scale: 3 },
   { name: '6.5-1242x2688', width: 414, height: 896, scale: 3 },
+  { name: '13-2064x2752', width: 1032, height: 1376, scale: 2 },
 ];
 
 async function waitForServer(url, timeoutMs = 20000) {
