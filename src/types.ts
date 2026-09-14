@@ -4,7 +4,7 @@
 export type DestKey = 'playa' | 'montana' | 'ciudad';
 export type ClimaKey = 'calor' | 'templado' | 'frio' | 'lluvia';
 export type MotivoKey = 'placer' | 'trabajo';
-export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta' | 'navegar';
+export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta' | 'ski' | 'navegar';
 /** 'camping' es alojamiento (define cómo/dónde dormís), no destino — se
  * puede acampar en la playa, la montaña o el campo por igual. */
 export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos' | 'camping';

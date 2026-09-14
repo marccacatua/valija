@@ -43,6 +43,8 @@ export const TURISMO_OPTIONS: CatalogOption<TurismoKey>[] = [
   { key: 'aventura', label: 'Aventura' },
   { key: 'cultura', label: 'Cultural' },
   { key: 'fiesta', label: 'Salidas' },
+  { key: 'ski', label: 'Ski' },
+  { key: 'navegar', label: 'Navegar' },
 ];
 
 export const ALOJ_OPTIONS: CatalogOption<AlojKey>[] = [
