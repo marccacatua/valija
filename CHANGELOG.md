@@ -5,6 +5,15 @@ junto con el número de versión en `package.json` (visible en la pantalla
 de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
 todavía no se hizo.
 
+## v1.0.0
+
+**Primer envío real a revisión de Apple.** Sincronizado con el Version 1.0 /
+Build 1 que ya está subido a App Store Connect. Se verificó de punta a
+punta el flujo de compra real: API key de RevenueCat conectada,
+entitlement `valija_pro` vinculado a `valija_pro_unlock`, build subido y
+"Listo para revisión", y una compra de prueba completada con éxito en
+ambiente Sandbox desde un iPhone real.
+
 ## v0.20.7
 
 - **Fix: identificador de entitlement de RevenueCat** — el código usaba
