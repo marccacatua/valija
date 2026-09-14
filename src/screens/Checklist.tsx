@@ -17,6 +17,7 @@ import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
 import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
+import { useMascotMorphTarget } from '../hooks/useMascotMorphTarget';
 import { useTemplates } from '../hooks/useTemplates';
 import { useTrips } from '../hooks/useTrips';
 import type { CategoryKey, HomeTask, ItemTemplate, PackingItem } from '../types';
@@ -85,6 +86,7 @@ export function Checklist() {
   // cualquier return, con el id de cada ítem tal como aparece hoy en la
   // vista detallada (categoría por categoría, tildados al fondo).
   const registerItemNode = useFlipReorder(groups.flatMap((g) => g.list.map((i) => i.id)));
+  const mascotMorph = useMascotMorphTarget<HTMLDivElement>();
 
   if (!trip) {
     return (
@@ -324,7 +326,7 @@ export function Checklist() {
             </div>
             <div className={styles.progressNote}>{progressNote(items)}</div>
           </div>
-          <div className={styles.mascotMorph}>
+          <div className={styles.mascotMorph} ref={mascotMorph.ref} style={mascotMorph.hidden ? { visibility: 'hidden' } : undefined}>
             <Mascot size={56} />
           </div>
         </div>

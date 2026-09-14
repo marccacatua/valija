@@ -141,9 +141,8 @@
   gap: 16px;
 }
 
-/* Mismo view-transition-name que en Welcome.module.css — ver ese archivo. */
+/* Destino del morph armado en Welcome.tsx (ver hooks/useMascotMorphTarget). */
 .mascotMorph {
-  view-transition-name: valu-mascot;
   flex: none;
 }
 

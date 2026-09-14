@@ -1562,11 +1562,36 @@ try {
     await ctx.close();
   }
   {
+    const { ctx, page } = await freshPage(browser); // sin viajes guardados
+    await page.click('[aria-label="Continuar"]');
+    await page.waitForURL(/\/intro$/, { timeout: 1000 });
+    // A mitad de camino tiene que existir una copia de la mascota en pleno
+    // viaje (tamaño intermedio entre los 150px de Welcome y los 44px de
+    // Intro) — si esto falla, el morph se rompió y quedó un salto seco.
+    await page.waitForTimeout(180);
+    const midSizes = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('svg[aria-label="Valu, la valija mascota"]')).map((el) => Math.round(el.getBoundingClientRect().width)),
+    );
+    const midFlight = midSizes.some((w) => w > 50 && w < 140);
+    assert(midFlight, 'El morph de la mascota se ve en pleno viaje (no un salto seco)', `sizes=${JSON.stringify(midSizes)}`);
+    await page.waitForTimeout(500);
+    const finalSizes = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('svg[aria-label="Valu, la valija mascota"]')).map((el) => Math.round(el.getBoundingClientRect().width)),
+    );
+    assert(
+      finalSizes.length === 1 && finalSizes[0] === 44,
+      'Terminado el morph, queda una sola mascota visible en su tamaño final',
+      `finalSizes=${JSON.stringify(finalSizes)}`,
+    );
+    await ctx.close();
+  }
+  {
     const { ctx, page } = await freshPage(browser);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(`${BASE}/`); // sin viajes guardados
     await page.waitForURL(/\/intro$/, { timeout: 800 });
-    assert(true, 'Con "reducir movimiento" activado, la bienvenida no hace esperar nada');
+    const count = await page.locator('svg[aria-label="Valu, la valija mascota"]').count();
+    assert(count === 1, 'Con "reducir movimiento" activado, no se arma ninguna copia de la mascota (salto directo)', `count=${count}`);
     await ctx.close();
   }
 } catch (err) {

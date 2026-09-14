@@ -153,13 +153,3 @@ a:hover {
     scroll-behavior: auto !important;
   }
 }
-
-/* Timing de la transición Bienvenida -> viaje/lista (ver navigateWithMorph
- * en features/motion.ts). Mismo tipo de curva que el FLIP del checklist,
- * para que toda la app "viaje" con la misma sensación. Solo corre cuando
- * se llama a document.startViewTransition, que ya está gateado por
- * prefers-reduced-motion — no hace falta repetir esa condición acá. */
-::view-transition-group(*) {
-  animation-duration: 420ms;
-  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-}

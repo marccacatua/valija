@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mascot } from '../components/Mascot';
-import { navigateWithMorph, prefersReducedMotion } from '../features/motion';
+import { armMascotMorph } from '../features/mascotMorph';
+import { prefersReducedMotion } from '../features/motion';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
 import styles from './Welcome.module.css';
@@ -33,10 +34,12 @@ export function Welcome() {
   // Nunca hay que obligar a nadie a mirar una animación, sobre todo la
   // décima vez: tocar la pantalla saltea la espera y va directo.
   const navigatedRef = useRef(false);
+  const mascotRef = useRef<HTMLDivElement>(null);
   const goNow = () => {
     if (navigatedRef.current) return;
     navigatedRef.current = true;
-    navigateWithMorph(navigate, destination);
+    if (mascotRef.current) armMascotMorph(mascotRef.current);
+    navigate(destination);
   };
 
   useEffect(() => {
@@ -61,7 +64,7 @@ export function Welcome() {
       <div className={styles.blobTop} />
       <div className={styles.blobBottom} />
       <div style={{ flex: 1 }} />
-      <div className={styles.mascotMorph}>
+      <div className={styles.mascotMorph} ref={mascotRef}>
         <Mascot size={150} animated />
       </div>
       {!hasTrips && (

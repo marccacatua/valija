@@ -19,9 +19,8 @@
   gap: 7px;
 }
 
-/* Mismo view-transition-name que en Welcome.module.css / Checklist.module.css. */
+/* Destino del morph armado en Welcome.tsx (ver hooks/useMascotMorphTarget). */
 .mascotMorph {
-  view-transition-name: valu-mascot;
   flex: none;
 }
 
