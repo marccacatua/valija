@@ -139,6 +139,16 @@ iPhone real y se apruebe mergear.
   daba el tiempo para leer el mensaje completo.
 - `FADE_MS` (el desvanecido del fondo) subió otro 30%: de 480ms a
   624ms, a pedido del usuario para probar cómo se siente más lento.
+- **El fade tiene que durar lo mismo que el viaje de la mascota**, no un
+  número aparte — así termina justo cuando la mascota llega a destino,
+  no antes. Se sacó `FADE_MS` como constante independiente:
+  `useMascotMorphTarget` ahora calcula `duration = morph.durationMs ??
+  DEFAULT_TRAVEL_MS` una sola vez y la usa para las DOS animaciones
+  (fondo y mascota). Con esto, el fade queda en 840ms para el usuario
+  que vuelve y 1680ms para el nuevo — automáticamente iguales al viaje
+  de la mascota en cada caso, sin tener que mantener dos números
+  sincronizados a mano. Verificado que las dos copias (fondo y
+  mascota) desaparecen en la misma ventana de tiempo en los dos casos.
 - QA actualizado: 114/114 tests de Playwright (8 nuevos para la
   bienvenida — incluye uno que verifica específicamente que el fade y
   el viaje de la mascota arrancan en el mismo instante) + 752.640

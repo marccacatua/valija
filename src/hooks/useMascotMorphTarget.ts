@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
-import { FADE_MS, takeMascotMorph } from '../features/mascotMorph';
+import { takeMascotMorph } from '../features/mascotMorph';
 
 // Mismo tipo de curva que el FLIP del checklist, para que toda la app
 // "viaje" con la misma sensación. Se puede pisar por viaje (ver
@@ -18,9 +18,8 @@ const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
  * 2. Una copia del fondo anaranjado de Welcome se desvanece encima de
  *    esta pantalla (por detrás de la mascota, que siempre queda visible
  *    por delante). Arranca en el mismo instante que el viaje de la
- *    mascota — antes, el fade pasaba en Welcome y terminaba ANTES de que
- *    la mascota empezara a moverse, y se sentía como dos pasos separados
- *    en vez de una sola transición.
+ *    mascota y dura exactamente lo mismo, para que el fade termine
+ *    justo cuando la mascota llega a destino — ni antes ni después.
  *
  * La copia queda parada en su tamaño y posición finales (los de acá) y
  * se le aplica el transform inverso para que arranque pareciendo estar en
@@ -45,6 +44,10 @@ export function useMascotMorphTarget<T extends HTMLElement>() {
     const morph = takeMascotMorph();
     if (!morph) return;
 
+    // Misma duración para el fade del fondo y el viaje de la mascota —
+    // así el fade termina justo cuando la mascota llega, no antes.
+    const duration = morph.durationMs ?? DEFAULT_TRAVEL_MS;
+
     // --- Fondo anaranjado: copia fija, arriba de todo menos de la
     // mascota, que se desvanece sola sin afectar el layout de esta
     // pantalla (no ocupa espacio real, solo se ve encima).
@@ -60,7 +63,7 @@ export function useMascotMorphTarget<T extends HTMLElement>() {
         pointerEvents: 'none',
       });
       document.body.appendChild(bgClone);
-      const bgAnim = bgClone.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease', fill: 'forwards' });
+      const bgAnim = bgClone.animate([{ opacity: 1 }, { opacity: 0 }], { duration, easing: 'ease', fill: 'forwards' });
       bgAnim.finished.catch(() => {}).then(() => bgClone.remove());
     }
 
@@ -113,7 +116,7 @@ export function useMascotMorphTarget<T extends HTMLElement>() {
         { transform: `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})` },
         { transform: 'translate(0, 0) scale(1, 1)' },
       ],
-      { duration: morph.durationMs ?? DEFAULT_TRAVEL_MS, easing: EASING, fill: 'forwards' },
+      { duration, easing: EASING, fill: 'forwards' },
     );
 
     let cancelled = false;

@@ -1603,7 +1603,10 @@ try {
       );
       return { bgOpacity: bg ? Number(getComputedStyle(bg).opacity) : null, mascotSizes };
     });
-    const bgAlreadyFading = state.bgOpacity !== null && state.bgOpacity < 0.9;
+    // El fade dura ahora lo mismo que el viaje de la mascota (1680ms para
+    // usuario nuevo), así que a los 100ms avanzó poco — alcanza con que
+    // ya no esté en 1 para confirmar que arrancó, no que esté avanzado.
+    const bgAlreadyFading = state.bgOpacity !== null && state.bgOpacity < 0.99;
     // No hace falta que ya esté "a mitad de camino" — con que se haya
     // despegado un poco del tamaño de arranque (150px) alcanza para
     // confirmar que el viaje ya empezó, no que esté esperando.
