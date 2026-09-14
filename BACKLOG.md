@@ -126,6 +126,17 @@ iPhone real y se apruebe mergear.
     animaciones a los 100ms: en los dos casos el fondo ya bajó de
     opacidad y la mascota ya se despegó de su tamaño de arranque —
     arrancan juntas de verdad, no una después de la otra.
+- **Texto del usuario nuevo descentrado + más tiempo para leer**: al
+  separar título y subtítulo en su propio `.content` (para el fade de
+  arriba), dejaron de ser ítems de flexbox independientes — que es lo
+  que los centraba antes — y pasaron a ser bloques normales. El
+  subtítulo, con `max-width: 290px`, quedaba pegado a la izquierda en
+  vez de centrado respecto del título (que sí ocupa todo el ancho de
+  `.content` y por eso se veía bien). Se le puso `display: flex;
+  flex-direction: column; align-items: center;` a `.content`, restaurando
+  el mismo centrado independiente por ítem que tenían antes de ese
+  refactor. De paso, `NEW_USER_HOLD_MS` pasó de 1800ms a 3600ms — no
+  daba el tiempo para leer el mensaje completo.
 - QA actualizado: 114/114 tests de Playwright (8 nuevos para la
   bienvenida — incluye uno que verifica específicamente que el fade y
   el viaje de la mascota arrancan en el mismo instante) + 752.640

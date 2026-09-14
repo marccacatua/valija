@@ -1526,7 +1526,8 @@ try {
 
   {
     const { ctx, page } = await freshPage(browser); // sin viajes guardados
-    await page.waitForURL(/\/intro$/, { timeout: 3500 });
+    // Usuario nuevo espera 3600ms antes de pasar solo (tiempo para leer).
+    await page.waitForURL(/\/intro$/, { timeout: 4200 });
     const hasIntroTitle = await page.locator('text=Tres toques y tu valija está lista').count();
     assert(hasIntroTitle > 0, 'Usuario nuevo: la bienvenida transiciona sola a Intro sin tocar nada', `count=${hasIntroTitle}`);
     await ctx.close();

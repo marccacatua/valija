@@ -10,7 +10,7 @@ import styles from './Welcome.module.css';
 // Cuánto se queda la mascota en pantalla antes de pasar sola — usuario
 // nuevo lee un mensaje corto, así que tiene más tiempo; el que vuelve no
 // necesita leer nada, es solo el instante de "reconocer" la app.
-const NEW_USER_HOLD_MS = 1800;
+const NEW_USER_HOLD_MS = 3600;
 const RETURNING_HOLD_MS = 1100;
 
 // El usuario nuevo recién está conociendo a Valu — que el morph hacia
