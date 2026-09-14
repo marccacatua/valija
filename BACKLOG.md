@@ -1,5 +1,53 @@
 # Backlog
 
+## En curso en la rama `post-v1-ux` (arrancado 2026-09-14)
+
+Mientras la v1.0.0 está en revisión de Apple, se decidió avanzar en
+paralelo con la "lista de nativez" + las dos features grandes, todo en
+una rama aparte (`post-v1-ux`) para no tocar `main` — que se mantiene
+igual a lo que Apple tiene en revisión — hasta que esto se pruebe en un
+iPhone real y se apruebe mergear.
+
+**Hecho en la rama, pendiente de probar en el celular:**
+- Haptics (`@capacitor/haptics`, `src/features/haptics.ts`) en tildar un
+  ítem, una tarea de casa, un grupo entero (vista rápida), y un toque
+  más fuerte al marcar un viaje finalizado. No-op silencioso en web.
+- `user-select: none` en botones/`[role=button]` — ya no se selecciona
+  texto al mantener presionado un ítem.
+- `prefers-reduced-motion` respetado: bloque global en CSS para
+  transiciones/animaciones, más un helper (`features/motion.ts`) para
+  el código que anima por JS (ver los dos puntos siguientes).
+- **Animación FLIP al tildar un ítem** (opción A del plan: código
+  propio con Web Animations API, sin librería nueva) —
+  `hooks/useFlipReorder.ts`. El ítem se queda tildado en su lugar
+  ~220ms y recién ahí viaja a su nueva posición en ~300ms, para no
+  perder el feedback del tilde. Falta calibrar esos dos números
+  mirándolo en un iPhone real.
+- **Bienvenida rediseñada estilo Headspace** (`screens/Welcome.tsx`):
+  ya no tiene botones — transiciona sola. Usuario nuevo ve un mensaje
+  corto ("A partir de ahora no te olvidás más nada") y pasa a Intro;
+  usuario que vuelve ve solo la mascota un instante y va **directo a su
+  último viaje sin terminar** (o a "Mis viajes" si no queda ninguno
+  activo). Tocar la pantalla saltea la espera en cualquier caso. La
+  versión y los links de Privacidad/Soporte, que vivían en esta
+  pantalla, se mudaron a un pie discreto en "Mis viajes".
+- QA actualizado: 111/111 tests de Playwright (5 nuevos para la
+  bienvenida) + 752.640 combinaciones sin errores. Se ajustó el test de
+  reordenamiento para esperar a que termine la animación antes de medir
+  posiciones.
+
+**Sin tocar todavía (decidido explícitamente por el usuario, 2026-09-14):**
+- Fichas por país (ASO) y español neutro/selector de idioma: esperar a
+  que Apple apruebe la app.
+- Google Play, promoción, versión en inglés: quedan para después de la
+  licencia del usuario (~15 días desde el 14/09).
+
+**Cómo seguimos:** falta que el usuario compile esta rama en su iPhone
+y la prueba de verdad — sobre todo calibrar los tiempos del FLIP y de
+la bienvenida, que un simulador o una captura no pueden juzgar del
+todo. Recién después de eso conviene mergear a `main`, subir versión
+(probablemente v1.1.0) y generar un build nuevo para Apple.
+
 ## Pendientes para retomar tras el envío a revisión (v1.0.0, 2026-09-14)
 
 El usuario va a estar de licencia ~15 días desde acá. Anotado para
@@ -11,29 +59,17 @@ retomar a la vuelta, en este orden sugerido:
    hicimos para iOS pero del lado de Android (cuenta de Google Play
    Console, ficha, capturas, revisar si Capacitor necesita algo
    especial para Android que no tocamos en esta ronda).
-3. **Animación fluida al tildar ítems**: hoy cuando se tilda un ítem
-   (y baja al fondo de su categoría, ver v0.20.4) el cambio de posición
-   es instantáneo — "desaparece" de un lugar y "aparece" en el otro.
-   El usuario quiere que se sienta como que el ítem "viaja" a su nueva
-   posición (una animación tipo FLIP — First/Last/Invert/Play — o una
-   librería como Framer Motion / `react-flip-toolkit`). Mejora de
-   sensación de uso, no de lógica.
-4. **Rediseño de la pantalla de bienvenida, estilo Headspace**: hoy
-   requiere apretar un botón para pasar a la app. La idea es que
-   transicione sola, sin que el usuario tenga que tocar nada:
-   - Usuario nuevo (sin viajes guardados): mensaje de bienvenida corto
-     tipo "a partir de ahora no te olvidás más nada", y de ahí pasa
-     solo a crear el primer viaje.
-   - Usuario que ya usó la app: solo ve el logo un instante y
-     transiciona directo a "Mis viajes".
-   **Pendiente de decidir**: si esto se diseña directo acá en código,
-   o si conviene pasar primero por un mockup/proceso de diseño más
-   cuidado (Design) antes de construirlo, dado que es una primera
-   impresión importante.
+3. ~~**Animación fluida al tildar ítems**~~ ✅ implementada en la rama
+   `post-v1-ux` (ver arriba), falta calibrar en dispositivo real.
+4. ~~**Rediseño de la pantalla de bienvenida, estilo Headspace**~~ ✅
+   implementado en la rama `post-v1-ux` (ver arriba): se hizo directo
+   en código, sin pasar por Design (decisión del usuario), y el destino
+   del usuario que vuelve es su último viaje sin terminar.
 5. **Estrategia de promoción de la app**: pensar dónde y cómo
    promocionarla (¿desde esta misma conversación, desde claude.ai,
    desde Cowork?). Foco inicial: **países de habla hispana**, hasta
-   que exista una versión en inglés (ítem aparte, ver abajo).
+   que exista una versión en inglés (ítem aparte, ver abajo). En
+   pausa hasta que Apple apruebe la app.
 6. **Español neutro o selector de idioma** (para cuando se piense la
    promoción/expansión): evaluar si conviene neutralizar un poco el
    español actual (hoy tiene modismos rioplatenses: "boarding pass",
@@ -41,19 +77,18 @@ retomar a la vuelta, en este orden sugerido:
    Importante: **evitar agregarle fricción al usuario** — la esencia
    de Valija es ser rápida y cómoda, así que si se agrega selección de
    idioma tiene que ser mínima (por ejemplo, autodetectada del
-   dispositivo, sin una pantalla extra que haya que completar).
+   dispositivo, sin una pantalla extra que haya que completar). En
+   pausa hasta que Apple apruebe la app.
 7. **Versión en inglés**: traducir la app para poder promocionarla
    fuera del mundo hispanohablante — depende de resolver primero el
    punto anterior (neutralizar/decidir variantes) para no traducir dos
    veces.
-8. **¿Seguimos en PWA/Capacitor o nos pasamos a Swift nativo?**
-   Pregunta abierta del usuario, motivada por querer la mejor fluidez
-   y animaciones posibles. Analizado en detalle en el documento de
-   plan (ver más abajo) — la recomendación corta es **quedarse en
-   Capacitor** y atacar los síntomas concretos que hacen que se sienta
-   "web" (haptics, animaciones, gestos), porque pasar a Swift
-   implicaría además reescribir todo de nuevo en Kotlin para Google
-   Play y tirar los 752k casos de QA que ya tenemos.
+8. ~~**¿Seguimos en PWA/Capacitor o nos pasamos a Swift nativo?**~~ ✅
+   Decidido (2026-09-14): **seguimos en Capacitor** (opción C del plan —
+   si algún día hace falta algo puntual, un módulo nativo específico en
+   vez de reescribir todo). Pasar a Swift implicaría además reescribir
+   todo de nuevo en Kotlin para Google Play y tirar los 752k casos de
+   QA que ya tenemos.
 9. ~~**Bloquear la rotación de pantalla**~~ ✅ hecho (pendiente de
    verificar en el dispositivo). La app rotaba a horizontal y quedaba
    mal; ahora `UISupportedInterfaceOrientations` en `Info.plist` sólo

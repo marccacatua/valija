@@ -1075,17 +1075,19 @@ try {
   }
 
   // ============================================================
-  // 28) Privacidad y Soporte: enlazadas desde la bienvenida y
-  // accesibles por URL directa (Apple entra directo, sin pasar por la app)
+  // 28) Privacidad y Soporte: enlazadas desde "Mis viajes" (la bienvenida
+  // ahora es un splash que transiciona solo, sin links — ver Welcome.tsx)
+  // y accesibles por URL directa (Apple entra directo, sin pasar por la app)
   // ============================================================
   {
     const { ctx, page } = await freshPage(browser);
-    await page.goto(`${BASE}/`);
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
     const hasPrivacyLink = await page.locator('a[href="/privacidad"]').count();
     const hasSupportLink = await page.locator('a[href="/soporte"]').count();
     assert(
       hasPrivacyLink === 1 && hasSupportLink === 1,
-      'La bienvenida enlaza a Privacidad y Soporte',
+      '"Mis viajes" enlaza a Privacidad y Soporte',
       `privacy=${hasPrivacyLink} support=${hasSupportLink}`,
     );
 
@@ -1407,7 +1409,11 @@ try {
     );
 
     await dni.click();
-    await page.waitForTimeout(100);
+    // El FLIP al tildar (useFlipReorder) sostiene el ítem en su lugar
+    // ~220ms y recién ahí lo desplaza en ~300ms — hay que esperar a que
+    // termine del todo antes de medir la posición final, si no se mide
+    // un frame a mitad de la animación.
+    await page.waitForTimeout(650);
 
     const afterDni = (await dni.boundingBox()).y;
     const afterPasajes = (await pasajes.boundingBox()).y;
@@ -1488,6 +1494,79 @@ try {
     await generateTrip(page, { maletas: ['Bodega'] });
     const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
     assert(hasWarning === 0, 'Sin bulto real, no aparece el aviso de espacio en la Checklist', `count=${hasWarning}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 44) Bienvenida como splash que transiciona sola (estilo Headspace):
+  // usuario nuevo ve un mensaje corto y pasa a Intro; usuario que vuelve
+  // ve solo la mascota e, idealmente, va directo a su viaje sin terminar
+  // ============================================================
+  function seedTrip(overrides = {}) {
+    return {
+      id: 'seed-trip-1',
+      createdAt: new Date().toISOString(),
+      form: {
+        name: '',
+        dest: ['playa'],
+        clima: 'calor',
+        motivo: 'placer',
+        turismo: 'relax',
+        aloj: 'depto',
+        transporte: 'avion',
+        maletas: ['carry'],
+        dias: 5,
+        vestidos: false,
+      },
+      items: [{ id: '0-docs', cat: 'docs', name: 'DNI y pasaporte', qty: 1, done: false }],
+      homeChecklist: [],
+      ...overrides,
+    };
+  }
+
+  {
+    const { ctx, page } = await freshPage(browser); // sin viajes guardados
+    await page.waitForURL(/\/intro$/, { timeout: 3500 });
+    const hasIntroTitle = await page.locator('text=Tres toques y tu valija está lista').count();
+    assert(hasIntroTitle > 0, 'Usuario nuevo: la bienvenida transiciona sola a Intro sin tocar nada', `count=${hasIntroTitle}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser); // sin viajes guardados
+    await page.click('[aria-label="Continuar"]');
+    await page.waitForURL(/\/intro$/, { timeout: 1000 });
+    assert(true, 'Tocar la pantalla de bienvenida saltea la espera en vez de forzar a mirarla entera');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.evaluate((trip) => {
+      localStorage.setItem('valija:trips', JSON.stringify([trip]));
+      localStorage.setItem('valija:lastTripId', JSON.stringify(trip.id));
+    }, seedTrip());
+    await page.goto(`${BASE}/`);
+    await page.waitForURL(/\/viaje\/seed-trip-1$/, { timeout: 3500 });
+    const hasTitle = await page.locator('text=Tu valija para').count();
+    assert(hasTitle > 0, 'Usuario que vuelve con un viaje sin terminar va directo a su checklist', `url=${page.url()}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.evaluate((trip) => {
+      localStorage.setItem('valija:trips', JSON.stringify([trip]));
+    }, seedTrip({ finishedAt: new Date().toISOString() }));
+    await page.goto(`${BASE}/`);
+    await page.waitForURL(/\/viajes$/, { timeout: 3500 });
+    const hasMisViajesTitle = await page.locator('text=Mis viajes').count();
+    assert(hasMisViajesTitle > 0, 'Usuario que vuelve con todo finalizado va a "Mis viajes", no a un viaje al azar', `url=${page.url()}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(`${BASE}/`); // sin viajes guardados
+    await page.waitForURL(/\/intro$/, { timeout: 800 });
+    assert(true, 'Con "reducir movimiento" activado, la bienvenida no hace esperar nada');
     await ctx.close();
   }
 } catch (err) {
