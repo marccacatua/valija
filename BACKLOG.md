@@ -46,6 +46,27 @@ retomar a la vuelta, en este orden sugerido:
    fuera del mundo hispanohablante — depende de resolver primero el
    punto anterior (neutralizar/decidir variantes) para no traducir dos
    veces.
+8. **¿Seguimos en PWA/Capacitor o nos pasamos a Swift nativo?**
+   Pregunta abierta del usuario, motivada por querer la mejor fluidez
+   y animaciones posibles. Analizado en detalle en el documento de
+   plan (ver más abajo) — la recomendación corta es **quedarse en
+   Capacitor** y atacar los síntomas concretos que hacen que se sienta
+   "web" (haptics, animaciones, gestos), porque pasar a Swift
+   implicaría además reescribir todo de nuevo en Kotlin para Google
+   Play y tirar los 752k casos de QA que ya tenemos.
+9. ~~**Bloquear la rotación de pantalla**~~ ✅ hecho (pendiente de
+   verificar en el dispositivo). La app rotaba a horizontal y quedaba
+   mal; ahora `UISupportedInterfaceOrientations` en `Info.plist` sólo
+   permite `Portrait` en iPhone. Se dejó iPad con las 4 orientaciones
+   a propósito: Apple pide que las apps de iPad que soportan
+   multitarea funcionen en todas las orientaciones, y restringirlo
+   podría generar un rechazo en una revisión futura.
+
+> 📋 El análisis completo de cada uno de estos puntos (con opciones,
+> pros y contras, esfuerzo estimado y recomendación) está en el
+> artifact **"Después de la v1.0"**, armado el 2026-09-14 mientras la
+> v1.0 estaba en revisión:
+> https://claude.ai/code/artifact/a25b62b9-00d1-4b69-bd9a-30e70c00a221
 
 ## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 
