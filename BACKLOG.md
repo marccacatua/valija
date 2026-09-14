@@ -68,6 +68,75 @@ retomar a la vuelta, en este orden sugerido:
 > v1.0 estaba en revisión:
 > https://claude.ai/code/artifact/a25b62b9-00d1-4b69-bd9a-30e70c00a221
 
+## Viajes de ski (próxima versión, dentro de Pro)
+
+Pedido del usuario (2026-09-14), a partir de feedback de un conocido.
+Va **dentro de la versión paga**, igual que bebé y camping.
+
+**El dato clave que lo hace distinto:** esquiando pasás casi todo el día
+con el equipo puesto, así que **se usa menos ropa normal** de lo que la
+app calcularía hoy para la misma cantidad de días. No es "montaña con
+más abrigo": es un viaje donde la ropa de calle baja y aparece un set
+técnico que hoy no existe en el catálogo.
+
+**Cómo modelarlo (decisión a tomar juntos).** Hoy `camping` no es un
+destino sino un alojamiento, justamente porque se puede acampar en
+cualquier lado (ver el comentario en `types.ts`). Con ski pasa algo
+parecido: esquiar es *lo que hacés*, y el destino sigue siendo la
+montaña. Las tres opciones:
+
+- **a) `TurismoKey: 'ski'`** — el que más se parece a cómo ya está
+  pensado el modelo: queda al lado de relax/aventura/cultura/fiesta,
+  combina naturalmente con `dest: montana` + `clima: frio`, y no
+  agrega una pregunta nueva al formulario. Contra: es menos visible
+  que un destino, y al ser una función paga conviene que se vea.
+- **b) `DestKey: 'ski'`** — el más descubrible (aparece entre playa /
+  montaña / ciudad, que es lo primero que toca el usuario). Contra:
+  rompe un poco la semántica, porque el ski no es un lugar.
+- **c) Un booleano propio**, como `bebe`. Contra: suma otra pregunta
+  al formulario, y el usuario pidió explícitamente no agregar fricción.
+
+*Recomendación:* **(a)**, y sumarle una `CategoryKey: 'ski'` propia para
+el equipo — exactamente el mismo patrón que ya usa camping (una opción
+dentro de un selector que ya existe + su propia categoría de ítems).
+
+**La lógica de cantidades.** El mecanismo ya existe: `lavaRopa` hoy
+capea las mudas con `Math.min(d, 4)` en vez de escalar con los días
+(`buildItems.ts:76-87`). Ski usaría la misma técnica en la otra
+dirección: bajar remeras y pantalones de calle, y sumar aparte lo
+técnico. Ojo con dos cosas: las **medias de ski** son gruesas y van
+aparte de las comunes (aprox. 1 par cada 2 días), y hay que dejar
+**ropa de après-ski** para la noche — no todo el viaje es en la pista.
+
+**Ítems a incluir** (borrador para revisar): primera piel térmica,
+campera y pantalón de nieve, segunda capa de polar, medias de ski,
+guantes, gorro, cuello/buff, antiparras, casco, botas de nieve para
+caminar, y **protector solar de factor alto + labial con FPS** — la
+nieve refleja los rayos y es donde más gente se quema sin darse cuenta.
+
+**Decisión de producto pendiente:** la mayoría **alquila** skis, botas
+y casco en el centro de ski, así que no habría que hacerlos empacar.
+¿Asumimos alquiler por defecto (y listamos sólo lo personal), o
+preguntamos? Preguntar es una pregunta más en un formulario que
+queremos corto — mi sugerencia es asumir alquiler y dejar que quien
+lleve equipo propio lo agregue como ítem suyo.
+
+**Enganches con lo que ya existe:**
+- El equipo de ski es voluminoso: hay que darle peso alto en
+  `BULK_WEIGHTS` (`distribute.ts`) para que el aviso de "quizás
+  necesitás más espacio" salte cuando corresponde.
+- Gateado con el flag `extraCategories`, el mismo que ya cubre bebé y
+  camping: así los que ya pagaron Pro lo reciben sin costo extra. Hay
+  que actualizar el texto del paywall (`PaywallSheet.tsx`), que hoy
+  nombra sólo "bebé/niño chico y camping".
+- Sumar una opción al union type agrega ~190k combinaciones al QA
+  combinatorio (hoy 752.640). No es problema, pero hay que escribir las
+  invariantes nuevas: que con ski baje la ropa de calle respecto del
+  mismo viaje sin ski, que aparezca la primera piel, y que sin ski no
+  se cuele ningún ítem de nieve.
+- A definir: si ski + clima cálido es una combinación válida (existe el
+  ski de primavera) o si conviene bloquearla.
+
 ## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 
 Pedido del usuario (2026-09) tras probar la v0.19.0: reemplazar el
