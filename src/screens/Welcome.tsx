@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mascot } from '../components/Mascot';
 import { armMascotMorph } from '../features/mascotMorph';
@@ -14,15 +14,10 @@ const NEW_USER_HOLD_MS = 1800;
 const RETURNING_HOLD_MS = 1100;
 
 // El usuario nuevo recién está conociendo a Valu — que el morph hacia
-// Intro sea más pausado (la mitad de velocidad que el default de
-// useMascotMorphTarget). Al que vuelve no hace falta pisarle nada: ese
-// caso ya se sentía bien con el default.
-const NEW_USER_MORPH_MS = 840;
-
-// Cuánto tarda en desvanecerse el fondo anaranjado antes de navegar —
-// sin esto, la pantalla corta seca justo cuando arranca el morph del
-// logo, y se siente brusco.
-const FADE_OUT_MS = 240;
+// Intro sea más pausado que el default de useMascotMorphTarget. Al que
+// vuelve no hace falta pisarle nada: ese caso ya se sentía bien con el
+// default.
+const NEW_USER_MORPH_MS = 1680;
 
 export function Welcome() {
   const navigate = useNavigate();
@@ -46,19 +41,18 @@ export function Welcome() {
   // décima vez: tocar la pantalla saltea la espera y va directo.
   const navigatedRef = useRef(false);
   const mascotRef = useRef<HTMLDivElement>(null);
-  const [fadingOut, setFadingOut] = useState(false);
+  const bgRef = useRef<HTMLDivElement>(null);
   const goNow = () => {
     if (navigatedRef.current) return;
     navigatedRef.current = true;
-    // Se captura ANTES de empezar a desvanecer la pantalla — el morph
-    // necesita la posición/tamaño reales, no a mitad de un fade.
-    if (mascotRef.current) armMascotMorph(mascotRef.current, hasTrips ? undefined : NEW_USER_MORPH_MS);
-    if (prefersReducedMotion()) {
-      navigate(destination);
-      return;
+    // Se navega ya mismo — el fade del fondo y el viaje de la mascota no
+    // pasan acá, sino como copias en la pantalla de destino (ver
+    // hooks/useMascotMorphTarget.ts), así arrancan los dos juntos en vez
+    // de que el fade termine antes de que la mascota se empiece a mover.
+    if (mascotRef.current && bgRef.current) {
+      armMascotMorph(mascotRef.current, bgRef.current, hasTrips ? undefined : NEW_USER_MORPH_MS);
     }
-    setFadingOut(true);
-    setTimeout(() => navigate(destination), FADE_OUT_MS);
+    navigate(destination);
   };
 
   useEffect(() => {
@@ -80,11 +74,9 @@ export function Welcome() {
       tabIndex={0}
       aria-label="Continuar"
     >
-      {/* Fondo anaranjado + blobs en su propia capa, separada de la
-          mascota: así el fade de salida (ver goNow) se lleva puesto el
-          color y la decoración, pero la mascota queda siempre nítida y
-          visible por encima — es la que sigue de largo en el morph. */}
-      <div className={`${styles.bg} ${fadingOut ? styles.bgFadingOut : ''}`}>
+      {/* Referenciado por ref: armMascotMorph clona este fondo tal cual
+          para desvanecerlo en la pantalla de destino (ver goNow arriba). */}
+      <div className={styles.bg} ref={bgRef}>
         <div className={styles.blobTop} />
         <div className={styles.blobBottom} />
       </div>
@@ -93,7 +85,7 @@ export function Welcome() {
         <Mascot size={150} animated />
       </div>
       {!hasTrips && (
-        <div className={`${styles.content} ${fadingOut ? styles.contentFadingOut : ''}`}>
+        <div className={styles.content}>
           <h1 className={styles.title}>
             A partir de ahora
             <br />

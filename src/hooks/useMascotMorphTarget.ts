@@ -1,26 +1,32 @@
 import { useLayoutEffect, useRef } from 'react';
-import { takeMascotMorph } from '../features/mascotMorph';
+import { FADE_MS, takeMascotMorph } from '../features/mascotMorph';
 
 // Mismo tipo de curva que el FLIP del checklist, para que toda la app
 // "viaje" con la misma sensación. Se puede pisar por viaje (ver
 // armMascotMorph) — Welcome usa una más lenta para el usuario nuevo.
-const DEFAULT_TRAVEL_MS = 420;
+const DEFAULT_TRAVEL_MS = 840;
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
 
 /**
- * Si Welcome dejó armado un morph (ver features/mascotMorph.ts), anima una
- * copia de esa mascota grande desde su posición original hasta acá encima
- * de todo (sin depender de la View Transitions API del navegador, que no
- * anduvo confiable). Mientras dura, oculta la mascota real de esta
- * pantalla para que no se vean las dos superpuestas.
+ * Si Welcome dejó armado un morph (ver features/mascotMorph.ts), arranca
+ * DOS animaciones al mismo tiempo, apenas monta esta pantalla:
  *
- * La copia se deja PARADA en su tamaño y posición finales (los de acá) y
+ * 1. Una copia de la mascota grande viaja desde su posición original
+ *    hasta acá (sin depender de la View Transitions API del navegador,
+ *    que no anduvo confiable). Mientras dura, oculta la mascota real de
+ *    esta pantalla para que no se vean las dos superpuestas.
+ * 2. Una copia del fondo anaranjado de Welcome se desvanece encima de
+ *    esta pantalla (por detrás de la mascota, que siempre queda visible
+ *    por delante). Arranca en el mismo instante que el viaje de la
+ *    mascota — antes, el fade pasaba en Welcome y terminaba ANTES de que
+ *    la mascota empezara a moverse, y se sentía como dos pasos separados
+ *    en vez de una sola transición.
+ *
+ * La copia queda parada en su tamaño y posición finales (los de acá) y
  * se le aplica el transform inverso para que arranque pareciendo estar en
  * el origen (la técnica clásica de FLIP) — así el último cuadro de la
  * animación es, por construcción, idéntico a como se ve la mascota real
- * debajo, sin el pequeño salto que salía animando left/top/width/height
- * directamente (esas son propiedades de layout: cada cuadro reacomoda la
- * página, y quedaba una diferencia de sub-píxel justo al terminar).
+ * debajo, sin saltos de sub-píxel por animar left/top/width/height.
  *
  * El ocultar/mostrar la mascota real se hace escribiendo `style.visibility`
  * directo sobre el nodo (no con estado de React): tiene que pasar en el
@@ -39,6 +45,26 @@ export function useMascotMorphTarget<T extends HTMLElement>() {
     const morph = takeMascotMorph();
     if (!morph) return;
 
+    // --- Fondo anaranjado: copia fija, arriba de todo menos de la
+    // mascota, que se desvanece sola sin afectar el layout de esta
+    // pantalla (no ocupa espacio real, solo se ve encima).
+    const bgWrap = document.createElement('div');
+    bgWrap.innerHTML = morph.bgHtml;
+    const bgClone = bgWrap.firstElementChild as HTMLElement | null;
+    if (bgClone) {
+      Object.assign(bgClone.style, {
+        position: 'fixed',
+        inset: '0',
+        margin: '0',
+        zIndex: '9998',
+        pointerEvents: 'none',
+      });
+      document.body.appendChild(bgClone);
+      const bgAnim = bgClone.animate([{ opacity: 1 }, { opacity: 0 }], { duration: FADE_MS, easing: 'ease', fill: 'forwards' });
+      bgAnim.finished.catch(() => {}).then(() => bgClone.remove());
+    }
+
+    // --- Mascota: la técnica FLIP de siempre.
     const toRect = el.getBoundingClientRect();
     el.style.visibility = 'hidden';
 
@@ -103,6 +129,7 @@ export function useMascotMorphTarget<T extends HTMLElement>() {
     return () => {
       cancelled = true;
       clone.remove();
+      bgClone?.remove();
       el.style.visibility = '';
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- solo debe correr una vez, al montar

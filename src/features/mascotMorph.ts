@@ -3,6 +3,7 @@ import { prefersReducedMotion } from './motion';
 interface PendingMorph {
   fromRect: DOMRect;
   html: string;
+  bgHtml: string;
   durationMs?: number;
 }
 
@@ -12,14 +13,22 @@ interface PendingMorph {
 // navegaciones al mismo tiempo.
 let pending: PendingMorph | null = null;
 
-/** Llamar en Welcome, con el wrapper de la mascota, justo antes de
- * `navigate(...)`. Guarda una foto (posición + markup) para que la
- * pantalla de destino pueda animar una copia desde ahí hasta la suya.
+// Cuánto tarda en desvanecerse la copia del fondo anaranjado, del lado
+// de la pantalla de destino — arranca al mismo tiempo que el viaje de
+// la mascota (ver hooks/useMascotMorphTarget.ts), no antes.
+export const FADE_MS = 480;
+
+/** Llamar en Welcome, con el wrapper de la mascota y el del fondo, justo
+ * antes de `navigate(...)`. Guarda una foto de los dos (posición + markup
+ * de la mascota; solo markup del fondo) para que la pantalla de destino
+ * pueda animar una copia de cada uno desde ahí — el vuelo de la mascota y
+ * el desvanecido del naranja arrancan juntos, en vez de que el fade
+ * termine primero y recién ahí empiece a moverse la mascota.
  * `durationMs` es opcional — cada pantalla de destino trae su propio
- * default si no se pisa acá (ver hooks/useMascotMorphTarget.ts). */
-export function armMascotMorph(el: HTMLElement, durationMs?: number) {
+ * default si no se pisa acá. */
+export function armMascotMorph(mascotEl: HTMLElement, bgEl: HTMLElement, durationMs?: number) {
   if (prefersReducedMotion()) return;
-  pending = { fromRect: el.getBoundingClientRect(), html: el.outerHTML, durationMs };
+  pending = { fromRect: mascotEl.getBoundingClientRect(), html: mascotEl.outerHTML, bgHtml: bgEl.outerHTML, durationMs };
 }
 
 /** Llamar en la pantalla de destino al montar. Se consume una sola vez:

@@ -1574,9 +1574,9 @@ try {
     );
     const midFlight = midSizes.some((w) => w > 50 && w < 140);
     assert(midFlight, 'El morph de la mascota se ve en pleno viaje (no un salto seco)', `sizes=${JSON.stringify(midSizes)}`);
-    // Usuario nuevo viaja a media velocidad (840ms) — hay que esperar más
+    // Usuario nuevo viaja a media velocidad (1680ms) — hay que esperar más
     // que en el caso general para que termine de verdad.
-    await page.waitForTimeout(750);
+    await page.waitForTimeout(1650);
     const finalSizes = await page.evaluate(() =>
       Array.from(document.querySelectorAll('svg[aria-label="Valu, la valija mascota"]')).map((el) => Math.round(el.getBoundingClientRect().width)),
     );
@@ -1584,6 +1584,33 @@ try {
       finalSizes.length === 1 && finalSizes[0] === 44,
       'Terminado el morph, queda una sola mascota visible en su tamaño final',
       `finalSizes=${JSON.stringify(finalSizes)}`,
+    );
+    await ctx.close();
+  }
+  {
+    // El fade del fondo y el viaje de la mascota tienen que arrancar
+    // juntos, no uno después del otro — se chequea bien temprano (30ms)
+    // que las dos cosas ya estén en marcha a la vez.
+    const { ctx, page } = await freshPage(browser); // sin viajes guardados
+    await page.click('[aria-label="Continuar"]');
+    await page.waitForURL(/\/intro$/, { timeout: 1000 });
+    await page.waitForTimeout(100);
+    const state = await page.evaluate(() => {
+      const bg = Array.from(document.querySelectorAll('div')).find((d) => getComputedStyle(d).zIndex === '9998');
+      const mascotSizes = Array.from(document.querySelectorAll('svg[aria-label="Valu, la valija mascota"]')).map((el) =>
+        Math.round(el.getBoundingClientRect().width),
+      );
+      return { bgOpacity: bg ? Number(getComputedStyle(bg).opacity) : null, mascotSizes };
+    });
+    const bgAlreadyFading = state.bgOpacity !== null && state.bgOpacity < 0.9;
+    // No hace falta que ya esté "a mitad de camino" — con que se haya
+    // despegado un poco del tamaño de arranque (150px) alcanza para
+    // confirmar que el viaje ya empezó, no que esté esperando.
+    const mascotAlreadyMoving = state.mascotSizes.some((w) => w < 148);
+    assert(
+      bgAlreadyFading && mascotAlreadyMoving,
+      'El fade del fondo y el viaje de la mascota arrancan al mismo tiempo',
+      `state=${JSON.stringify(state)}`,
     );
     await ctx.close();
   }

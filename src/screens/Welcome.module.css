@@ -2,8 +2,6 @@
   min-height: 100vh;
   box-sizing: border-box;
   padding: calc(env(safe-area-inset-top) + 56px) 28px 44px;
-  /* Lo que se ve una vez que .bg terminó de desvanecerse — mismo tono
-   * que el resto de la app, para que la transición no quede en blanco. */
   background: var(--cream);
   display: flex;
   flex-direction: column;
@@ -13,21 +11,16 @@
   overflow: hidden;
 }
 
-/* Capa aparte para el color + blobs: así el fade de salida (ver goNow en
- * Welcome.tsx) se lleva puesto el naranja y la decoración, pero la
- * mascota (que sigue de largo en el morph) nunca queda tapada ni se
- * desvanece con el resto. */
+/* Capa aparte del color + blobs, separada de la mascota: al navegar se
+ * clona tal cual (ver goNow en Welcome.tsx) para desvanecerla como
+ * overlay en la pantalla de destino, al mismo tiempo que la mascota
+ * viaja — ver hooks/useMascotMorphTarget.ts. Acá en Welcome no se anima
+ * nada, es solo el fondo normal de la pantalla mientras está montada. */
 .bg {
   position: absolute;
   inset: 0;
   background: linear-gradient(170deg, var(--coral) 0%, var(--coral-mid) 62%, var(--coral-deep) 100%);
-  opacity: 1;
-  transition: opacity 240ms ease;
   z-index: 0;
-}
-
-.bgFadingOut {
-  opacity: 0;
 }
 
 .blobTop {
@@ -50,17 +43,9 @@
   background: color-mix(in srgb, var(--surface) 12%, transparent);
 }
 
-/* Envuelve el título/subtítulo del usuario nuevo — se desvanece junto
- * con .bg (mismo timing), pero por separado de la mascota. */
 .content {
   position: relative;
   z-index: 1;
-  opacity: 1;
-  transition: opacity 240ms ease;
-}
-
-.contentFadingOut {
-  opacity: 0;
 }
 
 .title {
@@ -80,7 +65,7 @@
 
 /* Referenciado por ref en Welcome.tsx: armMascotMorph mide y clona este
  * wrapper justo antes de navegar (ver features/mascotMorph.ts). Por
- * encima de .bg y .content — nunca se desvanece con el resto. */
+ * encima de .bg y .content. */
 .mascotMorph {
   position: relative;
   z-index: 2;

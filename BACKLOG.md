@@ -107,11 +107,30 @@ iPhone real y se apruebe mergear.
     z-index por encima, y nunca baja de opacidad 1. Verificado
     midiendo ambas opacidades cada 50ms durante el fade: el fondo baja
     de ~0.7 a 0 mientras la mascota se mantiene siempre en 1.
-- QA actualizado: 113/113 tests de Playwright (7 nuevos para la
-  bienvenida, 2 de ellos verificando que el morph realmente anima en
-  vuelo y no es un salto seco) + 752.640 combinaciones sin errores. Se
-  ajustó el test de reordenamiento para esperar a que termine la
-  animación antes de medir posiciones.
+  - Segunda vuelta: el usuario pidió que el fade y el viaje de la
+    mascota arranquen exactamente juntos (antes, el fade pasaba entero
+    en `Welcome.tsx` y recién terminado ese fade arrancaba el viaje en
+    la pantalla de destino — dos pasos separados, no uno). Se invirtió
+    el orden: `Welcome.tsx` ya no espera a nada, navega apenas se toca
+    la pantalla o vence el timer, y `armMascotMorph` ahora captura
+    también el fondo (`bgEl.outerHTML`), no solo la mascota. Del lado
+    de la pantalla de destino, `useMascotMorphTarget` arma DOS copias
+    al montar — la mascota (como antes) y una del fondo anaranjado,
+    fija arriba de todo (`z-index` justo debajo de la mascota, que
+    siempre queda por delante) — y dispara las dos animaciones en el
+    mismo instante. De paso se subieron los tiempos al doble, como se
+    pidió: el fade de 240ms a 480ms (`FADE_MS`, en
+    `features/mascotMorph.ts`); el viaje del usuario que vuelve de
+    420ms a 840ms (`DEFAULT_TRAVEL_MS`); el del usuario nuevo de 840ms
+    a 1680ms (`NEW_USER_MORPH_MS`). Verificado midiendo las dos
+    animaciones a los 100ms: en los dos casos el fondo ya bajó de
+    opacidad y la mascota ya se despegó de su tamaño de arranque —
+    arrancan juntas de verdad, no una después de la otra.
+- QA actualizado: 114/114 tests de Playwright (8 nuevos para la
+  bienvenida — incluye uno que verifica específicamente que el fade y
+  el viaje de la mascota arrancan en el mismo instante) + 752.640
+  combinaciones sin errores. Se ajustó el test de reordenamiento para
+  esperar a que termine la animación antes de medir posiciones.
 - **Identificador de build en el pie de "Mis viajes"**: como en esta
   rama no se sube la versión en cada push (se sube recién al mergear a
   `main`), se agregó `__BUILD_ID__` (hash corto del commit — lo toma de
