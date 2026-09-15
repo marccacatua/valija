@@ -43,6 +43,8 @@ export const TURISMO_OPTIONS: CatalogOption<TurismoKey>[] = [
   { key: 'aventura', label: 'Aventura' },
   { key: 'cultura', label: 'Cultural' },
   { key: 'fiesta', label: 'Salidas' },
+  { key: 'ski', label: 'Ski' },
+  { key: 'navegar', label: 'Navegar' },
 ];
 
 export const ALOJ_OPTIONS: CatalogOption<AlojKey>[] = [
@@ -77,6 +79,8 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
   extras: { title: 'Extras', color: 'var(--sky)' },
   bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
   camping: { title: 'Camping', color: 'var(--forest)' },
+  ski: { title: 'Ski', color: 'var(--ice)' },
+  nautica: { title: 'Náutica', color: 'var(--navy)' },
 };
 
 // Documentos primero: coincide con el mensaje de progreso ("Arrancá por
@@ -86,7 +90,7 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
 // que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
 // (temáticamente superpuesta); "Camping" al final por ser la más
 // situacional de todas (solo aparece si el alojamiento es camping).
-export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'bebe', 'ropa', 'tech', 'extras', 'camping'];
+export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'bebe', 'ropa', 'tech', 'extras', 'camping', 'ski', 'nautica'];
 
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';

@@ -141,6 +141,11 @@
   gap: 16px;
 }
 
+/* Destino del morph armado en Welcome.tsx (ver hooks/useMascotMorphTarget). */
+.mascotMorph {
+  flex: none;
+}
+
 .progressCount {
   display: flex;
   align-items: baseline;

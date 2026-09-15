@@ -2,13 +2,25 @@
   min-height: 100vh;
   box-sizing: border-box;
   padding: calc(env(safe-area-inset-top) + 56px) 28px 44px;
-  background: linear-gradient(170deg, var(--coral) 0%, var(--coral-mid) 62%, var(--coral-deep) 100%);
+  background: var(--cream);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   position: relative;
   overflow: hidden;
+}
+
+/* Capa aparte del color + blobs, separada de la mascota: al navegar se
+ * clona tal cual (ver goNow en Welcome.tsx) para desvanecerla como
+ * overlay en la pantalla de destino, al mismo tiempo que la mascota
+ * viaja — ver hooks/useMascotMorphTarget.ts. Acá en Welcome no se anima
+ * nada, es solo el fondo normal de la pantalla mientras está montada. */
+.bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg, var(--coral) 0%, var(--coral-mid) 62%, var(--coral-deep) 100%);
+  z-index: 0;
 }
 
 .blobTop {
@@ -31,14 +43,20 @@
   background: color-mix(in srgb, var(--surface) 12%, transparent);
 }
 
+.content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .title {
   margin: 22px 0 0;
   font: 1000 40px/1.02 'Nunito', sans-serif;
   color: var(--paper);
   letter-spacing: -0.02em;
   text-wrap: balance;
-  position: relative;
-  z-index: 2;
 }
 
 .subtitle {
@@ -46,38 +64,12 @@
   font: 700 17px/1.45 'Nunito', sans-serif;
   color: color-mix(in srgb, var(--paper) 90%, transparent);
   max-width: 290px;
-  position: relative;
-  z-index: 2;
 }
 
-.actions {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+/* Referenciado por ref en Welcome.tsx: armMascotMorph mide y clona este
+ * wrapper justo antes de navegar (ver features/mascotMorph.ts). Por
+ * encima de .bg y .content. */
+.mascotMorph {
   position: relative;
   z-index: 2;
-}
-
-.version {
-  margin-top: 10px;
-  font: 800 11px/1 'Nunito', sans-serif;
-  color: color-mix(in srgb, var(--paper) 55%, transparent);
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
-
-.legalLinks {
-  margin-top: 6px;
-  display: flex;
-  gap: 10px;
-  position: relative;
-  z-index: 2;
-}
-
-.legalLinks a {
-  font: 800 11px/1 'Nunito', sans-serif;
-  color: color-mix(in srgb, var(--paper) 55%, transparent);
-  text-decoration: underline;
 }

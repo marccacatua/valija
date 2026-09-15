@@ -15,7 +15,9 @@ import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
+import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
+import { useMascotMorphTarget } from '../hooks/useMascotMorphTarget';
 import { useTemplates } from '../hooks/useTemplates';
 import { useTrips } from '../hooks/useTrips';
 import type { CategoryKey, HomeTask, ItemTemplate, PackingItem } from '../types';
@@ -54,10 +56,44 @@ export function Checklist() {
   const [onlyPending, setOnlyPending] = useState(false);
 
   const trip = getTrip(tripId);
+  const items = trip?.items ?? [];
+  const homeChecklist = trip?.homeChecklist ?? [];
 
   useEffect(() => {
     if (trip) setLastTripId(trip.id);
   }, [trip, setLastTripId]);
+
+  // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
+  // detallada, nunca el dato de fondo (progreso, vista rápida) — filtrar no
+  // debería poder "perder" un ítem, solo ocultarlo momentáneamente.
+  const matchesFilter = (item: PackingItem) => {
+    const matchesSearch = search.trim() === '' || item.name.toLowerCase().includes(search.trim().toLowerCase());
+    const matchesPending = !onlyPending || !item.done;
+    return matchesSearch && matchesPending;
+  };
+
+  // Mismo criterio que "Mis viajes" con los finalizados: los tildados bajan
+  // al fondo de su categoría (sort estable, no reordena entre sí ni a los
+  // pendientes) — quedan arriba de "Agregar ítem", que sigue siempre último.
+  const groups = CATEGORY_ORDER.map((key) => {
+    const list = items
+      .filter((i) => i.cat === key && matchesFilter(i))
+      .sort((a, b) => Number(a.done) - Number(b.done));
+    return { key, list };
+  }).filter((g) => g.list.length);
+
+  // Mismo criterio que las categorías de arriba: las tareas tildadas bajan
+  // al fondo de "¿Quedó todo pronto en casa?" (o su variante de barco) en
+  // vez de quedarse mezcladas con las pendientes.
+  const sortedHomeChecklist = [...homeChecklist].sort((a, b) => Number(a.done) - Number(b.done));
+
+  // El hook necesita el orden VISIBLE actual en cada render para poder
+  // compararlo contra el anterior — por eso se llama acá arriba, antes de
+  // cualquier return, con el id de cada ítem tal como aparece hoy en la
+  // vista detallada (categoría por categoría, tildados al fondo) más las
+  // tareas de casa/barco, que se reordenan con el mismo criterio.
+  const registerItemNode = useFlipReorder([...groups.flatMap((g) => g.list.map((i) => i.id)), ...sortedHomeChecklist.map((t) => t.id)]);
+  const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
 
   if (!trip) {
     return (
@@ -72,7 +108,6 @@ export function Checklist() {
     );
   }
 
-  const items = trip.items;
   const customItemsInTrip = items.filter((i) => i.isCustom);
   const customHomeTasksInTrip = trip.homeChecklist.filter((t) => t.isCustom);
 
@@ -145,26 +180,7 @@ export function Checklist() {
 
   const packed = packedCount(items);
   const pct = progressPct(items);
-
-  // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
-  // detallada, nunca el dato de fondo (progreso, vista rápida) — filtrar no
-  // debería poder "perder" un ítem, solo ocultarlo momentáneamente.
-  const matchesFilter = (item: PackingItem) => {
-    const matchesSearch = search.trim() === '' || item.name.toLowerCase().includes(search.trim().toLowerCase());
-    const matchesPending = !onlyPending || !item.done;
-    return matchesSearch && matchesPending;
-  };
   const isFiltering = search.trim() !== '' || onlyPending;
-
-  // Mismo criterio que "Mis viajes" con los finalizados: los tildados bajan
-  // al fondo de su categoría (sort estable, no reordena entre sí ni a los
-  // pendientes) — quedan arriba de "Agregar ítem", que sigue siempre último.
-  const groups = CATEGORY_ORDER.map((key) => {
-    const list = items
-      .filter((i) => i.cat === key && matchesFilter(i))
-      .sort((a, b) => Number(a.done) - Number(b.done));
-    return { key, list };
-  }).filter((g) => g.list.length);
 
   // Vista rápida: mismos ítems, agrupados en temas más grandes (ver
   // data/quickGroups.ts) para revisar de un vistazo en vez de ítem por
@@ -198,6 +214,7 @@ export function Checklist() {
         {list.map((item) => (
           <button
             key={item.id}
+            ref={registerItemNode(item.id)}
             type="button"
             className={styles.item}
             onClick={() => toggleItem(trip.id, item.id)}
@@ -316,7 +333,9 @@ export function Checklist() {
             </div>
             <div className={styles.progressNote}>{progressNote(items)}</div>
           </div>
-          <Mascot size={56} />
+          <div className={styles.mascotMorph} ref={mascotMorphRef}>
+            <Mascot size={56} />
+          </div>
         </div>
       </div>
 
@@ -376,14 +395,26 @@ export function Checklist() {
 
         <div className={styles.homeSection}>
           <div className={styles.homeSectionHeader}>
-            <span className={styles.homeSectionTitle}>¿Quedó todo pronto en casa?</span>
+            <span className={styles.homeSectionTitle}>
+              {trip.form.turismo === 'navegar' ? '¿Está todo listo en el barco?' : '¿Quedó todo pronto en casa?'}
+            </span>
             <span className={styles.groupCount}>
-              {trip.homeChecklist.filter((t) => t.done).length}/{trip.homeChecklist.length}
+              {homeChecklist.filter((t) => t.done).length}/{homeChecklist.length}
             </span>
           </div>
-          <div className={styles.homeSectionHint}>No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.</div>
-          {trip.homeChecklist.map((task) => (
-            <button key={task.id} type="button" className={styles.item} onClick={() => toggleHomeTask(trip.id, task.id)}>
+          <div className={styles.homeSectionHint}>
+            {trip.form.turismo === 'navegar'
+              ? 'No suma al progreso de la valija — chequeos de seguridad antes de zarpar.'
+              : 'No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.'}
+          </div>
+          {sortedHomeChecklist.map((task) => (
+            <button
+              key={task.id}
+              ref={registerItemNode(task.id)}
+              type="button"
+              className={styles.item}
+              onClick={() => toggleHomeTask(trip.id, task.id)}
+            >
               <span className={`${styles.checkbox} ${task.done ? styles.checkboxDone : ''}`}>✓</span>
               <span className={`${styles.itemName} ${task.done ? styles.itemNameDone : ''}`}>{task.label}</span>
               <span onClick={(e) => e.stopPropagation()}>

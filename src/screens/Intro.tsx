@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/Button';
+import { Mascot } from '../components/Mascot';
+import { useMascotMorphTarget } from '../hooks/useMascotMorphTarget';
 import styles from './Intro.module.css';
 
 const STEPS = [
@@ -40,11 +42,20 @@ const STEPS = [
 
 export function Intro() {
   const navigate = useNavigate();
+  const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
   return (
     <div className={styles.screen}>
-      <div className={styles.dots}>
-        <span className={styles.dot} />
-        <span className={`${styles.dot} ${styles.dotActive}`} />
+      <div className={styles.headerRow}>
+        <div className={styles.dots}>
+          <span className={styles.dot} />
+          <span className={`${styles.dot} ${styles.dotActive}`} />
+        </div>
+        {/* Si se llega acá desde la bienvenida (usuario nuevo), esta mascota
+            chica es el destino del morph armado en Welcome.tsx (ver
+            hooks/useMascotMorphTarget). */}
+        <div className={styles.mascotMorph} ref={mascotMorphRef}>
+          <Mascot size={44} />
+        </div>
       </div>
       <h2 className={styles.title}>Tres toques y tu valija está lista</h2>
 

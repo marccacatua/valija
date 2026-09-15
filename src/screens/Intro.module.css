@@ -7,10 +7,21 @@
   flex-direction: column;
 }
 
+.headerRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
 .dots {
   display: flex;
   gap: 7px;
-  margin-bottom: 30px;
+}
+
+/* Destino del morph armado en Welcome.tsx (ver hooks/useMascotMorphTarget). */
+.mascotMorph {
+  flex: none;
 }
 
 .dot {

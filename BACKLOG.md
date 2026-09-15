@@ -1,5 +1,205 @@
 # Backlog
 
+## En curso en la rama `post-v1-ux` (arrancado 2026-09-14)
+
+Mientras la v1.0.0 está en revisión de Apple, se decidió avanzar en
+paralelo con la "lista de nativez" + las dos features grandes, todo en
+una rama aparte (`post-v1-ux`) para no tocar `main` — que se mantiene
+igual a lo que Apple tiene en revisión — hasta que esto se pruebe en un
+iPhone real y se apruebe mergear.
+
+**Hecho en la rama, pendiente de probar en el celular:**
+- Haptics (`@capacitor/haptics`, `src/features/haptics.ts`) en tildar un
+  ítem, una tarea de casa, un grupo entero (vista rápida), y un toque
+  más fuerte al marcar un viaje finalizado. No-op silencioso en web.
+- `user-select: none` en botones/`[role=button]` — ya no se selecciona
+  texto al mantener presionado un ítem.
+- `prefers-reduced-motion` respetado: bloque global en CSS para
+  transiciones/animaciones, más un helper (`features/motion.ts`) para
+  el código que anima por JS (ver los dos puntos siguientes).
+- **Animación FLIP al tildar un ítem** (opción A del plan: código
+  propio con Web Animations API, sin librería nueva) —
+  `hooks/useFlipReorder.ts`. El ítem se queda tildado en su lugar
+  ~220ms y recién ahí viaja a su nueva posición en ~300ms, para no
+  perder el feedback del tilde. Falta calibrar esos dos números
+  mirándolo en un iPhone real.
+- **Bienvenida rediseñada estilo Headspace** (`screens/Welcome.tsx`):
+  ya no tiene botones — transiciona sola. Usuario nuevo ve un mensaje
+  corto ("A partir de ahora no te olvidás más nada") y pasa a Intro;
+  usuario que vuelve ve solo la mascota un instante y va **directo a su
+  último viaje sin terminar** (o a "Mis viajes" si no queda ninguno
+  activo). Tocar la pantalla saltea la espera en cualquier caso. La
+  versión y los links de Privacidad/Soporte, que vivían en esta
+  pantalla, se mudaron a un pie discreto en "Mis viajes".
+- **Morph del logo entre Bienvenida y el viaje** — código propio con Web
+  Animations API, **no** la View Transitions API del browser: se probó
+  primero con `document.startViewTransition` (más simple, sin manejar
+  DOM a mano), pero no animaba de verdad ni en Chrome ni en Safari
+  (iOS 26) — el usuario lo probó en su iPhone real y confirmó que el
+  logo aparecía ya en su posición final, sin transición visible. Se
+  reemplazó por el mismo tipo de técnica que ya usa el FLIP del
+  checklist: `features/mascotMorph.ts` guarda la posición y una copia
+  del HTML de la mascota justo antes de que Welcome navegue afuera;
+  `hooks/useMascotMorphTarget.ts`, usado en Checklist e Intro, la
+  recoge al montar, arma una copia en `position: fixed` y anima con
+  `element.animate()` desde esa posición hasta la propia (ocultando el
+  original real mientras dura, para que no se vean las dos
+  superpuestas). Ojo con el bug que salió al construirlo: el `<svg>` de
+  la mascota tiene `width`/`height` fijos como atributos, así que
+  animar el tamaño del `<div>` que lo envuelve no lo achicaba solo —
+  hubo que forzar `width:100%;height:100%` en el `<svg>` clonado para
+  que seguiera al contenedor. Si el destino no tiene mascota ("Mis
+  viajes"), no pasa nada especial (ni falla ni deja nada colgado).
+  Duración 420ms por defecto, misma curva que el FLIP para que se
+  sienta consistente. Andá con confianza en cualquier browser — no
+  depende de ninguna API experimental. Ya probado en un iPhone real
+  (iOS 26) y ajustado dos veces con feedback directo del usuario:
+  - Usuario nuevo (Bienvenida → Intro): se sentía demasiado rápido —
+    ahora dura el doble, 840ms (`NEW_USER_MORPH_MS` en `Welcome.tsx`,
+    pisa el default vía el segundo argumento de `armMascotMorph`). El
+    caso de usuario que vuelve se dejó en 420ms, que ya andaba bien.
+  - Usuario que vuelve (Bienvenida → Checklist): quedaba un glitch de
+    un frame al terminar — un instante en el que ni la copia animada ni
+    la mascota real estaban visibles. Causa: ocultar/mostrar la real se
+    hacía con estado de React (`setHidden`), que no es síncrono con
+    sacar la copia del DOM. Se cambió a escribir `style.visibility`
+    directo sobre el nodo en el mismo tick que se agrega/saca la copia
+    — verificado midiendo cuadro por cuadro (cada 20ms) que siempre hay
+    exactamente una mascota visible, nunca cero.
+  - En los dos casos, el usuario vio un "saltito" justo al terminar: el
+    destino final no coincidía exactamente con dónde queda la mascota
+    real. Causa: se animaba `left/top/width/height` directo, que son
+    propiedades de layout — cada cuadro reacomoda la página y puede
+    quedar una diferencia de sub-píxel justo al final. Se cambió a la
+    técnica FLIP clásica con `transform` (compuesto por GPU, sin
+    relayout en cada cuadro): la copia queda parada desde el arranque
+    en el tamaño y posición finales reales, y un `transform` invertido
+    la hace *verse* en el origen; se anima ese transform hasta la
+    identidad. Verificado comparando el rect real contra el de la copia
+    ya terminada: coinciden exacto (diferencia 0.00px) en los dos casos.
+  - Ese arreglo no alcanzó del todo — seguía quedando un saltito
+    "muy poquito" hacia abajo, en los dos casos. Causa real, distinta
+    de las anteriores: `Mascot.tsx` nunca le puso `display: block` al
+    `<svg>` — por default es `inline`, y un elemento inline reemplazado
+    (como una `<img>`) deja un huequito debajo por alineación a la
+    línea de base. La mascota real ocupa un poco menos que su propio
+    contenedor; la copia, en cambio, fuerza el svg a `width/height:
+    100%`, así que rellena ESE huequito y termina un pelín más alta —
+    visualmente, más abajo respecto de un punto de referencia
+    compartido. Con `display: block` en el `<svg>` de Mascot.tsx, el
+    contenedor mide exactamente lo que mide el dibujo, en la mascota
+    real y en la copia por igual. Reverificado: ahora coincide en
+    posición Y en ancho/alto (antes solo se había chequeado posición).
+- **Fade de la pantalla de bienvenida al salir**: el corte a la pantalla
+  siguiente era seco — el fondo anaranjado desaparecía de golpe justo
+  cuando arrancaba el morph del logo. Ahora `goNow` en `Welcome.tsx`
+  arma el morph (con la mascota todavía intacta, sin desvanecer),
+  después agrega la clase `.fadingOut` y recién cuando termina ese fade
+  navega de verdad — en los dos casos (usuario nuevo y que vuelve). Se
+  salta entero con reduced-motion, igual que el resto de las
+  animaciones de esta pantalla.
+  - Primera versión: se desvanecía toda la pantalla junta (`.screen`),
+    incluida la mascota — se veía bien el fade del naranja, pero la
+    mascota se apagaba con todo lo demás en vez de seguir viéndose
+    mientras viaja. Se separó en capas: `.bg` (el gradiente + los
+    blobs) y `.content` (título/subtítulo del usuario nuevo) se
+    desvanecen en 240ms; `.mascotMorph` queda afuera de esa capa, con
+    z-index por encima, y nunca baja de opacidad 1. Verificado
+    midiendo ambas opacidades cada 50ms durante el fade: el fondo baja
+    de ~0.7 a 0 mientras la mascota se mantiene siempre en 1.
+  - Segunda vuelta: el usuario pidió que el fade y el viaje de la
+    mascota arranquen exactamente juntos (antes, el fade pasaba entero
+    en `Welcome.tsx` y recién terminado ese fade arrancaba el viaje en
+    la pantalla de destino — dos pasos separados, no uno). Se invirtió
+    el orden: `Welcome.tsx` ya no espera a nada, navega apenas se toca
+    la pantalla o vence el timer, y `armMascotMorph` ahora captura
+    también el fondo (`bgEl.outerHTML`), no solo la mascota. Del lado
+    de la pantalla de destino, `useMascotMorphTarget` arma DOS copias
+    al montar — la mascota (como antes) y una del fondo anaranjado,
+    fija arriba de todo (`z-index` justo debajo de la mascota, que
+    siempre queda por delante) — y dispara las dos animaciones en el
+    mismo instante. De paso se subieron los tiempos al doble, como se
+    pidió: el fade de 240ms a 480ms (`FADE_MS`, en
+    `features/mascotMorph.ts`); el viaje del usuario que vuelve de
+    420ms a 840ms (`DEFAULT_TRAVEL_MS`); el del usuario nuevo de 840ms
+    a 1680ms (`NEW_USER_MORPH_MS`). Verificado midiendo las dos
+    animaciones a los 100ms: en los dos casos el fondo ya bajó de
+    opacidad y la mascota ya se despegó de su tamaño de arranque —
+    arrancan juntas de verdad, no una después de la otra.
+- **Texto del usuario nuevo descentrado + más tiempo para leer**: al
+  separar título y subtítulo en su propio `.content` (para el fade de
+  arriba), dejaron de ser ítems de flexbox independientes — que es lo
+  que los centraba antes — y pasaron a ser bloques normales. El
+  subtítulo, con `max-width: 290px`, quedaba pegado a la izquierda en
+  vez de centrado respecto del título (que sí ocupa todo el ancho de
+  `.content` y por eso se veía bien). Se le puso `display: flex;
+  flex-direction: column; align-items: center;` a `.content`, restaurando
+  el mismo centrado independiente por ítem que tenían antes de ese
+  refactor. De paso, `NEW_USER_HOLD_MS` pasó de 1800ms a 3600ms — no
+  daba el tiempo para leer el mensaje completo.
+- `FADE_MS` (el desvanecido del fondo) subió otro 30%: de 480ms a
+  624ms, a pedido del usuario para probar cómo se siente más lento.
+- **El fade tiene que durar lo mismo que el viaje de la mascota**, no un
+  número aparte — así termina justo cuando la mascota llega a destino,
+  no antes. Se sacó `FADE_MS` como constante independiente:
+  `useMascotMorphTarget` ahora calcula `duration = morph.durationMs ??
+  DEFAULT_TRAVEL_MS` una sola vez y la usa para las DOS animaciones
+  (fondo y mascota). Con esto, el fade queda en 840ms para el usuario
+  que vuelve y 1680ms para el nuevo — automáticamente iguales al viaje
+  de la mascota en cada caso, sin tener que mantener dos números
+  sincronizados a mano. Verificado que las dos copias (fondo y
+  mascota) desaparecen en la misma ventana de tiempo en los dos casos.
+- **Vuelta a independizarlos**: el usuario pidió probar el fade 50% más
+  lento SIN tocar el viaje de la mascota — así que se separaron nuevo.
+  `armMascotMorph` ahora recibe un objeto de opciones (`{ travelMs,
+  fadeMs }` en vez de un solo `durationMs`), y `useMascotMorphTarget`
+  guarda `DEFAULT_TRAVEL_MS` (840ms) y `DEFAULT_FADE_MS` (1260ms, 50%
+  más) por separado, cada uno animando su propia copia con su propia
+  duración. El usuario nuevo pisa los dos explícitamente en
+  `Welcome.tsx`: viaje 1680ms (sin cambios) y fade
+  `NEW_USER_TRAVEL_MS * 1.5` = 2520ms. Verificado que la mascota llega
+  a destino en los tiempos de siempre (840/1680ms) mientras el fondo
+  sigue desvaneciéndose 50% más (1260/2520ms) en cada caso.
+- El fade subió otro 25% sobre eso (a pedido del usuario, para seguir
+  probando cómo se siente): `DEFAULT_FADE_MS` de 1260ms a 1575ms;
+  `NEW_USER_FADE_MS` de `NEW_USER_TRAVEL_MS * 1.5` a `* 1.875` (1680ms
+  → 3150ms). El viaje de la mascota no se tocó.
+- QA actualizado: 114/114 tests de Playwright (8 nuevos para la
+  bienvenida — incluye uno que verifica específicamente que el fade y
+  el viaje de la mascota arrancan en el mismo instante) + 752.640
+  combinaciones sin errores. Se ajustó el test de reordenamiento para
+  esperar a que termine la animación antes de medir posiciones.
+- **Identificador de build en el pie de "Mis viajes"**: como en esta
+  rama no se sube la versión en cada push (se sube recién al mergear a
+  `main`), se agregó `__BUILD_ID__` (hash corto del commit — lo toma de
+  `VERCEL_GIT_COMMIT_SHA` en el deploy, o de `git rev-parse` en local)
+  al lado de la versión, para poder confirmar a simple vista que se
+  está viendo el último push sin tener que preguntar.
+- **Fix real (no del mockup de ski/navegar, encontrado mientras se
+  probaba): tildar una tarea de "¿Quedó todo pronto en casa?" no la
+  mandaba al fondo de la lista** — a diferencia de los ítems de la
+  valija, que sí bajan al fondo de su categoría (tildados) desde hace
+  rato. Faltaba aplicarle el mismo criterio: `Checklist.tsx` ahora
+  ordena `homeChecklist` igual que las categorías (`sort` estable por
+  `done`) y las sumó al mismo `useFlipReorder` que ya usan los ítems —
+  misma animación, un solo hook. Bug preexistente en el feature ya
+  shippeado (`homeChecklist`), no específico de ski/navegar, pero
+  afecta también a la futura sección "¿Está todo listo en el barco?"
+  porque es el mismo mecanismo. QA: nuevo test que confirma que tildar
+  una tarea de casa la manda al fondo (116/116 en total).
+
+**Sin tocar todavía (decidido explícitamente por el usuario, 2026-09-14):**
+- Fichas por país (ASO) y español neutro/selector de idioma: esperar a
+  que Apple apruebe la app.
+- Google Play, promoción, versión en inglés: quedan para después de la
+  licencia del usuario (~15 días desde el 14/09).
+
+**Cómo seguimos:** falta que el usuario compile esta rama en su iPhone
+y la prueba de verdad — sobre todo calibrar los tiempos del FLIP y de
+la bienvenida, que un simulador o una captura no pueden juzgar del
+todo. Recién después de eso conviene mergear a `main`, subir versión
+(probablemente v1.1.0) y generar un build nuevo para Apple.
+
 ## Pendientes para retomar tras el envío a revisión (v1.0.0, 2026-09-14)
 
 El usuario va a estar de licencia ~15 días desde acá. Anotado para
@@ -11,29 +211,17 @@ retomar a la vuelta, en este orden sugerido:
    hicimos para iOS pero del lado de Android (cuenta de Google Play
    Console, ficha, capturas, revisar si Capacitor necesita algo
    especial para Android que no tocamos en esta ronda).
-3. **Animación fluida al tildar ítems**: hoy cuando se tilda un ítem
-   (y baja al fondo de su categoría, ver v0.20.4) el cambio de posición
-   es instantáneo — "desaparece" de un lugar y "aparece" en el otro.
-   El usuario quiere que se sienta como que el ítem "viaja" a su nueva
-   posición (una animación tipo FLIP — First/Last/Invert/Play — o una
-   librería como Framer Motion / `react-flip-toolkit`). Mejora de
-   sensación de uso, no de lógica.
-4. **Rediseño de la pantalla de bienvenida, estilo Headspace**: hoy
-   requiere apretar un botón para pasar a la app. La idea es que
-   transicione sola, sin que el usuario tenga que tocar nada:
-   - Usuario nuevo (sin viajes guardados): mensaje de bienvenida corto
-     tipo "a partir de ahora no te olvidás más nada", y de ahí pasa
-     solo a crear el primer viaje.
-   - Usuario que ya usó la app: solo ve el logo un instante y
-     transiciona directo a "Mis viajes".
-   **Pendiente de decidir**: si esto se diseña directo acá en código,
-   o si conviene pasar primero por un mockup/proceso de diseño más
-   cuidado (Design) antes de construirlo, dado que es una primera
-   impresión importante.
+3. ~~**Animación fluida al tildar ítems**~~ ✅ implementada en la rama
+   `post-v1-ux` (ver arriba), falta calibrar en dispositivo real.
+4. ~~**Rediseño de la pantalla de bienvenida, estilo Headspace**~~ ✅
+   implementado en la rama `post-v1-ux` (ver arriba): se hizo directo
+   en código, sin pasar por Design (decisión del usuario), y el destino
+   del usuario que vuelve es su último viaje sin terminar.
 5. **Estrategia de promoción de la app**: pensar dónde y cómo
    promocionarla (¿desde esta misma conversación, desde claude.ai,
    desde Cowork?). Foco inicial: **países de habla hispana**, hasta
-   que exista una versión en inglés (ítem aparte, ver abajo).
+   que exista una versión en inglés (ítem aparte, ver abajo). En
+   pausa hasta que Apple apruebe la app.
 6. **Español neutro o selector de idioma** (para cuando se piense la
    promoción/expansión): evaluar si conviene neutralizar un poco el
    español actual (hoy tiene modismos rioplatenses: "boarding pass",
@@ -41,19 +229,18 @@ retomar a la vuelta, en este orden sugerido:
    Importante: **evitar agregarle fricción al usuario** — la esencia
    de Valija es ser rápida y cómoda, así que si se agrega selección de
    idioma tiene que ser mínima (por ejemplo, autodetectada del
-   dispositivo, sin una pantalla extra que haya que completar).
+   dispositivo, sin una pantalla extra que haya que completar). En
+   pausa hasta que Apple apruebe la app.
 7. **Versión en inglés**: traducir la app para poder promocionarla
    fuera del mundo hispanohablante — depende de resolver primero el
    punto anterior (neutralizar/decidir variantes) para no traducir dos
    veces.
-8. **¿Seguimos en PWA/Capacitor o nos pasamos a Swift nativo?**
-   Pregunta abierta del usuario, motivada por querer la mejor fluidez
-   y animaciones posibles. Analizado en detalle en el documento de
-   plan (ver más abajo) — la recomendación corta es **quedarse en
-   Capacitor** y atacar los síntomas concretos que hacen que se sienta
-   "web" (haptics, animaciones, gestos), porque pasar a Swift
-   implicaría además reescribir todo de nuevo en Kotlin para Google
-   Play y tirar los 752k casos de QA que ya tenemos.
+8. ~~**¿Seguimos en PWA/Capacitor o nos pasamos a Swift nativo?**~~ ✅
+   Decidido (2026-09-14): **seguimos en Capacitor** (opción C del plan —
+   si algún día hace falta algo puntual, un módulo nativo específico en
+   vez de reescribir todo). Pasar a Swift implicaría además reescribir
+   todo de nuevo en Kotlin para Google Play y tirar los 752k casos de
+   QA que ya tenemos.
 9. ~~**Bloquear la rotación de pantalla**~~ ✅ hecho (pendiente de
    verificar en el dispositivo). La app rotaba a horizontal y quedaba
    mal; ahora `UISupportedInterfaceOrientations` en `Info.plist` sólo
@@ -136,6 +323,65 @@ lleve equipo propio lo agregue como ítem suyo.
   se cuele ningún ítem de nieve.
 - A definir: si ski + clima cálido es una combinación válida (existe el
   ski de primavera) o si conviene bloquearla.
+
+## Viajes en velero / navegar (próxima versión, dentro de Pro)
+
+Pedido del usuario (2026-09-14). Va **dentro de la versión paga**, igual
+que ski/bebé/camping. Lo distinto acá: no es solo "qué empacar" — el
+usuario pidió específicamente **dos listas separadas**: la valija de la
+persona, y un chequeo de la embarcación antes de zarpar (seguridad y
+logística del barco, no pertenencias personales).
+
+**Cómo modelarlo:** mismo patrón que se recomendó para ski —
+`TurismoKey: 'navegar'` (al lado de relax/aventura/cultura/fiesta/ski),
+sin agregar una pregunta nueva al formulario. Combina con `dest: playa`
+como es esperable, pero no depende de él (hay navegación en lagos/ríos
+también, y el formulario ya no obliga esa relación para otras
+combinaciones). Para el equipo personal, una `CategoryKey: 'nautica'`
+nueva — mismo patrón que camping/ski.
+
+**Ítems personales** (borrador): calzado náutico antideslizante,
+campera rompeviento/impermeable, gafas de sol con cordón flotante
+(para que no se hundan si caen al agua), gorra con barbijo, protector
+solar de factor alto (el reflejo del agua quema más que en tierra),
+guantes de vela, un abrigo extra en capas (en el mar hace más frío y
+viento que en tierra aunque el clima elegido sea "calor"), una muda de
+recambio por si se moja, bolsa estanca para celular/documentos, y
+pastillas para el mareo.
+
+**La segunda lista — chequeo del barco — es la parte nueva de verdad.**
+Ya existe en la app un mecanismo casi idéntico: `homeChecklist`
+(`useTrips.ts`), la lista de tareas de "¿Quedó todo pronto en casa?"
+que hoy vive separada de los ítems para empacar. Es exactamente el
+mismo tipo de cosa — una lista de tareas, no de objetos — solo que para
+un barco en vez de una casa. Recomiendo **generalizar esa lista en vez
+de crear una tercera estructura de datos**: mismo hook, misma UI,
+mismo botón de agregar tarea propia, pero con:
+- Un título dinámico según `turismo`: "¿Está todo listo en el barco?"
+  en vez de "¿Quedó todo pronto en casa?" cuando `turismo === 'navegar'`.
+- Tareas por default propias en vez de las de agua/gas/plantas:
+  chalecos salvavidas (uno por tripulante), botiquín, extintor,
+  bengalas, ancla y cabo en condiciones, nivel de combustible, batería
+  cargada, radio VHF u otro medio de comunicación, pronóstico
+  meteorológico revisado, plan de navegación avisado a alguien en
+  tierra, documentación/matrícula de la embarcación, luces de
+  navegación, bomba de achique.
+- **Ojo**: no debería *reemplazar* la lista de casa — quien sale a
+  navegar probablemente también tenga que dejar algo pronto en su
+  casa. A definir con el usuario si conviene que aparezcan las DOS
+  listas (casa + barco) cuando `turismo === 'navegar'`, o si el barco
+  la reemplaza del todo.
+
+**Enganches con lo que ya existe:**
+- Gateado con el flag `extraCategories`, igual que bebé/camping/ski.
+- Actualizar el texto del paywall (`PaywallSheet.tsx`).
+- Sumar una opción más a `TurismoKey` agrega otro salto en el QA
+  combinatorio (ver la misma nota en la sección de ski) — hay que medir
+  el total actualizado antes de sumar ski Y navegar juntos.
+- Si se generaliza `homeChecklist`, conviene primero decidirlo también
+  para ski (¿tiene sentido una "segunda lista" para ski, tipo "¿la
+  campera está seca, el equipo alquilado confirmado?"), para no
+  generalizar el mecanismo dos veces con criterios distintos.
 
 ## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 

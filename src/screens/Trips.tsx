@@ -1,6 +1,6 @@
 import { Capacitor } from '@capacitor/core';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { BackupSheet } from '../components/BackupSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
@@ -175,6 +175,20 @@ export function Trips() {
             Borrar todos los viajes
           </button>
         )}
+
+        {/* Antes vivían en la pantalla de bienvenida — se mudaron acá al
+            convertirla en un splash que transiciona solo, sin botones
+            (ver Welcome.tsx). "Mis viajes" es la pantalla estable a la
+            que siempre se puede volver por el bottom nav. */}
+        <div className={styles.footer}>
+          <div className={styles.version}>
+            v{__APP_VERSION__} · {__BUILD_ID__}
+          </div>
+          <div className={styles.legalLinks}>
+            <Link to="/privacidad">Privacidad</Link>
+            <Link to="/soporte">Soporte</Link>
+          </div>
+        </div>
         <div style={{ height: 20 }} />
       </div>
 

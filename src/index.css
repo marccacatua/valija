@@ -57,6 +57,11 @@
   --forest-dark: #3e6837;
   --baby-pink: #ef83a8;
   --baby-pink-dark: #d8547f;
+  /* Mockup temporal ski/náutica — no commitear */
+  --ice: #4fb8d9;
+  --ice-dark: #2e8aa8;
+  --navy: #3a5a8c;
+  --navy-dark: #24395c;
 }
 
 * {
@@ -99,6 +104,17 @@ button {
   cursor: pointer;
 }
 
+/* Sin esto, mantener presionado un ítem selecciona su texto como en una
+   página web — es la señal más clara de "esto no es una app nativa".
+   Reglas separadas (no un reset visual compartido) para no pisarle
+   background/padding propio a los `[role="button"]` que ya tienen su
+   propio módulo CSS (ej. los botones de Trips.tsx). */
+button,
+[role='button'] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 a {
   color: var(--coral-dark);
   font-weight: 800;
@@ -125,4 +141,20 @@ a:hover {
   min-height: 100vh;
   background: var(--cream);
   position: relative;
+}
+
+/* Alguien con esta preferencia activada suele tenerla por mareo/vértigo
+ * real, no por gusto estético — se respeta sin excepciones. Cubre las
+ * transiciones/animaciones por CSS; las animadas por JS (Web Animations
+ * API, ej. el FLIP al tildar un ítem) chequean `matchMedia` aparte,
+ * porque esta regla no les llega. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -14,7 +14,13 @@ export function Mascot({ size = 56, bodyColor = 'var(--mustard)', strapColor = '
       height={size}
       viewBox="0 0 120 120"
       aria-label="Valu, la valija mascota"
-      style={animated ? { animation: 'floaty 5s ease-in-out infinite' } : undefined}
+      // display:block evita el espacio fantasma que deja un <svg> inline
+      // debajo suyo (alineado a la línea de base, como una <img>) — sin
+      // esto, el div que lo envuelve mide unos px más de lo que ocupa el
+      // dibujo, y eso se nota en el morph (features/mascotMorph.ts): la
+      // copia fuerza el svg a 100% del contenedor, así que terminaba un
+      // poquito más grande/abajo que la mascota real.
+      style={{ display: 'block', ...(animated ? { animation: 'floaty 5s ease-in-out infinite' } : null) }}
     >
       <rect x="46" y="10" width="28" height="20" rx="10" fill="none" stroke="var(--ink)" strokeWidth="6" />
       <rect x="14" y="26" width="92" height="76" rx="22" fill={bodyColor} />
