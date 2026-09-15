@@ -187,6 +187,44 @@ iPhone real y se apruebe mergear.
   afecta también a la futura sección "¿Está todo listo en el barco?"
   porque es el mismo mecanismo. QA: nuevo test que confirma que tildar
   una tarea de casa la manda al fondo (116/116 en total).
+- **Fix real: el FLIP de reorder (`useFlipReorder.ts`) "saltaba" al tildar
+  un ítem cerca del borde superior de la pantalla, después de scrollear**
+  — reportado por el usuario probando la app a fondo. Causa: el hook
+  medía la posición de cada ítem con `getBoundingClientRect()`, relativa
+  al viewport. Si el usuario scrolleaba (sin tildar nada) entre un tilde
+  y el siguiente, esa foto vieja quedaba tomada a un scroll distinto del
+  actual — al tildar de nuevo, la comparación vieja-vs-nueva incluía el
+  delta del scroll de por medio como si fuera un movimiento real, y
+  **todos** los ítems de la lista (no solo el tildado) se animaban de
+  golpe desde un offset falso, más grande cuanto más se había scrolleado
+  (típico al llegar a un ítem cerca del borde superior tras bajar
+  bastante). Reproducido primero con un script aparte que confirmó el
+  bug (ítems de otras categorías, lejos del que se tildó, recibían
+  animaciones de cientos de píxeles que no debían). Arreglado sumando el
+  scroll actual a cada medición (`rect.top + window.scrollY`, posición
+  "absoluta de página" en vez de "relativa al viewport") — así dx/dy
+  reflejan solo el movimiento real dentro del documento, sin importar
+  cuánto se haya scrolleado entre medio. QA: nuevo test que tilda un
+  ítem, scrollea sin tocar nada más, tilda otro, y confirma que un ítem
+  de una categoría totalmente distinta no recibe ninguna animación.
+- **Feature: deshacer un ítem o tarea de casa borrada por error**
+  (`components/UndoSnackbar.tsx`) — pedido del usuario tras notar que no
+  había forma de recuperar un borrado accidental. Se mantiene el borrado
+  instantáneo al tocar "×" (sin pedir confirmación antes: es una acción
+  frecuente y casi siempre a propósito — mismo criterio que Gmail/Trello,
+  no el de "¿Borrar este viaje?" que sí confirma antes por ser mucho más
+  grave), pero aparece una franja fija arriba del `BottomNav` con el
+  nombre de lo borrado y un botón "Deshacer" por 5 segundos; pasado ese
+  tiempo, o si se borra otra cosa mientras tanto, el borrado queda firme.
+  `useTrips.ts` sumó `restoreItem`/`restoreHomeTask` — no hace falta
+  reinsertar en la posición exacta del array porque el orden visual
+  siempre sale de ordenar por categoría + tildado, nunca del orden del
+  array. QA: 5 tests nuevos (borra sin confirmar, aparece el snackbar
+  con el nombre correcto, deshacer repone el ítem, el snackbar
+  desaparece solo pasado el tiempo, no queda tapado por el `BottomNav`,
+  y lo mismo para una tarea de casa).
+- QA actualizado tras estos dos últimos fixes: 125/125 tests de
+  Playwright.
 
 **Sin tocar todavía (decidido explícitamente por el usuario, 2026-09-14):**
 - Fichas por país (ASO) y español neutro/selector de idioma: esperar a

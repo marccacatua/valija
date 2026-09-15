@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { buildItems } from '../data/buildItems';
 import { buildHomeChecklist } from '../data/homeTasks';
 import { hapticTap, hapticMedium } from '../features/haptics';
-import type { CategoryKey, Trip, TripFormState } from '../types';
+import type { CategoryKey, HomeTask, PackingItem, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
 const STORAGE_KEY = 'valija:trips';
@@ -172,6 +172,24 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Repone un ítem borrado por error (ver UndoSnackbar en Checklist) — no
+   * hace falta reinsertarlo en su posición exacta: el orden visual sale
+   * siempre de ordenar por categoría + tildado, nunca del orden del array. */
+  const restoreItem = useCallback(
+    (tripId: string, item: PackingItem) => {
+      updateTrip(tripId, (t) => ({ ...t, items: [...t.items, item] }));
+    },
+    [updateTrip],
+  );
+
+  /** Misma idea que restoreItem, para una tarea de casa/barco. */
+  const restoreHomeTask = useCallback(
+    (tripId: string, task: HomeTask) => {
+      updateTrip(tripId, (t) => ({ ...t, homeChecklist: [...t.homeChecklist, task] }));
+    },
+    [updateTrip],
+  );
+
   const removeTrip = useCallback(
     (id: string) => {
       setTrips((prev) => prev.filter((t) => t.id !== id));
@@ -231,6 +249,8 @@ export function useTrips() {
     removeHomeTask,
     addCustomItem,
     removeItem,
+    restoreItem,
+    restoreHomeTask,
     removeTrip,
     removeAllTrips,
     toggleTripFinished,

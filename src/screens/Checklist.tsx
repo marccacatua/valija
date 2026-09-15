@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
 import { isPackingTight } from '../data/distribute';
@@ -13,6 +13,7 @@ import { BackArrowIcon, EditIcon, LockIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
+import { UndoSnackbar } from '../components/UndoSnackbar';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
 import { useFlipReorder } from '../hooks/useFlipReorder';
@@ -37,6 +38,8 @@ export function Checklist() {
     removeHomeTask,
     addCustomItem,
     removeItem,
+    restoreItem,
+    restoreHomeTask,
     cloneTrip,
   } = useTrips();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
@@ -54,6 +57,13 @@ export function Checklist() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [search, setSearch] = useState('');
   const [onlyPending, setOnlyPending] = useState(false);
+  // Guarda lo último borrado (ítem o tarea de casa) para poder ofrecer
+  // "Deshacer" un rato corto — ver UndoSnackbar. Si se borra otra cosa
+  // mientras tanto, se pisa: solo se puede deshacer el borrado más reciente.
+  const [pendingUndo, setPendingUndo] = useState<{ kind: 'item'; data: PackingItem } | { kind: 'homeTask'; data: HomeTask } | null>(
+    null,
+  );
+  const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const trip = getTrip(tripId);
   const items = trip?.items ?? [];
@@ -62,6 +72,12 @@ export function Checklist() {
   useEffect(() => {
     if (trip) setLastTripId(trip.id);
   }, [trip, setLastTripId]);
+
+  useEffect(() => {
+    return () => {
+      if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+    };
+  }, []);
 
   // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
   // detallada, nunca el dato de fondo (progreso, vista rápida) — filtrar no
@@ -149,6 +165,34 @@ export function Checklist() {
       setLastTripId(clone.id);
       navigate(`/viaje/${clone.id}`);
     }
+  };
+
+  const UNDO_TIMEOUT_MS = 5000;
+
+  const armUndo = (undo: NonNullable<typeof pendingUndo>) => {
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+    setPendingUndo(undo);
+    undoTimeoutRef.current = setTimeout(() => setPendingUndo(null), UNDO_TIMEOUT_MS);
+  };
+
+  // Borra al toque (sin pedir confirmación: es una acción muy frecuente y
+  // casi siempre a propósito) pero deja un rato corto para deshacer, por
+  // si el toque fue sin querer.
+  const handleRemoveItem = (item: PackingItem) => {
+    removeItem(trip.id, item.id);
+    armUndo({ kind: 'item', data: item });
+  };
+
+  const handleRemoveHomeTask = (task: HomeTask) => {
+    removeHomeTask(trip.id, task.id);
+    armUndo({ kind: 'homeTask', data: task });
+  };
+
+  const handleUndo = () => {
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+    if (pendingUndo?.kind === 'item') restoreItem(trip.id, pendingUndo.data);
+    else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data);
+    setPendingUndo(null);
   };
 
   // Comparte por el share sheet nativo cuando está disponible (celular); si
@@ -246,7 +290,7 @@ export function Checklist() {
               <button
                 type="button"
                 className={styles.removeBtn}
-                onClick={() => removeItem(trip.id, item.id)}
+                onClick={() => handleRemoveItem(item)}
                 aria-label={`Borrar ${item.name}`}
               >
                 ×
@@ -421,7 +465,7 @@ export function Checklist() {
                 <button
                   type="button"
                   className={styles.removeBtn}
-                  onClick={() => removeHomeTask(trip.id, task.id)}
+                  onClick={() => handleRemoveHomeTask(task)}
                   aria-label={`Borrar ${task.label}`}
                 >
                   ×
@@ -470,6 +514,13 @@ export function Checklist() {
       <BottomNav active="checklist" />
 
       {showPaywall && <PaywallSheet onClose={() => setShowPaywall(false)} />}
+
+      {pendingUndo && (
+        <UndoSnackbar
+          message={pendingUndo.kind === 'item' ? `"${pendingUndo.data.name}" borrado` : `"${pendingUndo.data.label}" borrada`}
+          onUndo={handleUndo}
+        />
+      )}
 
       {sheet === 'save' && (
         <SaveTemplateSheet

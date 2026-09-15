@@ -21,8 +21,26 @@ const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
  * sería una posición inventada) ni nada si el usuario tiene activado
  * "reducir movimiento" en el sistema.
  */
+// Posición "absoluta de página" (viewport + scroll actual) en vez de
+// getBoundingClientRect() a secas: si el usuario scrollea entre un tilde y
+// el siguiente sin que la lista se reordene (el caso normal: bajar hasta
+// el próximo ítem), la posición relativa al viewport de TODOS los ítems
+// cambia igual sin que ninguno se haya movido en el documento — comparar
+// esas dos fotos relativas al viewport de lleno haría "saltar" a toda la
+// lista con el delta del scroll. Sumar el scroll cancela ese ruido y dx/dy
+// quedan reflejando solo el movimiento real dentro del documento.
+interface PageRect {
+  top: number;
+  left: number;
+}
+
+function measurePageRect(node: HTMLElement): PageRect {
+  const rect = node.getBoundingClientRect();
+  return { top: rect.top + window.scrollY, left: rect.left + window.scrollX };
+}
+
 export function useFlipReorder(orderedIds: string[]) {
-  const rectsRef = useRef<Map<string, DOMRect>>(new Map());
+  const rectsRef = useRef<Map<string, PageRect>>(new Map());
   const nodesRef = useRef<Map<string, HTMLElement>>(new Map());
 
   const registerNode = (id: string) => (el: HTMLElement | null) => {
@@ -33,13 +51,13 @@ export function useFlipReorder(orderedIds: string[]) {
   // eslint-disable-next-line react-hooks/exhaustive-deps -- se recalcula a propósito solo cuando cambia el orden real, no la identidad del array
   useLayoutEffect(() => {
     const prevRects = rectsRef.current;
-    const nextRects = new Map<string, DOMRect>();
+    const nextRects = new Map<string, PageRect>();
     const reduceMotion = prefersReducedMotion();
 
     for (const id of orderedIds) {
       const node = nodesRef.current.get(id);
       if (!node) continue;
-      const rect = node.getBoundingClientRect();
+      const rect = measurePageRect(node);
       nextRects.set(id, rect);
 
       if (reduceMotion) continue;

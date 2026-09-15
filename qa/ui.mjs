@@ -1655,6 +1655,118 @@ try {
     assert(count === 1, 'Con "reducir movimiento" activado, no se arma ninguna copia de la mascota (salto directo)', `count=${count}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 45) Fix: el FLIP de reorder (useFlipReorder) medía la posición de los
+  // ítems relativa al viewport. Si el usuario scrolleaba (sin tildar nada)
+  // entre un tilde y el siguiente, esa foto vieja quedaba desactualizada:
+  // al tildar de nuevo, TODOS los ítems de la lista (no solo el tildado)
+  // se veían "saltar" desde un offset falso igual al scroll de por medio —
+  // más notorio cuanto más se había scrolleado para llegar al ítem
+  // (típicamente, ítems cerca del borde superior tras bajar bastante).
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page); // trae "DNI y pasaporte" (docs) y "Cepillo de dientes" (higiene)
+
+    // Tilde inicial para que useFlipReorder registre una primera "foto".
+    await page.locator('button', { hasText: 'DNI y pasaporte' }).first().click();
+    await page.waitForTimeout(650);
+
+    // Scrollear bastante SIN tildar nada — el bug aparecía acá: la foto
+    // guardada queda vieja respecto del scroll actual.
+    await page.evaluate(() => window.scrollTo(0, 700));
+    await page.waitForTimeout(150);
+
+    // Tildar otro ítem de Documentos dispara el reorder de nuevo.
+    await page.locator('button', { hasText: 'Pasajes / boarding pass' }).first().click();
+
+    // Un ítem de Higiene (categoría totalmente distinta, mucho más abajo)
+    // nunca debería animarse por esto: no cambió su lugar en el documento.
+    const higieneAnims = await page.evaluate(() => {
+      const el = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.includes('Cepillo de dientes'));
+      return el ? el.getAnimations().length : -1;
+    });
+    assert(
+      higieneAnims === 0,
+      'Tildar en Documentos tras scrollear no anima ítems de otra categoría (Higiene) que no se movieron',
+      `higieneAnims=${higieneAnims}`,
+    );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 46) Deshacer un ítem/tarea borrada por error (UndoSnackbar): borrar no
+  // pide confirmación (es una acción frecuente), pero deja un rato corto
+  // para deshacer antes de que se pierda de verdad.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+
+    await page.click('[aria-label="Borrar DNI y pasaporte"]');
+    const dniGone = await page.locator('button', { hasText: 'DNI y pasaporte' }).count();
+    assert(dniGone === 0, 'Borrar un ítem lo saca de la lista al toque, sin pedir confirmación', `count=${dniGone}`);
+
+    const snackbarText = await page.locator('text=borrado').first().textContent();
+    assert(snackbarText?.includes('DNI y pasaporte'), 'Aparece el snackbar de "Deshacer" nombrando el ítem borrado', `text=${snackbarText}`);
+
+    await page.click('text=Deshacer');
+    const dniBack = await page.locator('button', { hasText: 'DNI y pasaporte' }).count();
+    assert(dniBack === 1, 'Tocar "Deshacer" repone el ítem borrado', `count=${dniBack}`);
+
+    const snackbarGoneAfterUndo = await page.locator('text=Deshacer').count();
+    assert(snackbarGoneAfterUndo === 0, 'El snackbar desaparece después de deshacer', `count=${snackbarGoneAfterUndo}`);
+    await ctx.close();
+  }
+  {
+    // Pasado el tiempo de espera, el borrado queda firme: "Deshacer" ya no
+    // hace nada porque el snackbar mismo desapareció.
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Borrar DNI y pasaporte"]');
+    await page.waitForTimeout(5300);
+    const snackbarStillThere = await page.locator('text=Deshacer').count();
+    assert(snackbarStillThere === 0, 'El snackbar desaparece solo pasado el tiempo de espera', `count=${snackbarStillThere}`);
+    await ctx.close();
+  }
+  {
+    // El snackbar no debe quedar tapado por el BottomNav (sticky, abajo de
+    // todo) — verificamos que su borde inferior quede por encima del nav.
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Borrar DNI y pasaporte"]');
+    // Esperar a que termine la animación de entrada del snackbar (0.22s)
+    // antes de medir su posición final en reposo.
+    await page.waitForTimeout(300);
+    const overlap = await page.evaluate(() => {
+      const nav = document.querySelector('nav, [class*="nav"]');
+      const snackbar = document.querySelector('[role="status"]');
+      if (!nav || !snackbar) return null;
+      const navRect = nav.getBoundingClientRect();
+      const snackRect = snackbar.getBoundingClientRect();
+      return { navTop: navRect.top, snackBottom: snackRect.bottom };
+    });
+    assert(
+      overlap !== null && overlap.snackBottom <= overlap.navTop,
+      'El snackbar de "Deshacer" queda por encima del BottomNav, sin taparlo',
+      `overlap=${JSON.stringify(overlap)}`,
+    );
+    await ctx.close();
+  }
+  {
+    // Borrar una tarea de casa/barco también ofrece deshacer, con su
+    // propio mensaje (no confundido con el de un ítem de la valija).
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Borrar Apagar las luces"]');
+    const taskGone = await page.locator('button', { hasText: 'Apagar las luces' }).count();
+    assert(taskGone === 0, 'Borrar una tarea de casa la saca de la lista al toque', `count=${taskGone}`);
+    await page.click('text=Deshacer');
+    const taskBack = await page.locator('button', { hasText: 'Apagar las luces' }).count();
+    assert(taskBack === 1, 'Deshacer repone también una tarea de casa borrada', `count=${taskBack}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
