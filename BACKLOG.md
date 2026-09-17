@@ -1,6 +1,30 @@
 # Backlog
 
-## En curso en la rama `post-v1-ux` (arrancado 2026-09-14)
+## ✅ Mergeado a `main` como v1.1.0 (2026-09-17)
+
+Arrancado el 2026-09-14 en una rama aparte (`post-v1-ux`) mientras la
+v1.0.0 estaba en revisión de Apple, para no tocar `main`. Probado a
+fondo en un iPhone real por el usuario ("las 2 cosas funcionan de
+maravilla", sobre el fix de reorder y deshacer) y mergeado a `main`.
+
+**Importante — el mockup de ski/navegar NO se mergeó.** La rama tenía
+dos commits WIP de exploración visual (chips bloqueados en el
+formulario, categorías/colores de mockup) mezclados con el trabajo real
+y aprobado. Como la app ya la están usando amigos del usuario en
+producción, no correspondía mandarles UI a medio construir — se hizo el
+merge completo y después, en un commit aparte, se sacaron esos
+agregados de `types.ts`, `catalog.ts`, `quickGroups.ts`, `trip.ts`,
+`index.css`, `TripForm.tsx` y `Checklist.tsx`. El análisis de ambas
+features (ver más abajo) sigue entero en este documento — no se perdió
+nada, solo no se envió código a medio aprobar. Ninguna estructura de
+datos guardada cambió de forma en todo este proceso, así que los viajes
+ya guardados en los celulares de los amigos siguen funcionando
+exactamente igual después de actualizar.
+
+QA final en `main` antes de subir versión: 125/125 tests de Playwright
++ 752.640 combinaciones sin errores.
+
+### Historial de la rama (para referencia)
 
 Mientras la v1.0.0 está en revisión de Apple, se decidió avanzar en
 paralelo con la "lista de nativez" + las dos features grandes, todo en
@@ -232,11 +256,11 @@ iPhone real y se apruebe mergear.
 - Google Play, promoción, versión en inglés: quedan para después de la
   licencia del usuario (~15 días desde el 14/09).
 
-**Cómo seguimos:** falta que el usuario compile esta rama en su iPhone
-y la prueba de verdad — sobre todo calibrar los tiempos del FLIP y de
-la bienvenida, que un simulador o una captura no pueden juzgar del
-todo. Recién después de eso conviene mergear a `main`, subir versión
-(probablemente v1.1.0) y generar un build nuevo para Apple.
+**Cómo seguimos:** ✅ probado en el iPhone real, mergeado a `main` y
+subido a v1.1.0 (2026-09-17). Falta que el usuario compile esta versión
+en Xcode (subiendo `MARKETING_VERSION` a 1.1 ahí) y suba el build nuevo
+a App Store Connect — recién cuando Apple resuelva la v1.0.0, para no
+tener dos versiones en revisión a la vez.
 
 ## Pendientes para retomar tras el envío a revisión (v1.0.0, 2026-09-14)
 
