@@ -1,9 +1,39 @@
 # Changelog
 
 Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
-junto con el número de versión en `package.json` (visible en la pantalla
-de bienvenida de la app, abajo de todo). Ver `BACKLOG.md` para lo que
-todavía no se hizo.
+junto con el número de versión en `package.json` (visible en el pie de
+"Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
+
+## v1.1.0
+
+**"Lista de nativez" + fixes encontrados usando la app a fondo.** Todo
+mergeado desde la rama `post-v1-ux`, sin el mockup exploratorio de
+ski/navegar (esas dos features quedan pendientes de decisión de producto
+antes de programarse de verdad — ver `BACKLOG.md`).
+
+- **Bienvenida rediseñada, estilo splash que transiciona sola** (sin
+  botones): usuario nuevo lee un mensaje corto y pasa a Intro; usuario
+  que vuelve va directo a su último viaje sin terminar. La mascota
+  "viaja" con una animación propia (morph) entre pantallas, con el fondo
+  desvaneciéndose en sincronía.
+- **Animación al tildar un ítem** (FLIP): en vez de reordenarse en seco,
+  viaja a su nueva posición. Incluye un fix real encontrado usando la
+  app en el celular: el ítem "saltaba" al tildar cerca del borde
+  superior después de scrollear (la animación medía posición relativa
+  al viewport en vez de a la página completa).
+- **Deshacer un ítem o tarea de casa borrada por error**: sigue
+  borrándose al toque, sin pedir confirmación, pero aparece un aviso con
+  "Deshacer" por 5 segundos antes de que quede firme.
+- **Fix: tildar una tarea de "¿Quedó todo pronto en casa?" ahora la
+  manda al fondo de la lista**, igual que ya pasaba con los ítems de la
+  valija.
+- Haptics al tildar ítems/tareas/grupos y al finalizar un viaje;
+  `user-select` deshabilitado en botones; `prefers-reduced-motion`
+  respetado en todas las animaciones nuevas.
+- No hay cambios en cómo se guardan los viajes: los datos ya guardados
+  en el celular siguen funcionando exactamente igual después de
+  actualizar.
+- QA: 125/125 tests de Playwright + 752.640 combinaciones sin errores.
 
 ## v1.0.0
 
