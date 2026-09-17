@@ -78,14 +78,6 @@ export function TripForm() {
     set('aloj', key);
   };
 
-  const selectTurismo = (key: TripFormState['turismo']) => {
-    if ((key === 'ski' || key === 'navegar') && !canExtraCategories) {
-      setShowPaywall(true);
-      return;
-    }
-    set('turismo', key);
-  };
-
   const handleGenerate = () => {
     const trip = addTrip(form);
     setLastTripId(trip.id);
@@ -212,8 +204,7 @@ export function TripForm() {
                     key={opt.key}
                     label={opt.label}
                     selected={form.turismo === opt.key}
-                    onSelect={() => selectTurismo(opt.key)}
-                    locked={(opt.key === 'ski' || opt.key === 'navegar') && !canExtraCategories}
+                    onSelect={() => set('turismo', opt.key)}
                   />
                 ))}
               </div>

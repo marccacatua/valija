@@ -80,8 +80,6 @@ const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
   extras: 'los extras',
   bebe: 'lo del bebé',
   camping: 'lo de camping',
-  ski: 'lo de ski',
-  nautica: 'lo de náutica',
 };
 
 export function progressNote(items: PackingItem[]): string {
