@@ -18,7 +18,7 @@ import { OptionChip } from '../components/OptionChip';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SectionLabel } from '../components/SectionLabel';
 import { DurationStepper } from '../components/DurationStepper';
-import { BackArrowIcon, ClimaIcons, DestIcons, MaletaIcons } from '../components/icons';
+import { BackArrowIcon, ClimaIcons, DestIcons, MaletaIcons, MascotaIcon, NinoIcon } from '../components/icons';
 import { FREE_TRIP_LIMIT, useFeatureFlag, useIsPro } from '../features/flags';
 import { useTrips } from '../hooks/useTrips';
 import { useLastTripId } from '../hooks/useLastTripId';
@@ -33,6 +33,8 @@ export function TripForm() {
   const canExtraCategories = useFeatureFlag('extraCategories');
   const [form, setForm] = useState<TripFormState>(DEFAULT_FORM);
   const [showPaywall, setShowPaywall] = useState(false);
+  // MOCKUP TEMPORAL — no forma parte de TripFormState todavía.
+  const [mockMascota, setMockMascota] = useState(false);
 
   // Tope de la versión gratis: se chequea acá (antes de mostrar el
   // formulario) y no recién al tocar "Armar mi valija", para no hacer
@@ -199,14 +201,19 @@ export function TripForm() {
             </div>
           </div>
 
+          {/* MOCKUP TEMPORAL — pregunta combinada bebé/mascota, solo para
+              captura. "mockMascota" es estado local descartable, no forma
+              parte de TripFormState todavía. */}
           <div>
-            <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
-            <div className={styles.wrap}>
-              <OptionChip
-                label="Sí, sumar su equipaje"
-                selected={form.bebe}
+            <SectionLabel hint="opcional, elegí uno o los dos">¿Viajás con niño chico y/o mascota?</SectionLabel>
+            <div className={styles.grid3} style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+              <OptionCard label="Niño chico" icon={NinoIcon} selected={form.bebe} locked={!canExtraCategories} onSelect={selectBebe} />
+              <OptionCard
+                label="Mascota"
+                icon={MascotaIcon}
+                selected={mockMascota}
                 locked={!canExtraCategories}
-                onSelect={selectBebe}
+                onSelect={() => (canExtraCategories ? setMockMascota((v) => !v) : setShowPaywall(true))}
               />
             </div>
           </div>

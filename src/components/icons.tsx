@@ -68,6 +68,26 @@ export const MaletaIcons = {
   ),
 };
 
+// MOCKUP TEMPORAL — solo para la captura de la pregunta combinada
+// bebé/mascota, no confirmado todavía.
+export const NinoIcon = (
+  <svg width="20" height="30" viewBox="0 0 20 30">
+    <path d="M8 2h4v4h-4z" fill="var(--baby-pink-dark)" />
+    <rect x="6" y="6" width="8" height="4" rx="2" fill="var(--baby-pink-dark)" />
+    <rect x="3" y="10" width="14" height="18" rx="5" fill="var(--baby-pink)" />
+  </svg>
+);
+
+export const MascotaIcon = (
+  <svg width="30" height="28" viewBox="0 0 30 28">
+    <ellipse cx="15" cy="20" rx="9" ry="7" fill="var(--mustard-dark)" />
+    <circle cx="4" cy="9" r="3.6" fill="var(--mustard-dark)" />
+    <circle cx="11" cy="3" r="3.8" fill="var(--mustard-dark)" />
+    <circle cx="19" cy="3" r="3.8" fill="var(--mustard-dark)" />
+    <circle cx="26" cy="9" r="3.6" fill="var(--mustard-dark)" />
+  </svg>
+);
+
 export const CampingIcon = (
   <svg width="26" height="26" viewBox="0 0 26 26">
     <polygon points="13,3 24,23 2,23" fill="var(--forest)" />
