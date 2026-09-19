@@ -1254,20 +1254,63 @@ try {
   {
     const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
-    await page.click('button:has-text("Sí, sumar su equipaje")');
+    await page.click('button:has-text("Niño chico")');
     await page.click('button:has-text("Bodega")');
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
     const hasPanales = await page.locator('button', { hasText: 'Pañales' }).count();
-    assert(hasPanales === 1, 'Tildar "bebé" agrega la categoría Bebé con sus ítems (ej. Pañales)', `panales=${hasPanales}`);
+    assert(hasPanales === 1, 'Tildar "Niño chico" agrega la categoría Bebé con sus ítems (ej. Pañales)', `panales=${hasPanales}`);
     await ctx.close();
   }
   {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] }); // sin bebé
     const hasPanales = await page.locator('button', { hasText: 'Pañales' }).count();
-    assert(hasPanales === 0, 'Sin tildar "bebé", no aparecen sus ítems', `panales=${hasPanales}`);
+    assert(hasPanales === 0, 'Sin tildar "Niño chico", no aparecen sus ítems', `panales=${hasPanales}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 33b) "¿Viajás con niño chico y/o mascota?": la parte de mascota agrega
+  // su propia categoría, independiente de bebé — se pueden combinar las
+  // dos (multi-select, como Destino) sin un botón "Ambos" aparte.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Mascota")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasCorrea = await page.locator('button', { hasText: 'Correa' }).count();
+    assert(hasCorrea === 1, 'Tildar "Mascota" agrega la categoría Mascota con sus ítems (ej. Correa)', `correa=${hasCorrea}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // sin mascota
+    const hasCorrea = await page.locator('button', { hasText: 'Correa' }).count();
+    assert(hasCorrea === 0, 'Sin tildar "Mascota", no aparecen sus ítems', `correa=${hasCorrea}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Niño chico")');
+    await page.click('button:has-text("Mascota")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasPanales = await page.locator('button', { hasText: 'Pañales' }).count();
+    const hasCorrea = await page.locator('button', { hasText: 'Correa' }).count();
+    assert(
+      hasPanales === 1 && hasCorrea === 1,
+      'Se puede tildar "Niño chico" y "Mascota" a la vez (multi-select, sin botón "Ambos")',
+      `panales=${hasPanales} correa=${hasCorrea}`,
+    );
     await ctx.close();
   }
 
@@ -1372,7 +1415,7 @@ try {
   {
     const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page); // destino por defecto: playa
-    await page.click('button:has-text("Sí, sumar su equipaje")');
+    await page.click('button:has-text("Niño chico")');
     await page.click('button:has-text("Bodega")');
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
@@ -1462,22 +1505,38 @@ try {
   }
 
   // ============================================================
-  // 42) Bebé y Camping son categorías Pro: sin desbloquear, tocarlas abre
-  // el paywall en vez de seleccionarlas; con Pro, se seleccionan normal
+  // 42) Bebé, mascota y Camping son categorías Pro: sin desbloquear,
+  // tocarlas abre el paywall en vez de seleccionarlas; con Pro, se
+  // seleccionan normal
   // ============================================================
   {
     const { ctx, page } = await freshPage(browser); // sin pro
     await goToNewTripForm(page);
-    await page.click('button:has-text("Sí, sumar su equipaje")');
+    await page.click('button:has-text("Niño chico")');
     const paywallAfterBebe = await page.locator('text=Desbloqueá todo, para siempre').count();
-    assert(paywallAfterBebe === 1, 'Sin Pro, tocar "bebé" abre el paywall', `count=${paywallAfterBebe}`);
+    assert(paywallAfterBebe === 1, 'Sin Pro, tocar "Niño chico" abre el paywall', `count=${paywallAfterBebe}`);
     await page.click('text=Ahora no');
     await page.waitForTimeout(100);
     const bebeSelected = await page
-      .locator('button', { hasText: 'Sí, sumar su equipaje' })
+      .locator('button', { hasText: 'Niño chico' })
       .getAttribute('class')
       .then((c) => c && c.includes('selected'));
-    assert(!bebeSelected, 'Sin Pro, "bebé" no queda seleccionado tras cerrar el paywall', `selected=${bebeSelected}`);
+    assert(!bebeSelected, 'Sin Pro, "Niño chico" no queda seleccionado tras cerrar el paywall', `selected=${bebeSelected}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser); // sin pro
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Mascota")');
+    const paywallAfterMascota = await page.locator('text=Desbloqueá todo, para siempre').count();
+    assert(paywallAfterMascota === 1, 'Sin Pro, tocar "Mascota" abre el paywall', `count=${paywallAfterMascota}`);
+    await page.click('text=Ahora no');
+    await page.waitForTimeout(100);
+    const mascotaSelected = await page
+      .locator('button', { hasText: 'Mascota' })
+      .getAttribute('class')
+      .then((c) => c && c.includes('selected'));
+    assert(!mascotaSelected, 'Sin Pro, "Mascota" no queda seleccionada tras cerrar el paywall', `selected=${mascotaSelected}`);
     await ctx.close();
   }
   {
@@ -1508,7 +1567,7 @@ try {
   {
     const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
-    await page.click('button:has-text("Sí, sumar su equipaje")'); // bebé
+    await page.click('button:has-text("Niño chico")'); // bebé
     await page.click('button:has-text("Frío")');
     await page.click('button:has-text("Auto")');
     // 1 sola valija (Carry-on, el default) — sin botón de distribución

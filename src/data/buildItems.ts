@@ -239,6 +239,21 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('bebe', 'Entretenimiento para el viaje');
   }
 
+  // Categoría propia, mismo criterio que "Bebé": independiente del resto,
+  // no se mezcla con la ropa/higiene de la persona.
+  if (f.mascota) {
+    addSingle('mascota', 'Correa');
+    addSingle('mascota', 'Plato de comida y agua');
+    addSingle('mascota', 'Comida para los días de viaje');
+    addSingle('mascota', 'Cama o manta');
+    addSingle('mascota', 'Juguete favorito');
+    add('mascota', 'Bolsas para las heces');
+    addSingle('mascota', 'Libreta sanitaria y vacunas');
+    addSingle('mascota', 'Medicación habitual (si toma)');
+    if (f.transporte === 'avion') addSingle('mascota', 'Transportadora');
+    if (f.dest.includes('playa')) addSingle('mascota', 'Chaleco salvavidas para mascota');
+  }
+
   // Solo si el alojamiento es "Camping" — ítems bien distintos al resto,
   // por eso su propia categoría en vez de mezclarlos en Extras.
   if (f.aloj === 'camping') {

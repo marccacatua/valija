@@ -76,6 +76,7 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
   tech: { title: 'Electrónica', color: 'var(--mustard-dark)' },
   extras: { title: 'Extras', color: 'var(--sky)' },
   bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
+  mascota: { title: 'Mascota', color: 'var(--clay)' },
   camping: { title: 'Camping', color: 'var(--forest)' },
 };
 
@@ -83,10 +84,11 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
 // los documentos") y es lo más importante de no olvidar. Higiene antes
 // que ropa para que coincida con el orden de QUICK_GROUP_ORDER (vista
 // rápida) — mismo orden en las dos vistas, y con el mensaje de progreso
-// que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
-// (temáticamente superpuesta); "Camping" al final por ser la más
-// situacional de todas (solo aparece si el alojamiento es camping).
-export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'bebe', 'ropa', 'tech', 'extras', 'camping'];
+// que invita a seguir con la próxima categoría. "Bebé" y "Mascota" cerca
+// de higiene (misma pregunta del form las junta) y "Camping" al final
+// por ser la más situacional de todas (solo aparece si el alojamiento
+// es camping).
+export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'bebe', 'mascota', 'ropa', 'tech', 'extras', 'camping'];
 
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';

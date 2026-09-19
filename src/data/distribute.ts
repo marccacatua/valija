@@ -110,6 +110,8 @@ const BULK_WEIGHTS: Partial<Record<string, number>> = {
   'Butaca para auto': 3,
   'Mantita o saco de dormir': 1,
   'Toallón de playa': 1,
+  Transportadora: 3,
+  'Cama o manta': 1,
 };
 
 /** true si el "bulto" total pesa bastante para la cantidad de valijas

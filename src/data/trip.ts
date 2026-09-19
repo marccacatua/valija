@@ -26,6 +26,7 @@ export const DEFAULT_FORM: TripFormState = {
   vestidos: false,
   lavaRopa: false,
   bebe: false,
+  mascota: false,
 };
 
 export function tripTitle(form: TripFormState): string {
@@ -79,6 +80,7 @@ const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
   tech: 'la electrónica',
   extras: 'los extras',
   bebe: 'lo del bebé',
+  mascota: 'lo de la mascota',
   camping: 'lo de camping',
 };
 

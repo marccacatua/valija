@@ -68,8 +68,8 @@ export const MaletaIcons = {
   ),
 };
 
-// MOCKUP TEMPORAL — solo para la captura de la pregunta combinada
-// bebé/mascota, no confirmado todavía.
+// Íconos de la pregunta combinada "¿Viajás con niño chico y/o mascota?"
+// (TripForm.tsx) — un biberón para niño chico, una huella para mascota.
 export const NinoIcon = (
   <svg width="20" height="30" viewBox="0 0 20 30">
     <path d="M8 2h4v4h-4z" fill="var(--baby-pink-dark)" />
@@ -80,11 +80,11 @@ export const NinoIcon = (
 
 export const MascotaIcon = (
   <svg width="30" height="28" viewBox="0 0 30 28">
-    <ellipse cx="15" cy="20" rx="9" ry="7" fill="var(--mustard-dark)" />
-    <circle cx="4" cy="9" r="3.6" fill="var(--mustard-dark)" />
-    <circle cx="11" cy="3" r="3.8" fill="var(--mustard-dark)" />
-    <circle cx="19" cy="3" r="3.8" fill="var(--mustard-dark)" />
-    <circle cx="26" cy="9" r="3.6" fill="var(--mustard-dark)" />
+    <ellipse cx="15" cy="20" rx="9" ry="7" fill="var(--clay)" />
+    <circle cx="4" cy="9" r="3.6" fill="var(--clay)" />
+    <circle cx="11" cy="3" r="3.8" fill="var(--clay)" />
+    <circle cx="19" cy="3" r="3.8" fill="var(--clay)" />
+    <circle cx="26" cy="9" r="3.6" fill="var(--clay)" />
   </svg>
 );
 

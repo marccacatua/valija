@@ -11,7 +11,7 @@ export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos' | 'camping';
 export type TransporteKey = 'avion' | 'auto' | 'bus' | 'tren';
 export type MaletaKey = 'carry' | 'bodega' | 'mochila';
 
-export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'camping';
+export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'mascota' | 'camping';
 
 export interface TripFormState {
   name: string;
@@ -36,6 +36,10 @@ export interface TripFormState {
   /** Viaja con bebé o niño chico: suma la categoría "Bebé" completa,
    * separada del resto (no se mezcla con la ropa/higiene del adulto). */
   bebe: boolean;
+  /** Viaja con mascota: suma la categoría "Mascota" completa (correa,
+   * comida, transportadora, etc.) — independiente de bebé, se puede
+   * combinar (la pregunta del form las junta, pero son dos flags). */
+  mascota: boolean;
 }
 
 export interface PackingItem {

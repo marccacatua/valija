@@ -1,5 +1,57 @@
 # Backlog
 
+## ✅ Feature: viajar con mascota (en `main`, dentro de Pro, 2026-09-19)
+
+Pedido del usuario, iterado con mockups antes de programarlo de verdad
+(ver más abajo el historial del día). La pregunta "¿Viajás con bebé o
+niño chico?" se unificó con una nueva de mascota en una sola: **"¿Viajás
+con niño chico y/o mascota?"**, con dos tarjetas con ícono (mismo
+componente `OptionCard` que ya usa Destino) en vez de un toggle de
+texto — se pueden tocar las dos a la vez para "ambos", sin necesitar un
+tercer botón, mismo patrón multi-select que ya tiene Destino.
+
+- `mascota: boolean` en `TripFormState`, independiente de `bebe` (son
+  dos flags separadas, la pregunta solo las agrupa visualmente).
+- Categoría propia `CategoryKey: 'mascota'` (color `--clay`, token
+  nuevo) con sus ítems: Correa, Plato de comida y agua, Comida para los
+  días de viaje, Cama o manta, Juguete favorito, Bolsas para las heces,
+  Libreta sanitaria y vacunas, Medicación habitual (si toma), y dos
+  condicionales — Transportadora (si `transporte === 'avion'`) y
+  Chaleco salvavidas para mascota (si el destino incluye playa) — mismo
+  criterio que ya usa "Bebé" con la butaca para auto y el chaleco de
+  bebé.
+- Gateado con el flag `extraCategories` (Pro), igual que bebé y
+  camping — mismo paywall, texto actualizado en `PaywallSheet.tsx` y
+  `features/flags.ts` para nombrar las tres categorías.
+- `distribute.ts`: "Transportadora" y "Cama o manta" suman al cálculo
+  de bulto (aviso de "puede que necesites más espacio").
+- Íconos nuevos en `components/icons.tsx` (`NinoIcon`, `MascotaIcon`):
+  un biberón y una huella, mismo estilo geométrico plano que el resto
+  de los íconos del formulario.
+- QA: bloque combinatorio dedicado para "mascota" (mismo patrón que el
+  de "bebe" — cruza solo contra `dest`/`transporte`, no contra las ~11
+  dimensiones del cruce grande) + varios tests nuevos de Playwright
+  (categoría con/sin tildar, paywall, y que bebé+mascota se puedan
+  combinar a la vez). Se actualizaron 6 tests viejos que hacían click
+  por el texto anterior del toggle de bebé ("Sí, sumar su equipaje"),
+  que ya no existe.
+- QA final: 137/138 Playwright (el que falla es el flake de timing del
+  fade de bienvenida, ya documentado antes en este mismo archivo, no
+  relacionado) + 752.640 combinaciones sin errores.
+
+**Cómo se llegó hasta acá (mismo día, iterativo):**
+1. Usuario mostró una captura de la pregunta de bebé y sugirió
+   unificarla con mascota, con botones tipo Clima/Destino con dibujos
+   ("un niño / un perro / ambos").
+2. Se armó un mockup descartable (WIP) con estado local falso
+   (`mockMascota`, no en `TripFormState`) para mostrar cómo quedaría,
+   con captura sin Pro (candado) y con Pro (las dos tarjetas
+   tildadas a la vez).
+3. Usuario aprobó ("me gustó") y pidió avanzar con la lista real de
+   ítems — se construyó todo lo de arriba, reemplazando el mockup por
+   la implementación real (mismo ícono, mismo texto, ahora con lógica
+   de verdad detrás).
+
 ## Ajustes chicos sobre la v1.1.0 (en `main`, 2026-09-19)
 
 Cambios directos en `main` (no ameritaban rama aparte), a partir de que

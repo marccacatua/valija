@@ -27,6 +27,7 @@ const DIAS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 14, 20, 30];
 const VESTIDOS = [false, true];
 const LAVA_ROPA = [false, true];
 const BEBE = [false, true];
+const MASCOTA = [false, true];
 const ALL_BAGS: MaletaKey[] = ['carry', 'bodega', 'mochila'];
 
 function nonEmptySubsets<T>(arr: T[]): T[][] {
@@ -59,12 +60,12 @@ function fail(f: TripFormState, msg: string) {
   errors.push(`${msg} | form=${JSON.stringify(f)}`);
 }
 
-// lavaRopa y bebe quedan FUERA del gran cruce combinatorio a propósito:
-// cruzarlos contra las ~11 dimensiones existentes multiplicaba el total
-// x4 (a ~3M combos / 21M chequeos de distribución) para probar dos
-// campos cuya lógica depende de muy pocos otros campos (bebe: dest/
-// clima/transporte; lavaRopa: solo dias) — ver los bloques dedicados
-// más abajo, mucho más rápidos y con la misma cobertura real.
+// lavaRopa, bebe y mascota quedan FUERA del gran cruce combinatorio a
+// propósito: cruzarlos contra las ~11 dimensiones existentes multiplicaba
+// el total varias veces para probar campos cuya lógica depende de muy
+// pocos otros campos (bebe: dest/clima/transporte; mascota: dest/
+// transporte; lavaRopa: solo dias) — ver los bloques dedicados más
+// abajo, mucho más rápidos y con la misma cobertura real.
 for (const dest of DEST_SUBSETS)
   for (const clima of CLIMA)
     for (const motivo of MOTIVO)
@@ -88,6 +89,7 @@ for (const dest of DEST_SUBSETS)
                     vestidos,
                     lavaRopa: false,
                     bebe: false,
+                    mascota: false,
                   };
 
                   const raw = buildRawItems(form);
@@ -316,6 +318,7 @@ for (const dest of DEST_SUBSETS)
             vestidos: false,
             lavaRopa: false,
             bebe,
+            mascota: false,
           };
           const raw = buildRawItems(form);
           const bebeItems = raw.filter((it) => it.cat === 'bebe');
@@ -345,6 +348,48 @@ for (const dest of DEST_SUBSETS)
         }
 
 // ============================================================
+// Bloque dedicado: "mascota" — cruza solo contra los campos de los que
+// depende su lógica (dest, transporte), no contra todo.
+// ============================================================
+for (const dest of DEST_SUBSETS)
+  for (const transporte of TRANSPORTE)
+    for (const mascota of MASCOTA)
+      for (const dias of BEBE_DIAS) {
+        const form: TripFormState = {
+          name: 'QA-mascota',
+          dest,
+          clima: 'templado',
+          motivo: 'placer',
+          turismo: 'relax',
+          aloj: 'depto',
+          transporte,
+          maletas: ['carry'],
+          dias,
+          vestidos: false,
+          lavaRopa: false,
+          bebe: false,
+          mascota,
+        };
+        const raw = buildRawItems(form);
+        const mascotaItems = raw.filter((it) => it.cat === 'mascota');
+        if (mascotaItems.length > 0 !== mascota) {
+          fail(form, `Categoría "mascota": presente=${mascotaItems.length > 0} pero mascota=${mascota}`);
+        }
+        if (mascota) {
+          const names = mascotaItems.map((it) => it.name);
+          if (new Set(names).size !== names.length) fail(form, `Categoría "mascota" tiene ítems duplicados: ${names}`);
+          const hasTransportadora = names.includes('Transportadora');
+          if (hasTransportadora !== (transporte === 'avion')) {
+            fail(form, `"Transportadora" presente=${hasTransportadora} pero transporte=${transporte}`);
+          }
+          const hasChaleco = names.includes('Chaleco salvavidas para mascota');
+          if (hasChaleco !== dest.includes('playa')) {
+            fail(form, `"Chaleco salvavidas para mascota" presente=${hasChaleco} pero dest=${dest}`);
+          }
+        }
+      }
+
+// ============================================================
 // Bloque dedicado: "lavaRopa" — su lógica depende solo de `dias`,
 // así que alcanza con cruzarla contra eso.
 // ============================================================
@@ -363,6 +408,7 @@ for (const dias of DIAS)
       vestidos: false,
       lavaRopa,
       bebe: false,
+      mascota: false,
     };
     const raw = buildRawItems(form);
     const mudaDias = lavaRopa ? Math.min(dias, 4) : dias;
