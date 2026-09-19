@@ -143,45 +143,6 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Clima</SectionLabel>
-            <div className={styles.grid4}>
-              {CLIMA_OPTIONS.map((opt) => (
-                <OptionCard
-                  key={opt.key}
-                  compact
-                  label={opt.label}
-                  icon={ClimaIcons[opt.key]}
-                  selected={form.clima === opt.key}
-                  onSelect={() => set('clima', opt.key)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <SectionLabel>Vestuario</SectionLabel>
-            <div className={styles.wrap}>
-              <OptionChip
-                label="Sumar vestidos / pollera"
-                selected={form.vestidos}
-                onSelect={() => set('vestidos', !form.vestidos)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
-            <div className={styles.wrap}>
-              <OptionChip
-                label="Sí, sumar su equipaje"
-                selected={form.bebe}
-                locked={!canExtraCategories}
-                onSelect={selectBebe}
-              />
-            </div>
-          </div>
-
-          <div>
             <SectionLabel>Motivo</SectionLabel>
             <div className={styles.wrap}>
               {MOTIVO_OPTIONS.map((opt) => (
@@ -210,6 +171,27 @@ export function TripForm() {
               </div>
             </div>
           )}
+
+          <div>
+            <SectionLabel>Clima</SectionLabel>
+            <div className={styles.grid4}>
+              {CLIMA_OPTIONS.map((opt) => (
+                <OptionCard
+                  key={opt.key}
+                  compact
+                  label={opt.label}
+                  icon={ClimaIcons[opt.key]}
+                  selected={form.clima === opt.key}
+                  onSelect={() => set('clima', opt.key)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel>Duración</SectionLabel>
+            <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+          </div>
 
           <div>
             <SectionLabel>Alojamiento</SectionLabel>
@@ -263,8 +245,26 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Duración</SectionLabel>
-            <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+            <SectionLabel>Vestuario</SectionLabel>
+            <div className={styles.wrap}>
+              <OptionChip
+                label="Sumar vestidos / pollera"
+                selected={form.vestidos}
+                onSelect={() => set('vestidos', !form.vestidos)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
+            <div className={styles.wrap}>
+              <OptionChip
+                label="Sí, sumar su equipaje"
+                selected={form.bebe}
+                locked={!canExtraCategories}
+                onSelect={selectBebe}
+              />
+            </div>
           </div>
 
           <div className={styles.scrollPad} />
