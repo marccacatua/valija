@@ -1802,6 +1802,39 @@ try {
     );
     await ctx.close();
   }
+
+  // ============================================================
+  // 48) Fix: deshacer un borrado repone el ítem en su posición original,
+  // no al fondo de la categoría. Antes restoreItem lo agregaba al final
+  // del array — como el sort por tildado es estable, entre pendientes
+  // eso lo mandaba al fondo de Documentos en vez de devolverlo a donde
+  // estaba.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    // Orden real de Documentos (sin auto/trabajo): DNI y pasaporte,
+    // Libreta de conducir, Pasajes / boarding pass, Reserva de
+    // alojamiento, Billetera, Tarjetas y efectivo, Seguro de viaje.
+    // Borramos "Reserva de alojamiento", que va en el medio.
+    await page.click('[aria-label="Borrar Reserva de alojamiento"]');
+    await page.click('text=Deshacer');
+    await page.waitForTimeout(650); // esperar a que termine cualquier animación
+
+    const order = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('button'))
+        .filter((b) => b.className.includes('item') && !b.className.includes('qty'))
+        .map((b) => b.textContent)
+        .filter((t) => /Pasajes|Reserva|Billetera/.test(t))
+        .map((t) => (t.includes('Pasajes') ? 'Pasajes' : t.includes('Reserva') ? 'Reserva' : 'Billetera')),
+    );
+    assert(
+      order.join(',') === 'Pasajes,Reserva,Billetera',
+      'Deshacer repone el ítem en su posición original (entre Pasajes y Billetera), no al fondo',
+      `order=${order.join(',')}`,
+    );
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

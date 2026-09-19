@@ -158,14 +158,16 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // toca igual entrar en <100ml, así que dejamos el recordatorio general.
   if (hasCarryAlong && !hasBodega) add('higiene', 'Líquidos en envases de 100 ml');
 
+  // Identificación primero, juntas: DNI/pasaporte y libreta de conducir
+  // son las dos cosas que sirven para identificarte, van de la mano.
   add('docs', 'DNI y pasaporte');
+  // Sirve como identificación aunque no manejes en el viaje (para alquilar
+  // un auto en destino, por ejemplo) — no depende de f.transporte.
+  add('docs', 'Libreta de conducir');
   add('docs', 'Pasajes / boarding pass');
   add('docs', 'Reserva de alojamiento');
   add('docs', 'Billetera');
   add('docs', 'Tarjetas y efectivo');
-  // Sirve como identificación aunque no manejes en el viaje (para alquilar
-  // un auto en destino, por ejemplo) — no depende de f.transporte.
-  add('docs', 'Libreta de conducir');
   if (f.transporte === 'avion') add('docs', 'Seguro de viaje');
   if (f.transporte === 'auto') add('docs', 'Seguro del auto y VTV');
   if (f.motivo === 'trabajo') add('docs', 'Credencial y tarjeta corporativa');

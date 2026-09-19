@@ -60,9 +60,9 @@ export function Checklist() {
   // Guarda lo último borrado (ítem o tarea de casa) para poder ofrecer
   // "Deshacer" un rato corto — ver UndoSnackbar. Si se borra otra cosa
   // mientras tanto, se pisa: solo se puede deshacer el borrado más reciente.
-  const [pendingUndo, setPendingUndo] = useState<{ kind: 'item'; data: PackingItem } | { kind: 'homeTask'; data: HomeTask } | null>(
-    null,
-  );
+  const [pendingUndo, setPendingUndo] = useState<
+    { kind: 'item'; data: PackingItem; index: number } | { kind: 'homeTask'; data: HomeTask; index: number } | null
+  >(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const trip = getTrip(tripId);
@@ -179,19 +179,21 @@ export function Checklist() {
   // casi siempre a propósito) pero deja un rato corto para deshacer, por
   // si el toque fue sin querer.
   const handleRemoveItem = (item: PackingItem) => {
+    const index = items.findIndex((i) => i.id === item.id);
     removeItem(trip.id, item.id);
-    armUndo({ kind: 'item', data: item });
+    armUndo({ kind: 'item', data: item, index });
   };
 
   const handleRemoveHomeTask = (task: HomeTask) => {
+    const index = homeChecklist.findIndex((t) => t.id === task.id);
     removeHomeTask(trip.id, task.id);
-    armUndo({ kind: 'homeTask', data: task });
+    armUndo({ kind: 'homeTask', data: task, index });
   };
 
   const handleUndo = () => {
     if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
-    if (pendingUndo?.kind === 'item') restoreItem(trip.id, pendingUndo.data);
-    else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data);
+    if (pendingUndo?.kind === 'item') restoreItem(trip.id, pendingUndo.data, pendingUndo.index);
+    else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data, pendingUndo.index);
     setPendingUndo(null);
   };
 

@@ -1,5 +1,35 @@
 # Backlog
 
+## Ajustes chicos sobre la v1.1.0 (en `main`, 2026-09-19)
+
+Cambios directos en `main` (no ameritaban rama aparte), a partir de que
+el usuario probó a fondo el orden nuevo del formulario y el fix de
+deshacer del día anterior.
+
+- **"Libreta de conducir" reordenada dentro de Documentos**: queda
+  junto a "DNI y pasaporte" (las dos identifican a la persona), no
+  después de Billetera/Tarjetas — pedido del usuario para agrupar por
+  significado, no por orden de implementación.
+- **Fix real: deshacer un borrado reponía el ítem al FONDO de su
+  categoría, no en su lugar original.** `restoreItem`/`restoreHomeTask`
+  agregaban el ítem al final del array; como el sort por tildado
+  (`Checklist.tsx`) es estable, entre ítems con el mismo estado
+  (pendiente) el orden visual sale del orden del array — agregarlo al
+  final lo mandaba al fondo en vez de devolverlo a donde estaba.
+  Ahora `handleRemoveItem`/`handleRemoveHomeTask` guardan el índice
+  original (`items.findIndex`) antes de borrar, y `restoreItem`/
+  `restoreHomeTask` reciben ese índice y usan `splice` para reinsertar
+  ahí mismo. QA: nuevo test que borra un ítem del medio de Documentos,
+  deshace, y confirma que vuelve a quedar entre sus mismos vecinos.
+- **Orden de las preguntas del formulario, confirmado**: el usuario
+  reportó que el orden no coincidía con lo acordado (bebé/vestuario
+  antes de alojamiento, duración pegada a "Tipo de maleta") — se
+  verificó que el código en `main` ya tenía exactamente ese orden
+  (commit del día anterior); probablemente venía de estar probando un
+  build viejo (v1.1.0 nativo, o una PWA con el service worker
+  cacheado). Se reconfirmó con una captura nueva de punta a punta.
+- QA: 128/128 Playwright + 752.640 combinaciones sin errores.
+
 ## ✅ Mergeado a `main` como v1.1.0 (2026-09-17)
 
 Arrancado el 2026-09-14 en una rama aparte (`post-v1-ux`) mientras la

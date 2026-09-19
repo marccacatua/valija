@@ -172,20 +172,31 @@ export function useTrips() {
     [updateTrip],
   );
 
-  /** Repone un ítem borrado por error (ver UndoSnackbar en Checklist) — no
-   * hace falta reinsertarlo en su posición exacta: el orden visual sale
-   * siempre de ordenar por categoría + tildado, nunca del orden del array. */
+  /** Repone un ítem borrado por error (ver UndoSnackbar en Checklist) en
+   * su posición original del array — el sort por tildado (Checklist.tsx)
+   * es estable, así que entre ítems con el mismo estado (pendiente vs
+   * pendiente) el orden visual sale del orden del array: agregarlo al
+   * final en vez de en su índice original lo mandaría al fondo de su
+   * categoría en vez de devolverlo a donde estaba. */
   const restoreItem = useCallback(
-    (tripId: string, item: PackingItem) => {
-      updateTrip(tripId, (t) => ({ ...t, items: [...t.items, item] }));
+    (tripId: string, item: PackingItem, index: number) => {
+      updateTrip(tripId, (t) => {
+        const items = [...t.items];
+        items.splice(Math.min(index, items.length), 0, item);
+        return { ...t, items };
+      });
     },
     [updateTrip],
   );
 
   /** Misma idea que restoreItem, para una tarea de casa/barco. */
   const restoreHomeTask = useCallback(
-    (tripId: string, task: HomeTask) => {
-      updateTrip(tripId, (t) => ({ ...t, homeChecklist: [...t.homeChecklist, task] }));
+    (tripId: string, task: HomeTask, index: number) => {
+      updateTrip(tripId, (t) => {
+        const homeChecklist = [...t.homeChecklist];
+        homeChecklist.splice(Math.min(index, homeChecklist.length), 0, task);
+        return { ...t, homeChecklist };
+      });
     },
     [updateTrip],
   );
