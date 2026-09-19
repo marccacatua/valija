@@ -50,7 +50,21 @@ deshacer del día anterior.
   efectivamente desaparece terminada la animación) — se ajustó también
   el tiempo de espera de un test viejo de borrado que asumía que
   desaparecía en seco.
-- QA: 131/131 Playwright + 752.640 combinaciones sin errores.
+- **Fix real: un ítem restaurado con "Deshacer" se pisaba visualmente
+  con su vecino** (reportado con captura por el usuario). El ítem
+  restaurado aparece en el medio de la lista sin animación propia (es
+  "nuevo" para el FLIP, no hay posición anterior con qué compararlo),
+  pero el vecino que tiene que correrse para hacerle lugar se queda
+  "sostenido" en su posición vieja durante el HOLD del FLIP (220ms) —
+  y esa posición vieja es justo donde el ítem nuevo ya está parado.
+  Reproducido cuadro por cuadro: los dos ocupaban el mismo `top`
+  durante ~200ms. Arreglado en `useFlipReorder.ts`: un ítem que recién
+  aparece y desplaza a un vecino queda invisible durante ese mismo
+  HOLD y recién aparece con un fade corto, sincronizado con que el
+  vecino ya empezó a moverse — nunca compiten por el mismo espacio
+  visual a la vez. QA: 2 tests nuevos (sin solapamiento a mitad del
+  hold, visible al 100% terminada la animación).
+- QA final: 133/133 Playwright + 752.640 combinaciones sin errores.
 
 ## ✅ Mergeado a `main` como v1.1.0 (2026-09-17)
 

@@ -1839,6 +1839,50 @@ try {
   }
 
   // ============================================================
+  // 48b) Fix: un ítem recién restaurado con "Deshacer" (aparece en el
+  // medio de la lista) se pisaba visualmente con el vecino que tenía que
+  // correrse para hacerle lugar — el vecino se queda "sostenido" en su
+  // posición vieja durante el hold del FLIP, y esa posición vieja es
+  // justo donde el ítem nuevo ya está parado (sin animación propia, por
+  // ser "recién aparecido"). Se lo mantiene invisible durante ese mismo
+  // hold y recién aparece con un fade corto, sincronizado con que el
+  // vecino ya empezó a moverse.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    // Higiene: Enjuague bucal -> Desodorante -> Shampoo y acondicionador.
+    // Borramos "Desodorante" (queda en el medio) y deshacemos.
+    await page.click('[aria-label="Borrar Desodorante"]');
+    await page.click('text=Deshacer');
+    await page.waitForTimeout(90); // bien adentro del hold (220ms)
+
+    const midHold = await page.evaluate(() => {
+      const items = Array.from(document.querySelectorAll('button')).filter((b) => b.className.includes('item') && !b.className.includes('qty'));
+      const desodorante = items.find((b) => b.textContent?.includes('Desodorante'));
+      const shampoo = items.find((b) => b.textContent?.includes('Shampoo'));
+      if (!desodorante || !shampoo) return null;
+      const dRect = desodorante.getBoundingClientRect();
+      const sRect = shampoo.getBoundingClientRect();
+      const overlap = dRect.top < sRect.bottom && sRect.top < dRect.bottom;
+      return { desodoranteOpacity: Number(getComputedStyle(desodorante).opacity), overlap };
+    });
+    assert(
+      midHold !== null && (!midHold.overlap || midHold.desodoranteOpacity < 0.5),
+      'Un ítem restaurado con Deshacer no se pisa visualmente con el vecino que se corre para hacerle lugar',
+      `midHold=${JSON.stringify(midHold)}`,
+    );
+
+    await page.waitForTimeout(600);
+    const settledVisible = await page.evaluate(() => {
+      const el = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.includes('Desodorante'));
+      return el ? Number(getComputedStyle(el).opacity) : null;
+    });
+    assert(settledVisible === 1, 'Terminada la animación, el ítem restaurado queda completamente visible', `opacity=${settledVisible}`);
+    await ctx.close();
+  }
+
+  // ============================================================
   // 49) "Mis viajes": finalizar/reactivar anima el desplazamiento (mismo
   // FLIP que la checklist) en vez de saltar en seco a su nueva posición.
   // ============================================================

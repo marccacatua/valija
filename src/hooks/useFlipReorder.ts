@@ -8,6 +8,13 @@ import { prefersReducedMotion } from '../features/motion';
 const HOLD_MS = 220;
 const TRAVEL_MS = 300;
 const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
+// Un ítem que recién aparece en el medio de la lista (ej. "Deshacer" un
+// borrado) desplaza a su vecino de abajo, que se queda "sostenido" en su
+// posición vieja durante HOLD_MS — esa posición vieja es justo donde el
+// ítem nuevo ya está parado, así que si el nuevo aparece de una se pisan
+// un instante. Se lo mantiene invisible ese mismo HOLD_MS y recién ahí
+// aparece con este fade, sincronizado con que el vecino ya empezó a irse.
+const NEW_ITEM_FADE_MS = TRAVEL_MS;
 
 /**
  * FLIP genérico para listas reordenadas por React (First/Last/Invert/Play):
@@ -17,9 +24,12 @@ const EASING = 'cubic-bezier(0.2, 0.8, 0.2, 1)';
  * seco. Devuelve un `registerNode(id)` para pasar como `ref` en cada
  * elemento de la lista.
  *
- * No anima ítems que recién aparecen (no hay "First" con qué comparar,
- * sería una posición inventada) ni nada si el usuario tiene activado
- * "reducir movimiento" en el sistema.
+ * Un ítem que recién aparece (no hay "First" con qué comparar, sería una
+ * posición inventada) no se mueve con transform, pero si su aparición
+ * desplaza a un vecino, se lo mantiene invisible mientras ese vecino
+ * está "sostenido" en su posición vieja (ver NEW_ITEM_FADE_MS) — si no,
+ * quedan superpuestos un instante. No anima nada si el usuario tiene
+ * activado "reducir movimiento" en el sistema.
  */
 // Posición "absoluta de página" (viewport + scroll actual) en vez de
 // getBoundingClientRect() a secas: si el usuario scrollea entre un tilde y
@@ -79,7 +89,19 @@ export function useFlipReorder(orderedIds: string[]) {
 
       if (reduceMotion) continue;
       const prev = prevRects.get(id);
-      if (!prev) continue;
+      if (!prev) {
+        const anim = node.animate([{ opacity: 0 }, { opacity: 1 }], {
+          duration: NEW_ITEM_FADE_MS,
+          delay: HOLD_MS,
+          easing: 'ease',
+          fill: 'backwards',
+        });
+        animsRef.current.set(id, anim);
+        anim.addEventListener('finish', () => {
+          if (animsRef.current.get(id) === anim) animsRef.current.delete(id);
+        });
+        continue;
+      }
 
       const dx = prev.left - rect.left;
       const dy = prev.top - rect.top;
