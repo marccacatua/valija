@@ -116,6 +116,19 @@ deshacer del día anterior.
   vecino ya empezó a moverse — nunca compiten por el mismo espacio
   visual a la vez. QA: 2 tests nuevos (sin solapamiento a mitad del
   hold, visible al 100% terminada la animación).
+- **Fix real: al borrar un viaje en "Mis viajes", la tarjeta que sube
+  se pisaba con el "Tip de Valu"** (reportado por el usuario). El tip
+  es un `div` normal fuera del FLIP de las tarjetas — al borrar un
+  viaje, el resto de la lista se reacomoda animado, pero el tip
+  reflowaba en seco a su posición final (más arriba) mientras la
+  última tarjeta todavía estaba viajando visualmente por ese mismo
+  espacio. Reproducido cuadro por cuadro: llegaba a haber -124px de
+  superposición a mitad de la animación. Arreglado sumando el tip
+  como un ítem más del mismo `useFlipReorder` (id sintético
+  `__tip__` al final de la lista, en `Trips.tsx`) — así se corre en
+  sincro con las tarjetas y el espacio entre ambos se mantiene
+  constante durante toda la animación. QA: nuevo test que borra un
+  viaje y confirma que no hay superposición a mitad de la animación.
 - QA final: 133/133 Playwright + 752.640 combinaciones sin errores.
 
 ## ✅ Mergeado a `main` como v1.1.0 (2026-09-17)

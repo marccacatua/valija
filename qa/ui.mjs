@@ -2030,6 +2030,56 @@ try {
     assert(goneAfter === 0, 'Terminada la animación, el viaje borrado ya no está en la lista', `count=${goneAfter}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 51) "Mis viajes": la tarjeta que sube para ocupar el lugar del viaje
+  // borrado no se pisa con el "Tip de Valu" — el tip viaja en sincro con
+  // el resto (mismo FLIP), no reflowa en seco a su posición final.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje A');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    // Viaje B se crea después, así que queda arriba de A (más nuevo primero).
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('button:has-text("Nuevo viaje")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje B');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    // Borramos B: A (el último, pegado al tip) tiene que subir un lugar.
+    await page.click('[aria-label="Borrar Viaje B"]');
+    await page.click('text=Sí, borrar');
+
+    // Mitad de la animación de reacomodo (después del exit-fade de B y
+    // ya entrada la fase de viaje del FLIP) — el punto exacto donde el
+    // bug se veía antes del fix.
+    await page.waitForTimeout(350);
+    const overlap = await page.evaluate(() => {
+      const card = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.includes('Viaje A'));
+      const tip = document.querySelector('[class*="tip"]');
+      if (!card || !tip) return null;
+      return { gap: tip.getBoundingClientRect().top - card.getBoundingClientRect().bottom };
+    });
+    assert(
+      overlap !== null && overlap.gap > -1,
+      'Al borrar un viaje, la tarjeta que sube no se pisa con el "Tip de Valu"',
+      `overlap=${JSON.stringify(overlap)}`,
+    );
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
