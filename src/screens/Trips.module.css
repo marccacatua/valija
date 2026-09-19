@@ -132,6 +132,16 @@
   color: var(--muted);
 }
 
+/* Envuelve tip/backup/borrar-todos/footer para registrarlos como un solo
+   nodo en el FLIP (ver TRAILING_FLIP_ID en Trips.tsx) — mismo display y
+   gap que .body para que la separación entre ellos quede igual que
+   cuando eran hijos directos del flex de .body. */
+.trailingGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .tip {
   display: flex;
   align-items: center;

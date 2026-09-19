@@ -2033,8 +2033,9 @@ try {
 
   // ============================================================
   // 51) "Mis viajes": la tarjeta que sube para ocupar el lugar del viaje
-  // borrado no se pisa con el "Tip de Valu" — el tip viaja en sincro con
-  // el resto (mismo FLIP), no reflowa en seco a su posición final.
+  // borrado no se pisa con el "Tip de Valu", ni el tip con el botón de
+  // backup de abajo — todo el bloque de después de las tarjetas viaja
+  // junto como una sola unidad (mismo FLIP), no reflowa en seco.
   // ============================================================
   {
     const { ctx, page } = await freshPage(browser);
@@ -2070,12 +2071,21 @@ try {
     const overlap = await page.evaluate(() => {
       const card = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.includes('Viaje A'));
       const tip = document.querySelector('[class*="tip"]');
-      if (!card || !tip) return null;
-      return { gap: tip.getBoundingClientRect().top - card.getBoundingClientRect().bottom };
+      const backup = document.querySelector('[class*="backupBtn"]');
+      if (!card || !tip || !backup) return null;
+      return {
+        cardToTipGap: tip.getBoundingClientRect().top - card.getBoundingClientRect().bottom,
+        tipToBackupGap: backup.getBoundingClientRect().top - tip.getBoundingClientRect().bottom,
+      };
     });
     assert(
-      overlap !== null && overlap.gap > -1,
+      overlap !== null && overlap.cardToTipGap > -1,
       'Al borrar un viaje, la tarjeta que sube no se pisa con el "Tip de Valu"',
+      `overlap=${JSON.stringify(overlap)}`,
+    );
+    assert(
+      overlap !== null && overlap.tipToBackupGap > -1,
+      'Al borrar un viaje, el "Tip de Valu" no se pisa con el botón de backup de abajo',
       `overlap=${JSON.stringify(overlap)}`,
     );
     await ctx.close();

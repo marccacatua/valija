@@ -19,9 +19,14 @@ import styles from './Trips.module.css';
 // transición (el FLIP de reorder ya se encarga del resto de la lista).
 const DELETE_EXIT_MS = 220;
 
-// Id sintético para registrar el bloque "Tip de Valu" en el mismo FLIP
-// que las tarjetas de viaje (ver comentario donde se usa).
-const TIP_FLIP_ID = '__tip__';
+// Id sintético para registrar TODO lo que va después de las tarjetas
+// (tip, backup, borrar todos, footer) como un solo bloque en el mismo
+// FLIP que las tarjetas de viaje (ver comentario donde se usa) — tienen
+// que moverse juntos como una unidad rígida, no cada uno por separado:
+// si solo el tip se sincroniza, el problema simplemente se corre un
+// escalón más abajo (el tip termina pisando al botón de backup, que
+// sigue reflowando en seco).
+const TRAILING_FLIP_ID = '__trailing__';
 
 interface PendingConfirm {
   title: string;
@@ -94,12 +99,12 @@ export function Trips() {
 
   // Mismo FLIP que ya usan los ítems de la valija: anima el viaje que
   // sube/baja al finalizar o reactivar, y el reacomodo del resto cuando
-  // se borra uno. El "Tip de Valu" se suma como un ítem más de la lista
-  // (id sintético al final) para que también se corra en sincro — si no,
-  // al borrar un viaje el tip reflowa en seco a su lugar nuevo mientras
-  // la última tarjeta todavía está viajando visualmente por ese espacio,
-  // y se pisan un instante.
-  const flipIds = sortedTrips.length > 0 ? [...sortedTrips.map((t) => t.id), TIP_FLIP_ID] : [];
+  // se borra uno. Todo lo que va después de las tarjetas (tip, backup,
+  // borrar todos, footer) se suma como un bloque más al final — si no,
+  // al borrar un viaje esos elementos reflowan en seco a su lugar nuevo
+  // mientras la última tarjeta todavía está viajando visualmente por
+  // ese espacio, y se pisan un instante.
+  const flipIds = [...sortedTrips.map((t) => t.id), TRAILING_FLIP_ID];
   const registerFlipNode = useFlipReorder(flipIds);
   const registerCard = (id: string) => (el: HTMLElement | null) => {
     registerFlipNode(id)(el);
@@ -215,43 +220,49 @@ export function Trips() {
           })
         )}
 
-        {trips.length > 0 && (
-          <div className={styles.tip} ref={registerFlipNode(TIP_FLIP_ID)}>
-            <Mascot size={46} />
-            <div className={styles.tipText}>Tip de Valu: guardá la valija del último viaje de trabajo y la reusás en 2 toques.</div>
-          </div>
-        )}
+        {/* Todo este bloque se registra como una sola unidad en el FLIP
+            (ver TRAILING_FLIP_ID) para que se mueva entero en sincro con
+            las tarjetas de arriba — si cada elemento se sincronizara por
+            separado, el desfasaje entre ellos seguiría causando pisadas. */}
+        <div className={styles.trailingGroup} ref={registerFlipNode(TRAILING_FLIP_ID)}>
+          {trips.length > 0 && (
+            <div className={styles.tip}>
+              <Mascot size={46} />
+              <div className={styles.tipText}>Tip de Valu: guardá la valija del último viaje de trabajo y la reusás en 2 toques.</div>
+            </div>
+          )}
 
-        {/* Puente Safari <-> ícono instalado: solo tiene sentido en la web (dos
-            storages separados por iOS). La app nativa ya tiene un único storage,
-            así que este botón no aplica ahí — y de paso evita el "↔" que no
-            renderiza bien en el WebView nativo (ver LockIcon/UnlockIcon arriba). */}
-        {!Capacitor.isNativePlatform() && (
-          <button type="button" className={styles.backupBtn} onClick={() => setShowBackup(true)}>
-            Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)
-          </button>
-        )}
+          {/* Puente Safari <-> ícono instalado: solo tiene sentido en la web (dos
+              storages separados por iOS). La app nativa ya tiene un único storage,
+              así que este botón no aplica ahí — y de paso evita el "↔" que no
+              renderiza bien en el WebView nativo (ver LockIcon/UnlockIcon arriba). */}
+          {!Capacitor.isNativePlatform() && (
+            <button type="button" className={styles.backupBtn} onClick={() => setShowBackup(true)}>
+              Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)
+            </button>
+          )}
 
-        {trips.length > 0 && (
-          <button type="button" className={styles.deleteAllBtn} onClick={deleteAllTrips}>
-            Borrar todos los viajes
-          </button>
-        )}
+          {trips.length > 0 && (
+            <button type="button" className={styles.deleteAllBtn} onClick={deleteAllTrips}>
+              Borrar todos los viajes
+            </button>
+          )}
 
-        {/* Antes vivían en la pantalla de bienvenida — se mudaron acá al
-            convertirla en un splash que transiciona solo, sin botones
-            (ver Welcome.tsx). "Mis viajes" es la pantalla estable a la
-            que siempre se puede volver por el bottom nav. */}
-        <div className={styles.footer}>
-          <div className={styles.version}>
-            v{__APP_VERSION__} · {__BUILD_ID__}
+          {/* Antes vivían en la pantalla de bienvenida — se mudaron acá al
+              convertirla en un splash que transiciona solo, sin botones
+              (ver Welcome.tsx). "Mis viajes" es la pantalla estable a la
+              que siempre se puede volver por el bottom nav. */}
+          <div className={styles.footer}>
+            <div className={styles.version}>
+              v{__APP_VERSION__} · {__BUILD_ID__}
+            </div>
+            <div className={styles.legalLinks}>
+              <Link to="/privacidad">Privacidad</Link>
+              <Link to="/soporte">Soporte</Link>
+            </div>
           </div>
-          <div className={styles.legalLinks}>
-            <Link to="/privacidad">Privacidad</Link>
-            <Link to="/soporte">Soporte</Link>
-          </div>
+          <div style={{ height: 20 }} />
         </div>
-        <div style={{ height: 20 }} />
       </div>
 
       <div style={{ flex: 1 }} />

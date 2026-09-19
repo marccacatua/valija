@@ -1,5 +1,23 @@
 # Backlog
 
+## Versionado: de acá en adelante sube en cada tanda mergeada a `main`
+
+El usuario notó que era muy difícil saber cuántos cambios se habían
+acumulado sobre v1.1.0: el pie de "Mis viajes" muestra `v{versión} ·
+{hash del commit}`, pero la versión (`package.json`) solo sube a mano, y
+veníamos pusheando directo a `main` sin bumpearla — el hash cambiaba en
+cada commit pero el número de versión se quedaba pegado, así que no
+servía como referencia de "cuánto avanzó" (desde el commit `812f456`
+que bumpeó a 1.1.0 se habían acumulado ~9 commits reales sin bump).
+
+Acuerdo con el usuario: de acá en adelante, **la versión sube en cada
+tanda de cambios que se mergea a `main`** (patch para fixes sueltos,
+minor para features), con su entrada correspondiente en
+`CHANGELOG.md` — así el número siempre refleja algo real. Además, el
+trabajo pasa a hacerse en una rama aparte (no directo a `main`) para
+poder probarlo en un preview separado antes de mergear — mismo patrón
+que ya se usaba con `post-v1-ux` para la v1.1.0.
+
 ## ✅ Feature: viajar con mascota (en `main`, dentro de Pro, 2026-09-19)
 
 Pedido del usuario, iterado con mockups antes de programarlo de verdad
@@ -129,7 +147,25 @@ deshacer del día anterior.
   sincro con las tarjetas y el espacio entre ambos se mantiene
   constante durante toda la animación. QA: nuevo test que borra un
   viaje y confirma que no hay superposición a mitad de la animación.
-- QA final: 133/133 Playwright + 752.640 combinaciones sin errores.
+- **Corrección al fix anterior: el problema simplemente se corrió un
+  escalón más abajo** (reportado con captura por el usuario). Al
+  sincronizar SOLO el tip con las tarjetas, el tip pasó a ser "el
+  animado" mientras el botón de backup ("Llevar mis datos a otro
+  acceso") — el siguiente `div` normal de la lista — seguía reflowando
+  en seco, así que ahora se pisaban esos dos. Arreglado agrupando TODO
+  lo que va después de las tarjetas (tip, backup, borrar todos,
+  footer) en un solo `div` (`TRAILING_FLIP_ID`, id sintético único al
+  final de la lista) — así viajan juntos como una unidad rígida y el
+  espacio interno entre ellos no depende de la animación en absoluto.
+  Al envolverlos se perdía el `gap: 12px` que `.body` aplicaba entre
+  ellos como hijos directos del flex — se le agregó el mismo
+  `display:flex; flex-direction:column; gap:12px` al wrapper
+  (`.trailingGroup` en `Trips.module.css`) para que la separación
+  quedara pixel-exacta a como estaba antes. Reproducido cuadro por
+  cuadro antes y después del fix: la separación queda constante (18px
+  y 30px) en todo momento de la animación. QA: el test anterior se
+  extendió para chequear también el gap tip↔backup.
+- QA final: 142/142 Playwright + 752.640 combinaciones sin errores.
 
 ## ✅ Mergeado a `main` como v1.1.0 (2026-09-17)
 
