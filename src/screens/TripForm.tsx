@@ -189,8 +189,26 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Duración</SectionLabel>
-            <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+            <SectionLabel>Vestuario</SectionLabel>
+            <div className={styles.wrap}>
+              <OptionChip
+                label="Sumar vestidos / pollera"
+                selected={form.vestidos}
+                onSelect={() => set('vestidos', !form.vestidos)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
+            <div className={styles.wrap}>
+              <OptionChip
+                label="Sí, sumar su equipaje"
+                selected={form.bebe}
+                locked={!canExtraCategories}
+                onSelect={selectBebe}
+              />
+            </div>
           </div>
 
           <div>
@@ -230,6 +248,11 @@ export function TripForm() {
           </div>
 
           <div>
+            <SectionLabel>Duración</SectionLabel>
+            <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+          </div>
+
+          <div>
             <SectionLabel hint="elegí una o varias">Tipo de maleta</SectionLabel>
             <div className={styles.grid3}>
               {MALETA_OPTIONS.map((opt) => (
@@ -241,29 +264,6 @@ export function TripForm() {
                   onSelect={() => toggleMaleta(opt.key)}
                 />
               ))}
-            </div>
-          </div>
-
-          <div>
-            <SectionLabel>Vestuario</SectionLabel>
-            <div className={styles.wrap}>
-              <OptionChip
-                label="Sumar vestidos / pollera"
-                selected={form.vestidos}
-                onSelect={() => set('vestidos', !form.vestidos)}
-              />
-            </div>
-          </div>
-
-          <div>
-            <SectionLabel>¿Viajás con bebé o niño chico?</SectionLabel>
-            <div className={styles.wrap}>
-              <OptionChip
-                label="Sí, sumar su equipaje"
-                selected={form.bebe}
-                locked={!canExtraCategories}
-                onSelect={selectBebe}
-              />
             </div>
           </div>
 

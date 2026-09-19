@@ -163,11 +163,11 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('docs', 'Reserva de alojamiento');
   add('docs', 'Billetera');
   add('docs', 'Tarjetas y efectivo');
+  // Sirve como identificación aunque no manejes en el viaje (para alquilar
+  // un auto en destino, por ejemplo) — no depende de f.transporte.
+  add('docs', 'Libreta de conducir');
   if (f.transporte === 'avion') add('docs', 'Seguro de viaje');
-  if (f.transporte === 'auto') {
-    add('docs', 'Licencia de conducir');
-    add('docs', 'Seguro del auto y VTV');
-  }
+  if (f.transporte === 'auto') add('docs', 'Seguro del auto y VTV');
   if (f.motivo === 'trabajo') add('docs', 'Credencial y tarjeta corporativa');
 
   addSingle('tech', 'Cargador del celular');

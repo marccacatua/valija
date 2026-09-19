@@ -42,6 +42,8 @@ function measurePageRect(node: HTMLElement): PageRect {
 export function useFlipReorder(orderedIds: string[]) {
   const rectsRef = useRef<Map<string, PageRect>>(new Map());
   const nodesRef = useRef<Map<string, HTMLElement>>(new Map());
+  // Animación en curso por id, si la hay — ver el cancel() de abajo.
+  const animsRef = useRef<Map<string, Animation>>(new Map());
 
   const registerNode = (id: string) => (el: HTMLElement | null) => {
     if (el) nodesRef.current.set(id, el);
@@ -57,6 +59,21 @@ export function useFlipReorder(orderedIds: string[]) {
     for (const id of orderedIds) {
       const node = nodesRef.current.get(id);
       if (!node) continue;
+
+      // Si el elemento todavía estaba a mitad de camino de un reorder
+      // anterior (ej. tildaste y enseguida deshiciste un borrado antes de
+      // que la animación del hueco terminara), cancelarla ANTES de medir:
+      // si no, getBoundingClientRect() lee la posición transformada de esa
+      // animación vieja (un blanco en movimiento, no la posición real de
+      // reposo), y el próximo dx/dy sale contaminado — el elemento queda
+      // "pegado" en un offset que nunca se termina de resolver. Cancelar
+      // le saca el transform y lo deja en su posición de layout real.
+      const prevAnim = animsRef.current.get(id);
+      if (prevAnim) {
+        prevAnim.cancel();
+        animsRef.current.delete(id);
+      }
+
       const rect = measurePageRect(node);
       nextRects.set(id, rect);
 
@@ -68,11 +85,15 @@ export function useFlipReorder(orderedIds: string[]) {
       const dy = prev.top - rect.top;
       if (Math.abs(dx) < 1 && Math.abs(dy) < 1) continue;
 
-      node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'translate(0, 0)' }], {
+      const anim = node.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'translate(0, 0)' }], {
         duration: TRAVEL_MS,
         delay: HOLD_MS,
         easing: EASING,
         fill: 'backwards',
+      });
+      animsRef.current.set(id, anim);
+      anim.addEventListener('finish', () => {
+        if (animsRef.current.get(id) === anim) animsRef.current.delete(id);
       });
     }
 

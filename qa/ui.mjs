@@ -464,8 +464,8 @@ try {
     const docsRow = page.locator('button', { hasText: 'Documentos' });
     const docsCountText = await docsRow.locator('text=/^\\d+ ítems$/').textContent();
     assert(
-      docsCountText.startsWith('7'),
-      'Ítem personalizado en Documentos se cuenta en el grupo rápido "Documentos" (6 base + 1)',
+      docsCountText.startsWith('8'),
+      'Ítem personalizado en Documentos se cuenta en el grupo rápido "Documentos" (7 base + 1)',
       `texto=${docsCountText}`,
     );
     await ctx.close();
@@ -635,7 +635,7 @@ try {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
     assert((await page.locator('text=Arrancá por los documentos').count()) === 1, 'Nota inicial invita a arrancar por documentos');
-    for (const name of ['DNI y pasaporte', 'Pasajes / boarding pass', 'Reserva de alojamiento', 'Billetera', 'Tarjetas y efectivo', 'Seguro de viaje']) {
+    for (const name of ['DNI y pasaporte', 'Pasajes / boarding pass', 'Reserva de alojamiento', 'Billetera', 'Tarjetas y efectivo', 'Libreta de conducir', 'Seguro de viaje']) {
       await page.click(`button:has-text("${name}")`);
       await page.waitForTimeout(50);
     }
@@ -1765,6 +1765,41 @@ try {
     await page.click('text=Deshacer');
     const taskBack = await page.locator('button', { hasText: 'Apagar las luces' }).count();
     assert(taskBack === 1, 'Deshacer repone también una tarea de casa borrada', `count=${taskBack}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 47) Fix: deshacer un borrado MIENTRAS la animación de reorder anterior
+  // (el cierre del hueco) todavía está en curso dejaba ítems "pegados" con
+  // un transform que nunca se resolvía — useFlipReorder medía la posición
+  // de un elemento a mitad de una animación vieja en vez de su posición
+  // real de reposo. El fix cancela cualquier animación en curso de un
+  // ítem antes de volver a medirlo/animarlo.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Borrar Pasajes / boarding pass"]');
+    // Deshacer bien rápido, con el cierre del hueco (HOLD 220ms + TRAVEL
+    // 300ms) todavía a mitad de camino — el escenario exacto del bug.
+    await page.waitForTimeout(80);
+    await page.click('text=Deshacer');
+    // Esperar a que termine cualquier animación en danza (bien por encima
+    // de HOLD+TRAVEL) y recién ahí medir el estado de reposo final.
+    await page.waitForTimeout(700);
+    const stuck = await page.evaluate(() =>
+      Array.from(document.querySelectorAll('button'))
+        .filter((b) => b.className.includes('item') && !b.className.includes('qty'))
+        .some((el) => getComputedStyle(el).transform !== 'none'),
+    );
+    assert(!stuck, 'Deshacer a mitad de la animación de reorder no deja ningún ítem con un transform pegado', `stuck=${stuck}`);
+    const dniStillThere = await page.locator('button', { hasText: 'DNI y pasaporte' }).count();
+    const pasajesBack = await page.locator('button', { hasText: 'Pasajes / boarding pass' }).count();
+    assert(
+      dniStillThere === 1 && pasajesBack === 1,
+      'Deshacer a mitad de la animación de todos modos repone el ítem correctamente',
+      `dni=${dniStillThere} pasajes=${pasajesBack}`,
+    );
     await ctx.close();
   }
 } catch (err) {
