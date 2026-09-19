@@ -40,6 +40,11 @@ export interface TripFormState {
    * comida, transportadora, etc.) — independiente de bebé, se puede
    * combinar (la pregunta del form las junta, pero son dos flags). */
   mascota: boolean;
+  /** Va a hacer deporte en el viaje (correr, gimnasio, etc.), más allá
+   * del turismo elegido: suma remeras/short deportivo y championes, y
+   * unifica con turismo "aventura" para no duplicar ítems si se dan
+   * las dos condiciones juntas (ver buildItems.ts). */
+  deporte: boolean;
 }
 
 export interface PackingItem {

@@ -28,6 +28,7 @@ const VESTIDOS = [false, true];
 const LAVA_ROPA = [false, true];
 const BEBE = [false, true];
 const MASCOTA = [false, true];
+const DEPORTE = [false, true];
 const ALL_BAGS: MaletaKey[] = ['carry', 'bodega', 'mochila'];
 
 function nonEmptySubsets<T>(arr: T[]): T[][] {
@@ -90,6 +91,7 @@ for (const dest of DEST_SUBSETS)
                     lavaRopa: false,
                     bebe: false,
                     mascota: false,
+                    deporte: false,
                   };
 
                   const raw = buildRawItems(form);
@@ -319,6 +321,7 @@ for (const dest of DEST_SUBSETS)
             lavaRopa: false,
             bebe,
             mascota: false,
+            deporte: false,
           };
           const raw = buildRawItems(form);
           const bebeItems = raw.filter((it) => it.cat === 'bebe');
@@ -369,6 +372,7 @@ for (const dest of DEST_SUBSETS)
           lavaRopa: false,
           bebe: false,
           mascota,
+          deporte: false,
         };
         const raw = buildRawItems(form);
         const mascotaItems = raw.filter((it) => it.cat === 'mascota');
@@ -409,6 +413,7 @@ for (const dias of DIAS)
       lavaRopa,
       bebe: false,
       mascota: false,
+      deporte: false,
     };
     const raw = buildRawItems(form);
     const mudaDias = lavaRopa ? Math.min(dias, 4) : dias;
@@ -441,6 +446,73 @@ for (const dias of DIAS)
       fail(form, `lavaRopa=${lavaRopa}: "Pantalones" qty=${pantalones.qty}, esperado ${esperadoPantalones}`);
     }
   }
+
+// ============================================================
+// Bloque dedicado: "deporte" — cruza motivo/turismo (definen si ya
+// aplica por "aventura"), clima (define la campera) y días (define
+// cantidades), además del propio flag.
+// ============================================================
+const DEPORTE_DIAS = [1, 2, 3, 4, 5, 6, 10, 14];
+for (const motivo of MOTIVO)
+  for (const turismo of TURISMO)
+    for (const clima of CLIMA)
+      for (const deporte of DEPORTE)
+        for (const dias of DEPORTE_DIAS) {
+          const form: TripFormState = {
+            name: 'QA-deporte',
+            dest: ['ciudad'],
+            clima,
+            motivo,
+            turismo,
+            aloj: 'depto',
+            transporte: 'avion',
+            maletas: ['carry'],
+            dias,
+            vestidos: false,
+            lavaRopa: false,
+            bebe: false,
+            mascota: false,
+            deporte,
+          };
+          const raw = buildRawItems(form);
+          const leisure = motivo !== 'trabajo';
+          const haceDeporte = deporte || (leisure && turismo === 'aventura');
+          const names = raw.filter((it) => it.cat === 'ropa').map((it) => it.name);
+
+          const remeras = raw.find((it) => it.name === 'Remeras deportivas');
+          if (!!remeras !== haceDeporte) {
+            fail(form, `"Remeras deportivas" presente=${!!remeras} pero haceDeporte=${haceDeporte}`);
+          }
+          if (remeras) {
+            const esperado = Math.min(Math.max(2, Math.ceil(dias / 2)), 5);
+            if (remeras.qty !== esperado) fail(form, `"Remeras deportivas" qty=${remeras.qty}, esperado ${esperado}`);
+          }
+
+          const short = raw.find((it) => it.name === 'Short deportivo');
+          if (!!short !== haceDeporte) {
+            fail(form, `"Short deportivo" presente=${!!short} pero haceDeporte=${haceDeporte}`);
+          }
+          if (short) {
+            const esperado = Math.min(Math.ceil(dias / 3), 3);
+            if (short.qty !== esperado) fail(form, `"Short deportivo" qty=${short.qty}, esperado ${esperado}`);
+          }
+
+          const hasChampiones = names.includes('Championes para correr');
+          if (hasChampiones !== haceDeporte) {
+            fail(form, `"Championes para correr" presente=${hasChampiones} pero haceDeporte=${haceDeporte}`);
+          }
+
+          const hasCampera = names.includes('Campera liviana para correr');
+          const expectCampera = haceDeporte && (clima === 'frio' || clima === 'lluvia');
+          if (hasCampera !== expectCampera) {
+            fail(form, `"Campera liviana para correr" presente=${hasCampera} pero haceDeporte=${haceDeporte} clima=${clima}`);
+          }
+
+          // Sin duplicados aunque se solape deporte=true con turismo=aventura.
+          if (new Set(names).size !== names.length) {
+            fail(form, `Categoría "ropa" tiene ítems duplicados (deporte+aventura solapados): ${names}`);
+          }
+        }
 
 console.log(`Combinaciones de formulario probadas: ${combos}`);
 console.log(`Chequeos de distribución (combo x subconjunto de valijas): ${distributionChecks}`);

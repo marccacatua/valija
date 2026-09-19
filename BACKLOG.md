@@ -741,43 +741,31 @@ incluido) reseteando `done` a `false` en todo, y el botón "Repetir este
 viaje" en `Checklist.tsx` te deja directo en el viaje nuevo. No se
 limitó a ningún feature flag — es gratis, como el resto del generador.
 
-## Pregunta "¿vas a hacer deporte en este viaje?"
+## ~~Pregunta "¿vas a hacer deporte en este viaje?"~~ ✅ hecho (2026-09-19)
 
-Pedido reforzado por el usuario (2026-09-17): hoy la ropa deportiva sale
-de `turismo === 'aventura'`, pero motivo/turismo y deporte son
-independientes — podés viajar por trabajo y entrenar en los ratos
-libres, o ir de relax a la playa y correr todas las mañanas. El punto
-clave que agregó el usuario: hacer deporte no solo suma "Remeras
-deportivas" (que ya existe), sino que **hace falta más cantidad de
-algunas prendas — al menos el doble** — porque se ensucian/transpiran
-más rápido que en un viaje normal.
+Pedido reforzado por el usuario (2026-09-17), implementado el 2026-09-19
+junto con el pedido explícito de sumar "championes, remeras y short (o
+en caso de que haga frío o lluvia alguna camperita de lluvia para
+correr)". Campo `deporte: boolean` agregado a `TripFormState`
+(`types.ts`), independiente de `motivo`/`turismo`, con toggle simple
+("Voy a hacer deporte") junto a "Vestuario" en `TripForm.tsx` — gratis,
+no Pro.
 
-- Sumar un campo `deporte: boolean` a `TripFormState` (en `types.ts`),
-  independiente de `motivo` y `turismo`. Mismo patrón que `vestidos`/
-  `lavaRopa`: toggle simple en `TripForm.tsx`, no un grupo de opciones.
-- En `buildItems.ts`, unificar la condición de ropa deportiva:
-  `const haceDeporte = f.deporte || (leisure && f.turismo === 'aventura');`
-  — evita que alguien con turismo "aventura" viera el ítem duplicado si
-  además tilda el nuevo checkbox.
-- **Cantidades a subir cuando `haceDeporte` es true** (a definir el
-  número exacto juntos, pero la dirección es clara — al menos duplicar
-  respecto de lo que ya suma la ropa normal):
-  - `Remeras deportivas`: ya sale en 2 fijo por `turismo === 'aventura'`
-    — con el checkbox, probablemente debería escalar con los días como
-    hace `Remeras` normal (`cap(remerasDias, 8)` o similar), no quedar
-    fijo en 2 para un viaje de 10 días haciendo deporte todos los días.
-  - `Medias`: candidato fuerte a subir — con actividad física se
-    transpiran mucho más rápido que en un viaje normal. Posible: sumar
-    un extra fijo (ej. +3) o directamente no aplicar el tope de
-    `lavaRopa` para medias cuando hay deporte.
-  - `Ropa interior`: mismo argumento que medias, un poco menos crítico.
-  - A decidir: ¿el "doble" es sobre la cantidad BASE (sin deporte) o es
-    un número fijo adicional independiente de los días? Un número fijo
-    escala mal en viajes largos; un multiplicador tiene más sentido
-    pero hay que revisar que no explote en viajes de 20+ días (¿aplicar
-    también un tope como el de `lavaRopa`?).
-- QA: sumaría ~2 combinaciones más por cada combo existente (con/sin
-  deporte) — nada grave para el combinatorio actual.
+En `buildItems.ts` se unificó con turismo "aventura" para no duplicar
+ítems si se dan las dos condiciones juntas:
+`const haceDeporte = f.deporte || (leisure && f.turismo === 'aventura');`.
+Con `haceDeporte` true se suman: "Remeras deportivas" (escala con los
+días, `cap(Math.max(2, Math.ceil(d / 2)), 5)`, en vez de quedar fija en
+2), "Short deportivo" (nuevo ítem, `cap(Math.ceil(d / 3), 3)`),
+"Championes para correr" (nuevo, único) y, solo con clima frío o
+lluvia, "Campera liviana para correr" (nueva). Los 3 ítems nuevos se
+agregaron a `ROPA_ORDER` en su sub-sección correspondiente.
+
+QA: bloque dedicado en `qa/combinatorial.ts` cruzando motivo × turismo ×
+clima × deporte × días, verificando presencia/cantidad de cada ítem y
+ausencia de duplicados cuando deporte y turismo aventura se solapan.
+Tests en `qa/ui.mjs` confirmando que el toggle es gratis y que sin
+tildarlo (y sin turismo aventura) no aparecen los ítems.
 
 ## ~~Viajar con bebé o niño pequeño~~ ✅ hecho en v0.19.0
 

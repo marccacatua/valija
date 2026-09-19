@@ -30,12 +30,14 @@ export const ROPA_ORDER = [
   'Buzos',
   'Campera abrigada',
   'Rompeviento impermeable',
+  'Campera liviana para correr',
   'Saco o blazer',
   'Outfit para salir',
   // abajo
   'Pantalones',
   'Vestido o pollera',
   'Short o pantalón de trekking',
+  'Short deportivo',
   'Shorts o bermudas',
   'Traje de baño',
   // accesorios (lentes de sol vive en "extras", no acá — ver buildRawItems)
@@ -47,6 +49,7 @@ export const ROPA_ORDER = [
   'Ojotas o sandalias',
   'Zapatillas de trekking',
   'Zapatillas cómodas para caminar',
+  'Championes para correr',
   'Zapatos de vestir',
   'Calzado para salir',
   'Botas o calzado de abrigo',
@@ -104,9 +107,21 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.dest.includes('playa')) add('ropa', 'Ojotas o sandalias');
   if (f.vestidos) add('ropa', 'Vestido o pollera', Math.max(1, Math.ceil(d / 3)));
   if (f.dest.includes('montana') || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
-  if (leisure && f.turismo === 'aventura') {
-    add('ropa', 'Remeras deportivas', 2);
-    add('ropa', 'Short o pantalón de trekking');
+  if (leisure && f.turismo === 'aventura') add('ropa', 'Short o pantalón de trekking');
+  // Turismo "aventura" ya asume que hacés actividad física, pero el
+  // checkbox de deporte cubre al resto (trabajo con gimnasio en el
+  // hotel, relax en la playa pero corriendo todas las mañanas, etc.) —
+  // se unifica para no duplicar "Remeras deportivas" si se dan las dos
+  // condiciones juntas.
+  const haceDeporte = f.deporte || (leisure && f.turismo === 'aventura');
+  if (haceDeporte) {
+    // Deportivas se ensucian/transpiran más rápido que la ropa normal —
+    // escala con los días en vez de quedar fija en 2, con un piso de 2
+    // para viajes cortos.
+    add('ropa', 'Remeras deportivas', cap(Math.max(2, Math.ceil(d / 2)), 5));
+    add('ropa', 'Short deportivo', cap(Math.ceil(d / 3), 3));
+    addSingle('ropa', 'Championes para correr');
+    if (f.clima === 'frio' || f.clima === 'lluvia') addSingle('ropa', 'Campera liviana para correr');
   }
   if (f.dest.includes('ciudad')) add('ropa', 'Zapatillas cómodas para caminar');
   // Viaje solo de playa pero largo: en algún momento del viaje hace falta

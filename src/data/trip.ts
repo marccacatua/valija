@@ -27,6 +27,7 @@ export const DEFAULT_FORM: TripFormState = {
   lavaRopa: false,
   bebe: false,
   mascota: false,
+  deporte: false,
 };
 
 export function tripTitle(form: TripFormState): string {

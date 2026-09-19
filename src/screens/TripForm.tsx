@@ -204,6 +204,11 @@ export function TripForm() {
                 selected={form.vestidos}
                 onSelect={() => set('vestidos', !form.vestidos)}
               />
+              <OptionChip
+                label="Voy a hacer deporte"
+                selected={form.deporte}
+                onSelect={() => set('deporte', !form.deporte)}
+              />
             </div>
           </div>
 

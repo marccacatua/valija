@@ -1315,6 +1315,30 @@ try {
   }
 
   // ============================================================
+  // 33c) "Voy a hacer deporte": gratis (no Pro), agrega Championes para
+  // correr y compañía; sin tildarlo (y sin turismo aventura) no aparecen.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Voy a hacer deporte")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasChampiones = await page.locator('button', { hasText: 'Championes para correr' }).count();
+    assert(hasChampiones === 1, 'Tildar "Voy a hacer deporte" agrega "Championes para correr" (sin ser Pro)', `championes=${hasChampiones}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // turismo por defecto: relax, sin deporte
+    const hasChampiones = await page.locator('button', { hasText: 'Championes para correr' }).count();
+    assert(hasChampiones === 0, 'Sin tildar "Voy a hacer deporte" (y sin turismo aventura), no aparecen sus ítems', `championes=${hasChampiones}`);
+    await ctx.close();
+  }
+
+  // ============================================================
   // 34) "Pienso lavar ropa en el viaje": baja la cantidad de mudas
   // calculadas respecto del mismo viaje sin marcarlo (las remeras tienen
   // tope propio más alto — ver test 41 — así que acá se chequea con
