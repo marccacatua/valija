@@ -4,6 +4,36 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.2.0
+
+**Mascota, deporte, y una tanda de fixes de animación encontrados
+usando la app a fondo.** Primera versión bajo el nuevo criterio de
+versionado: de acá en adelante la versión sube en cada tanda mergeada a
+`main`, en vez de quedar fija por varios commits (ver `BACKLOG.md`).
+
+- **Viajar con mascota** (dentro de Pro): la pregunta de bebé se
+  unificó con una nueva de mascota — "¿Viajás con niño chico y/o
+  mascota?", con dos tarjetas con ícono que se pueden tocar juntas para
+  "ambos". Categoría propia con correa, comida, transportadora (si es
+  en avión), chaleco salvavidas (si hay playa), y el resto de lo
+  esperable para viajar con una mascota.
+- **Toggle "Voy a hacer deporte"** (gratis): suma remeras y short
+  deportivo (escalan con los días), championes para correr, y una
+  campera liviana si hace frío o llueve. Se unifica con turismo
+  "aventura" para no duplicar ítems si se dan las dos condiciones.
+- **"Libreta de conducir" ahora siempre visible** en Documentos, junto
+  a "DNI y pasaporte" (antes solo aparecía si el transporte era auto).
+- **Fix: "Deshacer" un borrado reponía el ítem al fondo de su
+  categoría**, no en su lugar original — ahora vuelve exactamente a
+  donde estaba.
+- **Fix: un ítem restaurado con "Deshacer" se pisaba visualmente con su
+  vecino** durante la animación de reacomodo.
+- **Fix: al borrar un viaje en "Mis viajes", la tarjeta que sube se
+  pisaba con el "Tip de Valu" y con el botón de backup de abajo** — todo
+  el bloque de después de las tarjetas ahora viaja junto, como una sola
+  unidad, en vez de reflowar en seco.
+- QA: 142/142 Playwright + 752.640 combinaciones sin errores.
+
 ## v1.1.0
 
 **"Lista de nativez" + fixes encontrados usando la app a fondo.** Todo
