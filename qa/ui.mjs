@@ -360,7 +360,9 @@ try {
     await page.locator('[aria-label^="Borrar "]').first().click();
     await page.waitForSelector('text=No se puede deshacer.');
     await page.click('button:has-text("Sí, borrar")');
-    await page.waitForTimeout(100);
+    // El borrado ahora anima la salida (fade) antes de sacarlo de verdad
+    // — hay que esperar más que antes de medir el estado final.
+    await page.waitForTimeout(400);
     const cardsAfterOne = await page.locator('[aria-label^="Borrar "]').count();
     assert(cardsAfterOne === 1, 'Borrar un viaje individual deja 1 (con confirmación)', `cards=${cardsAfterOne}`);
 
@@ -1833,6 +1835,72 @@ try {
       'Deshacer repone el ítem en su posición original (entre Pasajes y Billetera), no al fondo',
       `order=${order.join(',')}`,
     );
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 49) "Mis viajes": finalizar/reactivar anima el desplazamiento (mismo
+  // FLIP que la checklist) en vez de saltar en seco a su nueva posición.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje A');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje B');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('[aria-label="Marcar Viaje B como finalizado"]');
+    // A mitad de camino, "Viaje A" (que sube para ocupar el lugar de B)
+    // tiene que estar en pleno vuelo — no ya asentado en su posición.
+    await page.waitForTimeout(60);
+    const midFlight = await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.includes('Viaje A'));
+      return btn ? getComputedStyle(btn).transform : null;
+    });
+    assert(midFlight !== null && midFlight !== 'none', 'Finalizar un viaje anima el reacomodo del resto (FLIP), no un salto seco', `transform=${midFlight}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 50) "Mis viajes": borrar anima la salida (fade + deslizamiento) antes
+  // de sacar el viaje de la lista, en vez de que desaparezca en seco.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page);
+    await page.click('[aria-label="Cambiar nombre del viaje"]');
+    await page.locator('input[class*="heroTitleInput"]').fill('Viaje A');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(80);
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('[aria-label="Borrar Viaje A"]');
+    await page.click('text=Sí, borrar');
+    await page.waitForTimeout(60);
+    const midFade = await page.evaluate(() => {
+      const btn = Array.from(document.querySelectorAll('button')).find((b) => b.textContent?.includes('Viaje A'));
+      return btn ? { stillThere: true, opacity: Number(getComputedStyle(btn).opacity) } : { stillThere: false };
+    });
+    assert(
+      midFade.stillThere && midFade.opacity < 1,
+      'Borrar un viaje lo desvanece antes de sacarlo (no desaparece en seco)',
+      `midFade=${JSON.stringify(midFade)}`,
+    );
+    await page.waitForTimeout(400);
+    const goneAfter = await page.locator('text=Viaje A').count();
+    assert(goneAfter === 0, 'Terminada la animación, el viaje borrado ya no está en la lista', `count=${goneAfter}`);
     await ctx.close();
   }
 } catch (err) {

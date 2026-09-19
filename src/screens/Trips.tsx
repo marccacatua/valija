@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BackupSheet } from '../components/BackupSheet';
 import { Button } from '../components/Button';
@@ -8,9 +8,16 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Mascot } from '../components/Mascot';
 import { ProgressRing } from '../components/ProgressRing';
 import { progressPct, tripListMeta, tripTitle } from '../data/trip';
+import { prefersReducedMotion } from '../features/motion';
+import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
 import styles from './Trips.module.css';
+
+// Antes de sacarlo de verdad, un fade + deslizamiento corto — sin esto,
+// la tarjeta desaparece en seco y el resto salta a ocupar el hueco sin
+// transición (el FLIP de reorder ya se encarga del resto de la lista).
+const DELETE_EXIT_MS = 220;
 
 interface PendingConfirm {
   title: string;
@@ -26,10 +33,41 @@ export function Trips() {
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
   const [showBackup, setShowBackup] = useState(false);
   const [didImport, setDidImport] = useState(false);
+  // Tarjetas en pleno fade de salida (recién borradas) — les sacamos el
+  // click mientras se van, para no poder tocarlas dos veces.
+  const [exitingIds, setExitingIds] = useState<Set<string>>(new Set());
+  const cardNodesRef = useRef<Map<string, HTMLElement>>(new Map());
 
   const openTrip = (id: string) => {
     setLastTripId(id);
     navigate(`/viaje/${id}`);
+  };
+
+  // Anima la tarjeta yéndose (fade + deslizamiento) y recién ahí la saca
+  // de verdad — así el resto de la lista tiene tiempo de reordenarse con
+  // el mismo FLIP que ya usa el reorder de finalizados, en vez de saltar
+  // en seco al hueco que deja.
+  const playExitThenRemove = (id: string) => {
+    const node = cardNodesRef.current.get(id);
+    if (!node || prefersReducedMotion()) {
+      removeTrip(id);
+      return;
+    }
+    setExitingIds((prev) => new Set(prev).add(id));
+    const anim = node.animate([{ opacity: 1, transform: 'translateX(0)' }, { opacity: 0, transform: 'translateX(28px)' }], {
+      duration: DELETE_EXIT_MS,
+      easing: 'ease',
+      fill: 'forwards',
+    });
+    const finish = () => {
+      removeTrip(id);
+      setExitingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    };
+    anim.finished.then(finish).catch(finish);
   };
 
   const deleteTrip = (id: string, name: string) => {
@@ -37,16 +75,28 @@ export function Trips() {
       title: `¿Borrar "${name}"?`,
       message: 'No se puede deshacer.',
       onConfirm: () => {
-        removeTrip(id);
         setConfirm(null);
+        playExitThenRemove(id);
       },
     });
   };
 
   // Los finalizados van al final, sin reordenar dentro de cada grupo
   // (Array.sort es estable) — los activos quedan como ya venían (más
-  // nuevo primero, por cómo addTrip los antepone).
+  // nuevo primero, por cómo addTrip los antepone). Reactivar uno vuelve
+  // a este mismo orden solo, porque finalizar nunca mueve nada en el
+  // array real (`trips`) — únicamente marca `finishedAt`.
   const sortedTrips = [...trips].sort((a, b) => Number(!!a.finishedAt) - Number(!!b.finishedAt));
+
+  // Mismo FLIP que ya usan los ítems de la valija: anima el viaje que
+  // sube/baja al finalizar o reactivar, y el reacomodo del resto cuando
+  // se borra uno.
+  const registerFlipNode = useFlipReorder(sortedTrips.map((t) => t.id));
+  const registerCard = (id: string) => (el: HTMLElement | null) => {
+    registerFlipNode(id)(el);
+    if (el) cardNodesRef.current.set(id, el);
+    else cardNodesRef.current.delete(id);
+  };
 
   const deleteAllTrips = () => {
     setConfirm({
@@ -95,11 +145,14 @@ export function Trips() {
             const done = pct === 100;
             const finished = Boolean(trip.finishedAt);
             const color = done ? 'var(--teal)' : 'var(--coral)';
+            const exiting = exitingIds.has(trip.id);
             return (
               <button
                 key={trip.id}
+                ref={registerCard(trip.id)}
                 type="button"
                 className={`${styles.tripCard} ${finished ? styles.tripCardFinished : ''}`}
+                style={exiting ? { pointerEvents: 'none' } : undefined}
                 onClick={() => openTrip(trip.id)}
               >
                 <ProgressRing pct={pct} color={finished ? 'var(--muted-3)' : color} />

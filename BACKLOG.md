@@ -28,7 +28,29 @@ deshacer del día anterior.
   (commit del día anterior); probablemente venía de estar probando un
   build viejo (v1.1.0 nativo, o una PWA con el service worker
   cacheado). Se reconfirmó con una captura nueva de punta a punta.
-- QA: 128/128 Playwright + 752.640 combinaciones sin errores.
+- **Causa real encontrada después**: no era caché — el `__BUILD_ID__` en
+  el pie de "Mis viajes" mostraba exactamente el hash del último commit
+  pusheado. Lo que pasaba es que `buildItems()` genera los ítems de un
+  viaje UNA SOLA VEZ, al crearlo, y quedan guardados así en
+  localStorage para siempre — un viaje armado antes de estos cambios
+  conserva el orden viejo, no se reordena solo. Para ver el orden nuevo
+  (formulario y Documentos) hace falta crear un viaje de cero con
+  "+ Nuevo", no mirar uno ya guardado.
+- **Animaciones en "Mis viajes"** (mismo FLIP que ya usa la checklist,
+  vía `useFlipReorder`): finalizar o reactivar un viaje ahora anima el
+  desplazamiento en vez de saltar en seco a la nueva posición — y como
+  finalizar nunca mueve nada en el array real (`toggleTripFinished`
+  solo marca `finishedAt`, ver `useTrips.ts`), reactivar ya volvía
+  exactamente a la posición original; solo faltaba animarlo. Borrar un
+  viaje ahora hace un fade + deslizamiento corto (`DELETE_EXIT_MS =
+  220ms`, `Trips.tsx`) antes de sacarlo de verdad del estado — recién
+  ahí el resto de la lista se reacomoda con el mismo FLIP. Sin
+  `prefers-reduced-motion` sigue siendo instantáneo. QA: 3 tests nuevos
+  (reacomodo animado al finalizar, fade al borrar, y el viaje
+  efectivamente desaparece terminada la animación) — se ajustó también
+  el tiempo de espera de un test viejo de borrado que asumía que
+  desaparecía en seco.
+- QA: 131/131 Playwright + 752.640 combinaciones sin errores.
 
 ## ✅ Mergeado a `main` como v1.1.0 (2026-09-17)
 
