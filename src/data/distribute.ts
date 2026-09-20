@@ -112,6 +112,10 @@ const BULK_WEIGHTS: Partial<Record<string, number>> = {
   'Toallón de playa': 1,
   Transportadora: 3,
   'Cama o manta': 1,
+  'Campera de nieve': 2,
+  'Pantalón de nieve': 2,
+  'Botas de nieve para caminar': 2,
+  'Segunda capa de polar': 1,
 };
 
 /** true si el "bulto" total pesa bastante para la cantidad de valijas

@@ -81,13 +81,22 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // mudas — conviene un tope algo más alto que el general al lavar ropa,
   // para tener alguna de sobra (incluida una para salir).
   const remerasDias = f.lavaRopa ? Math.min(d, 6) : d;
-  add('ropa', 'Remeras', cap(remerasDias, 8));
+  // Esquiando pasás casi todo el día con el equipo de nieve puesto (ver
+  // más abajo la categoría "ski") — la ropa de calle solo hace falta
+  // para las noches y los días de viaje, no escala con la duración
+  // completa como en un viaje normal. Se aplica un tope propio, más bajo
+  // que el que ya calcula lavaRopa (si se dan las dos condiciones juntas
+  // gana la más restrictiva).
+  const isSki = leisure && f.turismo === 'ski';
+  const isNavegar = leisure && f.turismo === 'navegar';
+  add('ropa', 'Remeras', cap(isSki ? Math.min(remerasDias, 4) : remerasDias, 8));
   add('ropa', 'Ropa interior', cap(mudaDias + 1, 10));
   add('ropa', 'Medias', cap(mudaDias, 8));
   // Lavando ropa los pantalones no necesitan escalar con la duración del
   // viaje: se reusan varios días antes de lavarse, a diferencia de
   // remeras/interior/medias.
-  add('ropa', 'Pantalones', f.lavaRopa ? 2 : Math.max(1, Math.ceil(d / 4)));
+  const pantalonesBase = f.lavaRopa ? 2 : Math.max(1, Math.ceil(d / 4));
+  add('ropa', 'Pantalones', isSki ? Math.min(pantalonesBase, 2) : pantalonesBase);
   add('ropa', 'Pijama', d > 5 ? 2 : 1);
   add('ropa', 'Cinturón');
   if (f.clima === 'frio') {
@@ -98,7 +107,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Botas o calzado de abrigo');
   }
   if (f.clima === 'templado') add('ropa', 'Buzo o campera liviana');
-  if (f.clima === 'lluvia' || f.dest.includes('montana')) add('ropa', 'Rompeviento impermeable');
+  // También para navegar: en el mar hace falta un rompeviento/impermeable
+  // igual que en la montaña o con lluvia — mismo ítem, no uno propio de
+  // "náutica" (evita duplicar algo que ya existe).
+  if (f.clima === 'lluvia' || f.dest.includes('montana') || isNavegar) add('ropa', 'Rompeviento impermeable');
   if (f.dest.includes('playa') || f.clima === 'calor') {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
@@ -165,7 +177,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('higiene', 'Skincare / crema');
   add('higiene', 'Afeitadora, pinza y corta uñas');
   add('higiene', 'Botiquín básico');
-  if (f.dest.includes('playa') || f.clima === 'calor') add('higiene', 'Protector solar');
+  // También con esquí (la nieve refleja los rayos, quema igual o más que
+  // en la playa) y navegando (el reflejo del agua quema más que en
+  // tierra) — mismo ítem genérico, no versiones propias por actividad.
+  if (f.dest.includes('playa') || f.clima === 'calor' || isSki || isNavegar) add('higiene', 'Protector solar');
   if ((leisure && f.turismo === 'aventura') || f.dest.includes('playa') || f.aloj === 'camping') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
   // El resto de los líquidos (protector solar, skincare, repelente,
@@ -267,6 +282,56 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('mascota', 'Medicación habitual (si toma)');
     if (f.transporte === 'avion') addSingle('mascota', 'Transportadora');
     if (f.dest.includes('playa')) addSingle('mascota', 'Chaleco salvavidas para mascota');
+  }
+
+  // Categoría propia: equipo técnico de esquí, distinto de la ropa de
+  // calle de arriba (que ya baja de cantidad más arriba, ver isSki).
+  // Se asume que esquís, botas de esquí y casco se ALQUILAN en el
+  // centro de ski (lo más común) — solo se lista lo personal. Orden:
+  // de adentro hacia afuera por capas (primera piel -> polar -> campera
+  // y pantalón de nieve), después los accesorios que se usan puestos,
+  // el calzado para andar por el pueblo (no la pista) al final, y la
+  // protección solar (la nieve refleja tanto o más que la playa).
+  if (isSki) {
+    // Se ensucian/transpiran como cualquier base layer — escala con los
+    // días con un piso de 2, igual criterio que "Remeras deportivas".
+    add('ski', 'Primera piel térmica (parte de arriba)', cap(Math.max(2, Math.ceil(d / 3)), 4));
+    add('ski', 'Primera piel térmica (parte de abajo)', cap(Math.max(2, Math.ceil(d / 3)), 4));
+    // El polar no se ensucia tan rápido, no hace falta uno por día.
+    add('ski', 'Segunda capa de polar', d > 4 ? 2 : 1);
+    addSingle('ski', 'Campera de nieve');
+    addSingle('ski', 'Pantalón de nieve');
+    // Se mojan/transpiran cada día de esquí — 1 par por día con un tope
+    // más alto que el resto (se pueden secar de un día para el otro).
+    add('ski', 'Medias de ski', cap(Math.max(2, d), 6));
+    addSingle('ski', 'Guantes de nieve');
+    addSingle('ski', 'Gorro térmico');
+    addSingle('ski', 'Cuello o buff');
+    addSingle('ski', 'Antiparras');
+    addSingle('ski', 'Botas de nieve para caminar');
+    addSingle('ski', 'Labial con protector solar (FPS)');
+  }
+
+  // Categoría propia: equipo personal de navegación — el chequeo de
+  // seguridad de la embarcación (chalecos, botiquín, bengalas, etc.) va
+  // en una lista aparte (ver `homeTasks.ts` / `boatChecklist`), no acá:
+  // esto es lo que la PERSONA se pone/lleva encima, no lo del barco.
+  // Orden: calzado -> accesorios propios de estar en cubierta ->
+  // protección extra contra frío/agua -> contingencias.
+  if (isNavegar) {
+    addSingle('nautica', 'Calzado náutico antideslizante');
+    addSingle('nautica', 'Guantes de vela');
+    // Accesorio para los lentes de sol que ya suma "Extras" — no una
+    // segunda gafa, para no duplicar.
+    addSingle('nautica', 'Cordón flotante para los lentes de sol');
+    addSingle('nautica', 'Gorra o sombrero con barbijo');
+    // En el mar hace más frío y viento que en tierra aunque el clima
+    // elegido sea "calor" — independiente de la rama de clima, que no
+    // lo cubre en ese caso.
+    addSingle('nautica', 'Abrigo extra en capas (en el mar hace más frío y viento que en tierra)');
+    addSingle('nautica', 'Muda de ropa extra (por si te mojás)');
+    addSingle('nautica', 'Bolsa estanca para celular y documentos');
+    addSingle('nautica', 'Pastillas para el mareo');
   }
 
   // Solo si el alojamiento es "Camping" — ítems bien distintos al resto,

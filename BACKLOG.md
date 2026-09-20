@@ -509,133 +509,82 @@ retomar a la vuelta, en este orden sugerido:
 > v1.0 estaba en revisión:
 > https://claude.ai/code/artifact/a25b62b9-00d1-4b69-bd9a-30e70c00a221
 
-## Viajes de ski (próxima versión, dentro de Pro)
+## ✅ Viajes de ski y navegar (en rama `ski-navegar`, 2026-09-20, dentro de Pro)
 
-Pedido del usuario (2026-09-14), a partir de feedback de un conocido.
-Va **dentro de la versión paga**, igual que bebé y camping.
+Pedido del usuario (2026-09-14), implementado el 2026-09-20 junto con
+navegar (mismo patrón, tenía sentido hacerlos juntos). **Todavía sin
+mergear a `main`** — hay algunas decisiones de producto que tomé por mi
+cuenta (marcadas ⚠️ abajo) que quedan pendientes de tu confirmación
+antes de mergear.
 
-**El dato clave que lo hace distinto:** esquiando pasás casi todo el día
-con el equipo puesto, así que **se usa menos ropa normal** de lo que la
-app calcularía hoy para la misma cantidad de días. No es "montaña con
-más abrigo": es un viaje donde la ropa de calle baja y aparece un set
-técnico que hoy no existe en el catálogo.
+**Modelado**: se siguió la recomendación (a) de este documento —
+`TurismoKey` sumó `'ski'` y `'navegar'` (al lado de
+relax/aventura/cultura/fiesta), sin preguntas nuevas en el formulario.
+Categorías propias `CategoryKey: 'ski'` y `'nautica'` para el equipo.
+Gateadas con el flag `extraCategories` (Pro), igual que bebé/mascota/
+camping — paywall y texto de flags actualizados para nombrar las 5.
 
-**Cómo modelarlo (decisión a tomar juntos).** Hoy `camping` no es un
-destino sino un alojamiento, justamente porque se puede acampar en
-cualquier lado (ver el comentario en `types.ts`). Con ski pasa algo
-parecido: esquiar es *lo que hacés*, y el destino sigue siendo la
-montaña. Las tres opciones:
+**Esquí** — el dato clave (esquiando pasás casi todo el día con el
+equipo puesto, se usa menos ropa de calle) se implementó bajando
+"Remeras" (tope 4, antes escalaba con los días) y "Pantalones" (tope 2)
+cuando `turismo === 'ski'`, compitiendo con `lavaRopa` por el tope más
+restrictivo. Categoría "Esquí" con 12 ítems, en orden de capas hacia
+afuera: primera piel térmica (arriba/abajo, escala con los días),
+segunda capa de polar, campera y pantalón de nieve, medias de ski
+(escala con los días, se ensucian/mojan seguido), guantes de nieve,
+gorro térmico, cuello/buff, antiparras, botas de nieve para caminar, y
+labial con FPS. "Protector solar" (ya existente en Higiene) se
+reutiliza en vez de duplicar — ahora también aparece con ski o navegar,
+sin importar el clima elegido (la nieve/el agua reflejan igual o más
+que el sol directo).
 
-- **a) `TurismoKey: 'ski'`** — el que más se parece a cómo ya está
-  pensado el modelo: queda al lado de relax/aventura/cultura/fiesta,
-  combina naturalmente con `dest: montana` + `clima: frio`, y no
-  agrega una pregunta nueva al formulario. Contra: es menos visible
-  que un destino, y al ser una función paga conviene que se vea.
-- **b) `DestKey: 'ski'`** — el más descubrible (aparece entre playa /
-  montaña / ciudad, que es lo primero que toca el usuario). Contra:
-  rompe un poco la semántica, porque el ski no es un lugar.
-- **c) Un booleano propio**, como `bebe`. Contra: suma otra pregunta
-  al formulario, y el usuario pidió explícitamente no agregar fricción.
+- ⚠️ **Decisión tomada por mi cuenta**: esquís, botas de esquí y casco
+  quedan **afuera** de la lista (se asume alquiler, como sugería este
+  documento) — solo se lista el equipo personal.
+- ⚠️ **Decisión tomada por mi cuenta**: ski + clima cálido queda
+  **permitido**, sin bloquear la combinación (existe el ski de
+  primavera) — la lista de ski no depende del clima elegido.
+- `BULK_WEIGHTS` (`distribute.ts`) subió para campera/pantalón/botas de
+  nieve — el aviso de "puede que necesites más espacio" ahora salta
+  también con equipo de esquí (verificado con captura real).
 
-*Recomendación:* **(a)**, y sumarle una `CategoryKey: 'ski'` propia para
-el equipo — exactamente el mismo patrón que ya usa camping (una opción
-dentro de un selector que ya existe + su propia categoría de ítems).
+**Navegar** — categoría "Náutica" con 8 ítems personales (calzado
+náutico, guantes de vela, cordón flotante para los lentes de sol,
+gorra con barbijo, abrigo extra en capas, muda de recambio, bolsa
+estanca, pastillas para el mareo). "Rompeviento impermeable" (ya
+existente en Ropa) se reutiliza igual que el protector solar, en vez
+de duplicar.
 
-**La lógica de cantidades.** El mecanismo ya existe: `lavaRopa` hoy
-capea las mudas con `Math.min(d, 4)` en vez de escalar con los días
-(`buildItems.ts:76-87`). Ski usaría la misma técnica en la otra
-dirección: bajar remeras y pantalones de calle, y sumar aparte lo
-técnico. Ojo con dos cosas: las **medias de ski** son gruesas y van
-aparte de las comunes (aprox. 1 par cada 2 días), y hay que dejar
-**ropa de après-ski** para la noche — no todo el viaje es en la pista.
+- ⚠️ **Decisión tomada por mi cuenta, la más grande de las tres**: la
+  segunda lista del barco (`boatChecklist`, nuevo campo en `Trip`) se
+  implementó como **una lista ADICIONAL, no un reemplazo** de "¿Quedó
+  todo pronto en casa?" — las dos aparecen juntas cuando
+  `turismo === 'navegar'` (salir a navegar no te saca la
+  responsabilidad de dejar algo resuelto en tu casa). Título propio:
+  "¿Está todo listo para zarpar?", con 13 tareas por default
+  (seguridad primero: chalecos, botiquín, extintor, bengalas; después
+  logística/mecánica del barco; por último comunicación/planificación
+  de la salida). Mismo mecanismo que `homeChecklist` en todo lo demás
+  (tildar, agregar a mano, borrar, deshacer) — generalizado en
+  `useTrips.ts` con una sola función factory (`createChecklistActions`)
+  parametrizada por campo, en vez de duplicar 4 funciones dos veces.
+  **Esto es lo que más te pediría que confirmes** antes de mergear: si
+  preferís que el barco reemplace la lista de casa en vez de sumarse,
+  es un cambio de una línea (la condición de render en `Checklist.tsx`).
+- Las plantillas ("Guardar como plantilla") **no incluyen tareas del
+  barco todavía** — se dejó afuera a propósito para no agrandar más el
+  cambio; sigue en el backlog si hace falta más adelante.
 
-**Ítems a incluir** (borrador para revisar): primera piel térmica,
-campera y pantalón de nieve, segunda capa de polar, medias de ski,
-guantes, gorro, cuello/buff, antiparras, casco, botas de nieve para
-caminar, y **protector solar de factor alto + labial con FPS** — la
-nieve refleja los rayos y es donde más gente se quema sin darse cuenta.
-
-**Decisión de producto pendiente:** la mayoría **alquila** skis, botas
-y casco en el centro de ski, así que no habría que hacerlos empacar.
-¿Asumimos alquiler por defecto (y listamos sólo lo personal), o
-preguntamos? Preguntar es una pregunta más en un formulario que
-queremos corto — mi sugerencia es asumir alquiler y dejar que quien
-lleve equipo propio lo agregue como ítem suyo.
-
-**Enganches con lo que ya existe:**
-- El equipo de ski es voluminoso: hay que darle peso alto en
-  `BULK_WEIGHTS` (`distribute.ts`) para que el aviso de "quizás
-  necesitás más espacio" salte cuando corresponde.
-- Gateado con el flag `extraCategories`, el mismo que ya cubre bebé y
-  camping: así los que ya pagaron Pro lo reciben sin costo extra. Hay
-  que actualizar el texto del paywall (`PaywallSheet.tsx`), que hoy
-  nombra sólo "bebé/niño chico y camping".
-- Sumar una opción al union type agrega ~190k combinaciones al QA
-  combinatorio (hoy 752.640). No es problema, pero hay que escribir las
-  invariantes nuevas: que con ski baje la ropa de calle respecto del
-  mismo viaje sin ski, que aparezca la primera piel, y que sin ski no
-  se cuele ningún ítem de nieve.
-- A definir: si ski + clima cálido es una combinación válida (existe el
-  ski de primavera) o si conviene bloquearla.
-
-## Viajes en velero / navegar (próxima versión, dentro de Pro)
-
-Pedido del usuario (2026-09-14). Va **dentro de la versión paga**, igual
-que ski/bebé/camping. Lo distinto acá: no es solo "qué empacar" — el
-usuario pidió específicamente **dos listas separadas**: la valija de la
-persona, y un chequeo de la embarcación antes de zarpar (seguridad y
-logística del barco, no pertenencias personales).
-
-**Cómo modelarlo:** mismo patrón que se recomendó para ski —
-`TurismoKey: 'navegar'` (al lado de relax/aventura/cultura/fiesta/ski),
-sin agregar una pregunta nueva al formulario. Combina con `dest: playa`
-como es esperable, pero no depende de él (hay navegación en lagos/ríos
-también, y el formulario ya no obliga esa relación para otras
-combinaciones). Para el equipo personal, una `CategoryKey: 'nautica'`
-nueva — mismo patrón que camping/ski.
-
-**Ítems personales** (borrador): calzado náutico antideslizante,
-campera rompeviento/impermeable, gafas de sol con cordón flotante
-(para que no se hundan si caen al agua), gorra con barbijo, protector
-solar de factor alto (el reflejo del agua quema más que en tierra),
-guantes de vela, un abrigo extra en capas (en el mar hace más frío y
-viento que en tierra aunque el clima elegido sea "calor"), una muda de
-recambio por si se moja, bolsa estanca para celular/documentos, y
-pastillas para el mareo.
-
-**La segunda lista — chequeo del barco — es la parte nueva de verdad.**
-Ya existe en la app un mecanismo casi idéntico: `homeChecklist`
-(`useTrips.ts`), la lista de tareas de "¿Quedó todo pronto en casa?"
-que hoy vive separada de los ítems para empacar. Es exactamente el
-mismo tipo de cosa — una lista de tareas, no de objetos — solo que para
-un barco en vez de una casa. Recomiendo **generalizar esa lista en vez
-de crear una tercera estructura de datos**: mismo hook, misma UI,
-mismo botón de agregar tarea propia, pero con:
-- Un título dinámico según `turismo`: "¿Está todo listo en el barco?"
-  en vez de "¿Quedó todo pronto en casa?" cuando `turismo === 'navegar'`.
-- Tareas por default propias en vez de las de agua/gas/plantas:
-  chalecos salvavidas (uno por tripulante), botiquín, extintor,
-  bengalas, ancla y cabo en condiciones, nivel de combustible, batería
-  cargada, radio VHF u otro medio de comunicación, pronóstico
-  meteorológico revisado, plan de navegación avisado a alguien en
-  tierra, documentación/matrícula de la embarcación, luces de
-  navegación, bomba de achique.
-- **Ojo**: no debería *reemplazar* la lista de casa — quien sale a
-  navegar probablemente también tenga que dejar algo pronto en su
-  casa. A definir con el usuario si conviene que aparezcan las DOS
-  listas (casa + barco) cuando `turismo === 'navegar'`, o si el barco
-  la reemplaza del todo.
-
-**Enganches con lo que ya existe:**
-- Gateado con el flag `extraCategories`, igual que bebé/camping/ski.
-- Actualizar el texto del paywall (`PaywallSheet.tsx`).
-- Sumar una opción más a `TurismoKey` agrega otro salto en el QA
-  combinatorio (ver la misma nota en la sección de ski) — hay que medir
-  el total actualizado antes de sumar ski Y navegar juntos.
-- Si se generaliza `homeChecklist`, conviene primero decidirlo también
-  para ski (¿tiene sentido una "segunda lista" para ski, tipo "¿la
-  campera está seca, el equipo alquilado confirmado?"), para no
-  generalizar el mecanismo dos veces con criterios distintos.
+QA: dos bloques dedicados en `qa/combinatorial.ts` (mismo criterio que
+bebé/mascota/deporte: no van al cruce grande de ~752k combos, cruzan
+solo motivo/turismo/lavaRopa/clima/días) verificando presencia,
+cantidades, no-duplicados, y que `homeChecklist`/`boatChecklist` se
+comporten como se espera. 9 tests nuevos en `qa/ui.mjs` (paywall,
+presencia/ausencia de cada categoría, las dos listas de tareas
+apareciendo juntas, y que tildar una tarea del barco no afecte el
+progreso de empaque). QA final: 152/153 Playwright (el que falla es el
+flake de timing ya documentado, no relacionado) + 752.640 combinaciones
+sin errores.
 
 ## Toggles estilo "tilde" para vestidos/bebé/lavar ropa (probado, no convenció — descartado por ahora)
 

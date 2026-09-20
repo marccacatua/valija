@@ -36,10 +36,14 @@ export function Checklist() {
     toggleHomeTask,
     addHomeTask,
     removeHomeTask,
+    toggleBoatTask,
+    addBoatTask,
+    removeBoatTask,
     addCustomItem,
     removeItem,
     restoreItem,
     restoreHomeTask,
+    restoreBoatTask,
     cloneTrip,
   } = useTrips();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
@@ -61,13 +65,17 @@ export function Checklist() {
   // "Deshacer" un rato corto — ver UndoSnackbar. Si se borra otra cosa
   // mientras tanto, se pisa: solo se puede deshacer el borrado más reciente.
   const [pendingUndo, setPendingUndo] = useState<
-    { kind: 'item'; data: PackingItem; index: number } | { kind: 'homeTask'; data: HomeTask; index: number } | null
+    | { kind: 'item'; data: PackingItem; index: number }
+    | { kind: 'homeTask'; data: HomeTask; index: number }
+    | { kind: 'boatTask'; data: HomeTask; index: number }
+    | null
   >(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const trip = getTrip(tripId);
   const items = trip?.items ?? [];
   const homeChecklist = trip?.homeChecklist ?? [];
+  const boatChecklist = trip?.boatChecklist ?? [];
 
   useEffect(() => {
     if (trip) setLastTripId(trip.id);
@@ -99,16 +107,21 @@ export function Checklist() {
   }).filter((g) => g.list.length);
 
   // Mismo criterio que las categorías de arriba: las tareas tildadas bajan
-  // al fondo de "¿Quedó todo pronto en casa?" en vez de quedarse
-  // mezcladas con las pendientes.
+  // al fondo de "¿Quedó todo pronto en casa?"/"¿Está todo listo para
+  // zarpar?" en vez de quedarse mezcladas con las pendientes.
   const sortedHomeChecklist = [...homeChecklist].sort((a, b) => Number(a.done) - Number(b.done));
+  const sortedBoatChecklist = [...boatChecklist].sort((a, b) => Number(a.done) - Number(b.done));
 
   // El hook necesita el orden VISIBLE actual en cada render para poder
   // compararlo contra el anterior — por eso se llama acá arriba, antes de
   // cualquier return, con el id de cada ítem tal como aparece hoy en la
   // vista detallada (categoría por categoría, tildados al fondo) más las
-  // tareas de casa, que se reordenan con el mismo criterio.
-  const registerItemNode = useFlipReorder([...groups.flatMap((g) => g.list.map((i) => i.id)), ...sortedHomeChecklist.map((t) => t.id)]);
+  // tareas de casa y de barco, que se reordenan con el mismo criterio.
+  const registerItemNode = useFlipReorder([
+    ...groups.flatMap((g) => g.list.map((i) => i.id)),
+    ...sortedHomeChecklist.map((t) => t.id),
+    ...sortedBoatChecklist.map((t) => t.id),
+  ]);
   const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
 
   if (!trip) {
@@ -190,10 +203,17 @@ export function Checklist() {
     armUndo({ kind: 'homeTask', data: task, index });
   };
 
+  const handleRemoveBoatTask = (task: HomeTask) => {
+    const index = boatChecklist.findIndex((t) => t.id === task.id);
+    removeBoatTask(trip.id, task.id);
+    armUndo({ kind: 'boatTask', data: task, index });
+  };
+
   const handleUndo = () => {
     if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
     if (pendingUndo?.kind === 'item') restoreItem(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data, pendingUndo.index);
+    else if (pendingUndo?.kind === 'boatTask') restoreBoatTask(trip.id, pendingUndo.data, pendingUndo.index);
     setPendingUndo(null);
   };
 
@@ -304,6 +324,41 @@ export function Checklist() {
       </div>
     );
   };
+
+  // Casa y barco comparten exactamente el mismo layout — título, hint,
+  // lista tildable con FLIP, borrar/deshacer, agregar a mano — con datos
+  // y handlers distintos. Una sola función en vez de duplicar el JSX.
+  const taskSection = (opts: {
+    title: string;
+    hint: string;
+    tasks: HomeTask[];
+    sorted: HomeTask[];
+    onToggle: (taskId: string) => void;
+    onRemove: (task: HomeTask) => void;
+    onAdd: (label: string) => void;
+  }) => (
+    <div className={styles.homeSection}>
+      <div className={styles.homeSectionHeader}>
+        <span className={styles.homeSectionTitle}>{opts.title}</span>
+        <span className={styles.groupCount}>
+          {opts.tasks.filter((t) => t.done).length}/{opts.tasks.length}
+        </span>
+      </div>
+      <div className={styles.homeSectionHint}>{opts.hint}</div>
+      {opts.sorted.map((task) => (
+        <button key={task.id} ref={registerItemNode(task.id)} type="button" className={styles.item} onClick={() => opts.onToggle(task.id)}>
+          <span className={`${styles.checkbox} ${task.done ? styles.checkboxDone : ''}`}>✓</span>
+          <span className={`${styles.itemName} ${task.done ? styles.itemNameDone : ''}`}>{task.label}</span>
+          <span onClick={(e) => e.stopPropagation()}>
+            <button type="button" className={styles.removeBtn} onClick={() => opts.onRemove(task)} aria-label={`Borrar ${task.label}`}>
+              ×
+            </button>
+          </span>
+        </button>
+      ))}
+      {canAddCustomItems && <AddItemRow onAdd={opts.onAdd} />}
+    </div>
+  );
 
   const groupedQuick = (key: string, list: PackingItem[]) => {
     const meta = QUICK_GROUP_META[key as keyof typeof QUICK_GROUP_META];
@@ -439,38 +494,29 @@ export function Checklist() {
           quickGroups.map((g) => groupedQuick(g.key, g.list))
         )}
 
-        <div className={styles.homeSection}>
-          <div className={styles.homeSectionHeader}>
-            <span className={styles.homeSectionTitle}>¿Quedó todo pronto en casa?</span>
-            <span className={styles.groupCount}>
-              {homeChecklist.filter((t) => t.done).length}/{homeChecklist.length}
-            </span>
-          </div>
-          <div className={styles.homeSectionHint}>No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.</div>
-          {sortedHomeChecklist.map((task) => (
-            <button
-              key={task.id}
-              ref={registerItemNode(task.id)}
-              type="button"
-              className={styles.item}
-              onClick={() => toggleHomeTask(trip.id, task.id)}
-            >
-              <span className={`${styles.checkbox} ${task.done ? styles.checkboxDone : ''}`}>✓</span>
-              <span className={`${styles.itemName} ${task.done ? styles.itemNameDone : ''}`}>{task.label}</span>
-              <span onClick={(e) => e.stopPropagation()}>
-                <button
-                  type="button"
-                  className={styles.removeBtn}
-                  onClick={() => handleRemoveHomeTask(task)}
-                  aria-label={`Borrar ${task.label}`}
-                >
-                  ×
-                </button>
-              </span>
-            </button>
-          ))}
-          {canAddCustomItems && <AddItemRow onAdd={(label) => addHomeTask(trip.id, label)} />}
-        </div>
+        {taskSection({
+          title: '¿Quedó todo pronto en casa?',
+          hint: 'No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.',
+          tasks: homeChecklist,
+          sorted: sortedHomeChecklist,
+          onToggle: (taskId) => toggleHomeTask(trip.id, taskId),
+          onRemove: handleRemoveHomeTask,
+          onAdd: (label) => addHomeTask(trip.id, label),
+        })}
+
+        {/* Solo cuando turismo === 'navegar' (ver buildBoatChecklist) — no
+            reemplaza la de casa, se suma aparte: salir a navegar no te
+            saca la responsabilidad de dejar algo resuelto en tu casa. */}
+        {boatChecklist.length > 0 &&
+          taskSection({
+            title: '¿Está todo listo para zarpar?',
+            hint: 'Seguridad y logística de la embarcación — no tiene nada que ver con la valija personal.',
+            tasks: boatChecklist,
+            sorted: sortedBoatChecklist,
+            onToggle: (taskId) => toggleBoatTask(trip.id, taskId),
+            onRemove: handleRemoveBoatTask,
+            onAdd: (label) => addBoatTask(trip.id, label),
+          })}
 
         {trip.form.maletas.length > 1 && (
           <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>

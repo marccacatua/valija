@@ -27,3 +27,35 @@ export function buildHomeChecklist(form: TripFormState): HomeTask[] {
   if (form.dias >= 5) labels.splice(4, 0, 'Vaciar la heladera de comida perecedera');
   return labels.map((label, i) => ({ id: `home-${i}`, label, done: false }));
 }
+
+/**
+ * "¿Está todo listo para zarpar?" — mismo mecanismo que `buildHomeChecklist`
+ * (tildar, agregar a mano, deshacer), pero para la embarcación: seguridad
+ * y logística del barco, no pertenencias personales (eso vive en la
+ * categoría "nautica" de `buildRawItems`). A propósito NO reemplaza la
+ * lista de casa: quien sale a navegar probablemente también tenga que
+ * dejar algo pronto en su casa antes de salir — las dos listas aparecen
+ * juntas cuando `turismo === 'navegar'`. Orden: seguridad primero (lo
+ * que salva vidas), después logística/mecánica del barco, por último
+ * comunicación y planificación de la salida.
+ */
+const BOAT_TASKS = [
+  'Chalecos salvavidas (uno por tripulante)',
+  'Botiquín',
+  'Extintor',
+  'Bengalas',
+  'Ancla y cabo en condiciones',
+  'Luces de navegación',
+  'Bomba de achique',
+  'Nivel de combustible',
+  'Batería cargada',
+  'Documentación y matrícula de la embarcación',
+  'Radio VHF u otro medio de comunicación',
+  'Pronóstico meteorológico revisado',
+  'Plan de navegación avisado a alguien en tierra',
+];
+
+export function buildBoatChecklist(form: TripFormState): HomeTask[] {
+  if (form.motivo === 'trabajo' || form.turismo !== 'navegar') return [];
+  return BOAT_TASKS.map((label, i) => ({ id: `boat-${i}`, label, done: false }));
+}

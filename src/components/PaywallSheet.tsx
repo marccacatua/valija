@@ -22,7 +22,7 @@ const BENEFITS = [
   'Agregar tus propios ítems y tareas',
   'Guardar y aplicar plantillas',
   'Repetir un viaje anterior con un toque',
-  'Categorías extra: bebé/niño chico, mascota y camping',
+  'Categorías extra: bebé/niño chico, mascota, esquí, navegar y camping',
 ];
 
 export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {

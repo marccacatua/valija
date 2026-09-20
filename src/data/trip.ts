@@ -82,6 +82,8 @@ const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
   extras: 'los extras',
   bebe: 'lo del bebé',
   mascota: 'lo de la mascota',
+  ski: 'lo de esquí',
+  nautica: 'lo náutico',
   camping: 'lo de camping',
 };
 
@@ -139,6 +141,14 @@ export function shareText(trip: Trip): string {
   if (trip.homeChecklist.length) {
     lines.push('¿Quedó todo pronto en casa?');
     for (const task of trip.homeChecklist) {
+      lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
+    }
+    lines.push('');
+  }
+
+  if (trip.boatChecklist.length) {
+    lines.push('¿Está todo listo para zarpar?');
+    for (const task of trip.boatChecklist) {
       lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
     }
   }

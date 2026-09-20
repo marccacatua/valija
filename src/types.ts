@@ -4,14 +4,14 @@
 export type DestKey = 'playa' | 'montana' | 'ciudad';
 export type ClimaKey = 'calor' | 'templado' | 'frio' | 'lluvia';
 export type MotivoKey = 'placer' | 'trabajo';
-export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta';
+export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta' | 'ski' | 'navegar';
 /** 'camping' es alojamiento (define cómo/dónde dormís), no destino — se
  * puede acampar en la playa, la montaña o el campo por igual. */
 export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos' | 'camping';
 export type TransporteKey = 'avion' | 'auto' | 'bus' | 'tren';
 export type MaletaKey = 'carry' | 'bodega' | 'mochila';
 
-export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'mascota' | 'camping';
+export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'mascota' | 'ski' | 'nautica' | 'camping';
 
 export interface TripFormState {
   name: string;
@@ -78,6 +78,12 @@ export interface Trip {
   form: TripFormState;
   items: PackingItem[];
   homeChecklist: HomeTask[];
+  /** Lista de tareas de "¿está todo listo para zarpar?" — mismo tipo y
+   * mecanismo que `homeChecklist` (tildar, agregar a mano, deshacer),
+   * pero para la embarcación, no la casa. Vacía salvo `turismo ===
+   * 'navegar'`: no reemplaza `homeChecklist` (dejar algo pronto en casa
+   * es independiente de zarpar), se suma aparte. */
+  boatChecklist: HomeTask[];
   /** Cuándo se marcó el viaje como finalizado — sin valor significa que
    * sigue activo. Se guarda la fecha (no un simple booleano) por si en
    * el futuro sirve mostrar "finalizado el 12 sept"; hoy solo se usa

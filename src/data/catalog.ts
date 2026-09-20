@@ -43,6 +43,8 @@ export const TURISMO_OPTIONS: CatalogOption<TurismoKey>[] = [
   { key: 'aventura', label: 'Aventura' },
   { key: 'cultura', label: 'Cultural' },
   { key: 'fiesta', label: 'Salidas' },
+  { key: 'ski', label: 'Esquí' },
+  { key: 'navegar', label: 'Navegar' },
 ];
 
 export const ALOJ_OPTIONS: CatalogOption<AlojKey>[] = [
@@ -77,6 +79,8 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
   extras: { title: 'Extras', color: 'var(--sky)' },
   bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
   mascota: { title: 'Mascota', color: 'var(--clay)' },
+  ski: { title: 'Esquí', color: 'var(--ice)' },
+  nautica: { title: 'Náutica', color: 'var(--navy)' },
   camping: { title: 'Camping', color: 'var(--forest)' },
 };
 
@@ -86,12 +90,23 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
 // rápida) — mismo orden en las dos vistas, y con el mensaje de progreso
 // que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
 // (misma rutina de cuidado personal, y la misma pregunta del form las
-// junta visualmente). "Mascota", en cambio, no tiene nada que ver con
-// higiene/vestuario — sus ítems (correa, comida, transportadora) son
-// logística situacional, igual que "Camping" — así que va pegada a esa,
-// al final de todo (y de paso, antes de la sección de casa, que siempre
-// cierra la pantalla).
-export const CATEGORY_ORDER: CategoryKey[] = ['docs', 'higiene', 'bebe', 'ropa', 'tech', 'extras', 'mascota', 'camping'];
+// junta visualmente). "Mascota", "Esquí", "Náutica" y "Camping", en
+// cambio, no tienen nada que ver con higiene/vestuario — son logística
+// situacional (equipo específico de una actividad puntual), así que van
+// todas juntas al final (y de paso, antes de la sección de casa/barco,
+// que siempre cierra la pantalla).
+export const CATEGORY_ORDER: CategoryKey[] = [
+  'docs',
+  'higiene',
+  'bebe',
+  'ropa',
+  'tech',
+  'extras',
+  'mascota',
+  'ski',
+  'nautica',
+  'camping',
+];
 
 export function labelFor<K extends string>(options: CatalogOption<K>[], key: K): string {
   return options.find((o) => o.key === key)?.label ?? '—';

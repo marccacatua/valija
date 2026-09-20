@@ -12,6 +12,8 @@ export type QuickGroupKey =
   | 'extras'
   | 'bebe'
   | 'mascota'
+  | 'ski'
+  | 'nautica'
   | 'camping';
 
 export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: string }> = {
@@ -26,6 +28,8 @@ export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: str
   extras: { title: 'Extras', color: 'var(--sky)' },
   bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
   mascota: { title: 'Mascota', color: 'var(--clay)' },
+  ski: { title: 'Esquí', color: 'var(--ice)' },
+  nautica: { title: 'Náutica', color: 'var(--navy)' },
   camping: { title: 'Camping', color: 'var(--forest)' },
 };
 
@@ -41,6 +45,8 @@ export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
   'electronica',
   'extras',
   'mascota',
+  'ski',
+  'nautica',
   'camping',
 ];
 
@@ -100,6 +106,8 @@ const CATEGORY_FALLBACK: Record<CategoryKey, QuickGroupKey> = {
   extras: 'extras',
   bebe: 'bebe',
   mascota: 'mascota',
+  ski: 'ski',
+  nautica: 'nautica',
   camping: 'camping',
 };
 

@@ -1,6 +1,6 @@
 import { buildRawItems, ROPA_ORDER } from '../src/data/buildItems';
 import { distributeItems } from '../src/data/distribute';
-import { buildHomeChecklist } from '../src/data/homeTasks';
+import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
 import { QUICK_GROUP_META, quickGroupFor } from '../src/data/quickGroups';
 import type { AlojKey, ClimaKey, DestKey, MaletaKey, MotivoKey, TransporteKey, TripFormState, TurismoKey } from '../src/types';
 
@@ -513,6 +513,129 @@ for (const motivo of MOTIVO)
             fail(form, `Categoría "ropa" tiene ítems duplicados (deporte+aventura solapados): ${names}`);
           }
         }
+
+// ============================================================
+// Bloque dedicado: "ski" — turismo === 'ski' no va al cruce grande (mismo
+// criterio que "deporte": efecto acotado, no interactúa con las otras
+// ~11 dimensiones). Cruza motivo (define `leisure`), turismo (ski vs
+// baseline), lavaRopa (compite con la reducción propia de ski por la
+// ropa "más restrictiva"), clima (el protector solar tiene que sumar
+// pase lo que pase) y días.
+// ============================================================
+const SKI_DIAS = [1, 2, 3, 4, 5, 6, 8, 10, 14];
+for (const motivo of MOTIVO)
+  for (const turismo of ['relax', 'ski'] as TurismoKey[])
+    for (const lavaRopa of LAVA_ROPA)
+      for (const clima of ['frio', 'calor'] as ClimaKey[])
+        for (const dias of SKI_DIAS) {
+          const form: TripFormState = {
+            name: 'QA-ski',
+            dest: ['montana'],
+            clima,
+            motivo,
+            turismo,
+            aloj: 'depto',
+            transporte: 'avion',
+            maletas: ['carry'],
+            dias,
+            vestidos: false,
+            lavaRopa,
+            bebe: false,
+            mascota: false,
+            deporte: false,
+          };
+          const raw = buildRawItems(form);
+          const isSki = motivo !== 'trabajo' && turismo === 'ski';
+          const skiItems = raw.filter((it) => it.cat === 'ski');
+          if (skiItems.length > 0 !== isSki) {
+            fail(form, `Categoría "ski": presente=${skiItems.length > 0} pero isSki=${isSki}`);
+          }
+          if (isSki) {
+            const names = skiItems.map((it) => it.name);
+            if (new Set(names).size !== names.length) fail(form, `Categoría "ski" tiene ítems duplicados: ${names}`);
+
+            const piel = skiItems.find((it) => it.name === 'Primera piel térmica (parte de arriba)');
+            const esperadoPiel = Math.min(Math.max(2, Math.ceil(dias / 3)), 4);
+            if (piel && piel.qty !== esperadoPiel) fail(form, `"Primera piel térmica" qty=${piel.qty}, esperado ${esperadoPiel}`);
+
+            const medias = skiItems.find((it) => it.name === 'Medias de ski');
+            const esperadoMedias = Math.min(Math.max(2, dias), 6);
+            if (medias && medias.qty !== esperadoMedias) fail(form, `"Medias de ski" qty=${medias.qty}, esperado ${esperadoMedias}`);
+
+            // La ropa de calle baja de tope con ski, sin importar lavaRopa
+            // (gana la más restrictiva) — nunca por encima de 4/2.
+            const remeras = raw.find((it) => it.cat === 'ropa' && it.name === 'Remeras');
+            const pantalones = raw.find((it) => it.cat === 'ropa' && it.name === 'Pantalones');
+            if (remeras && remeras.qty > 4) fail(form, `Con ski, "Remeras" no debería superar 4 (qty=${remeras.qty})`);
+            if (pantalones && pantalones.qty > 2) fail(form, `Con ski, "Pantalones" no debería superar 2 (qty=${pantalones.qty})`);
+
+            // El protector solar suma pase lo que pase el clima elegido.
+            const hasSolar = raw.some((it) => it.cat === 'higiene' && it.name === 'Protector solar');
+            if (!hasSolar) fail(form, `Con ski (clima=${clima}) se esperaba "Protector solar" en higiene`);
+          }
+        }
+
+// ============================================================
+// Bloque dedicado: "navegar" — mismo criterio que "ski": cruza motivo,
+// turismo (navegar vs baseline), clima y días. También valida que la
+// lista de casa (`homeChecklist`) siga existiendo IGUAL (navegar no la
+// reemplaza) y que `boatChecklist` aparezca solo con navegar.
+// ============================================================
+const NAVEGAR_DIAS = [1, 3, 5, 10];
+for (const motivo of MOTIVO)
+  for (const turismo of ['relax', 'navegar'] as TurismoKey[])
+    for (const clima of ['frio', 'calor'] as ClimaKey[])
+      for (const dias of NAVEGAR_DIAS) {
+        const form: TripFormState = {
+          name: 'QA-navegar',
+          dest: ['playa'],
+          clima,
+          motivo,
+          turismo,
+          aloj: 'depto',
+          transporte: 'avion',
+          maletas: ['carry'],
+          dias,
+          vestidos: false,
+          lavaRopa: false,
+          bebe: false,
+          mascota: false,
+          deporte: false,
+        };
+        const raw = buildRawItems(form);
+        const isNavegar = motivo !== 'trabajo' && turismo === 'navegar';
+        const nauticaItems = raw.filter((it) => it.cat === 'nautica');
+        if (nauticaItems.length > 0 !== isNavegar) {
+          fail(form, `Categoría "nautica": presente=${nauticaItems.length > 0} pero isNavegar=${isNavegar}`);
+        }
+        if (isNavegar) {
+          const names = nauticaItems.map((it) => it.name);
+          if (new Set(names).size !== names.length) fail(form, `Categoría "nautica" tiene ítems duplicados: ${names}`);
+
+          // Reusa "Rompeviento impermeable" y "Protector solar" en vez de
+          // crear versiones propias — tienen que sumar pase lo que pase
+          // clima/dest (acá clima=calor, dest=playa, ninguno los gatilla
+          // por su cuenta).
+          const hasRompeviento = raw.some((it) => it.cat === 'ropa' && it.name === 'Rompeviento impermeable');
+          if (!hasRompeviento) fail(form, `Con navegar (clima=${clima}) se esperaba "Rompeviento impermeable"`);
+          const hasSolar = raw.some((it) => it.cat === 'higiene' && it.name === 'Protector solar');
+          if (!hasSolar) fail(form, `Con navegar (clima=${clima}) se esperaba "Protector solar" en higiene`);
+        }
+
+        // homeChecklist sigue existiendo igual, navegar no la reemplaza.
+        const homeChecklist = buildHomeChecklist(form);
+        if (homeChecklist.length === 0) fail(form, 'homeChecklist no debería quedar vacía con navegar');
+
+        const boatChecklist = buildBoatChecklist(form);
+        if (boatChecklist.length > 0 !== isNavegar) {
+          fail(form, `boatChecklist: presente=${boatChecklist.length > 0} pero isNavegar=${isNavegar}`);
+        }
+        if (isNavegar) {
+          const ids = boatChecklist.map((t) => t.id);
+          if (new Set(ids).size !== ids.length) fail(form, `boatChecklist tiene ids duplicados: ${ids}`);
+          if (boatChecklist.some((t) => !t.label.trim())) fail(form, 'boatChecklist tiene un label vacío');
+        }
+      }
 
 console.log(`Combinaciones de formulario probadas: ${combos}`);
 console.log(`Chequeos de distribución (combo x subconjunto de valijas): ${distributionChecks}`);

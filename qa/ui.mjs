@@ -2090,6 +2090,97 @@ try {
     );
     await ctx.close();
   }
+
+  // ============================================================
+  // 52) "Esquí" y "Navegar" son categorías Pro (mismo criterio que
+  // bebé/mascota/camping): sin desbloquear, tocarlas abre el paywall;
+  // con Pro, generan su propia categoría de ítems.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser); // sin pro
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Esquí")');
+    const paywallAfterSki = await page.locator('text=Desbloqueá todo, para siempre').count();
+    assert(paywallAfterSki === 1, 'Sin Pro, tocar "Esquí" abre el paywall', `count=${paywallAfterSki}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser); // sin pro
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Navegar")');
+    const paywallAfterNavegar = await page.locator('text=Desbloqueá todo, para siempre').count();
+    assert(paywallAfterNavegar === 1, 'Sin Pro, tocar "Navegar" abre el paywall', `count=${paywallAfterNavegar}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Esquí")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasCampera = await page.locator('button', { hasText: 'Campera de nieve' }).count();
+    assert(hasCampera === 1, 'Tildar "Esquí" agrega la categoría con sus ítems (ej. Campera de nieve)', `campera=${hasCampera}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // turismo por defecto: relax
+    const hasCampera = await page.locator('button', { hasText: 'Campera de nieve' }).count();
+    assert(hasCampera === 0, 'Sin tildar "Esquí", no aparecen sus ítems', `campera=${hasCampera}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 53) "Navegar" suma su categoría de ítems personales Y una segunda
+  // lista de tareas ("¿Está todo listo para zarpar?") que NO reemplaza
+  // la de casa — las dos aparecen juntas.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Navegar")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasCalzado = await page.locator('button', { hasText: 'Calzado náutico antideslizante' }).count();
+    assert(hasCalzado === 1, 'Tildar "Navegar" agrega la categoría con sus ítems (ej. Calzado náutico)', `calzado=${hasCalzado}`);
+    const hasBoatSection = await page.locator('text=¿Está todo listo para zarpar?').count();
+    assert(hasBoatSection === 1, 'Con "Navegar" aparece la sección "¿Está todo listo para zarpar?"', `count=${hasBoatSection}`);
+    const hasChaleco = await page.locator('button', { hasText: 'Chalecos salvavidas' }).count();
+    assert(hasChaleco === 1, 'La lista del barco tiene sus tareas (ej. Chalecos salvavidas)', `chaleco=${hasChaleco}`);
+    const hasHomeSection = await page.locator('text=¿Quedó todo pronto en casa?').count();
+    assert(hasHomeSection === 1, 'Navegar NO reemplaza la lista de casa: aparecen las dos secciones', `count=${hasHomeSection}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // turismo por defecto: relax
+    const hasCalzado = await page.locator('button', { hasText: 'Calzado náutico antideslizante' }).count();
+    assert(hasCalzado === 0, 'Sin tildar "Navegar", no aparecen sus ítems', `calzado=${hasCalzado}`);
+    const hasBoatSection = await page.locator('text=¿Está todo listo para zarpar?').count();
+    assert(hasBoatSection === 0, 'Sin "Navegar", no aparece la sección del barco', `count=${hasBoatSection}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Navegar")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    // Tildar una tarea del barco no debería afectar el contador de
+    // empacado de la valija — mismo criterio que ya vale para casa.
+    const packedBefore = await page.locator('span', { hasText: /^de \d+ empacado$/ }).locator('xpath=preceding-sibling::span[1]').textContent();
+    await page.click('button:has-text("Chalecos salvavidas")');
+    await page.waitForTimeout(100);
+    const packedAfter = await page.locator('span', { hasText: /^de \d+ empacado$/ }).locator('xpath=preceding-sibling::span[1]').textContent();
+    assert(packedBefore === packedAfter, 'Tildar una tarea del barco NO afecta el contador de empacado de la valija', `antes=${packedBefore} despues=${packedAfter}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

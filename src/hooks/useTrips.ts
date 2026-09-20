@@ -1,27 +1,70 @@
 import { useCallback, useMemo } from 'react';
 import { buildItems } from '../data/buildItems';
-import { buildHomeChecklist } from '../data/homeTasks';
+import { buildBoatChecklist, buildHomeChecklist } from '../data/homeTasks';
 import { hapticTap, hapticMedium } from '../features/haptics';
 import type { CategoryKey, HomeTask, PackingItem, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
 
 const STORAGE_KEY = 'valija:trips';
 
+/** Los dos campos de `Trip` que son listas de tareas (no de ítems para
+ * empacar) — casa y barco comparten exactamente el mismo mecanismo
+ * (tildar, agregar a mano, borrar, deshacer), así que en vez de escribir
+ * cada función dos veces se arma una sola vez por campo. */
+type ChecklistField = 'homeChecklist' | 'boatChecklist';
+
+function createChecklistActions(
+  field: ChecklistField,
+  updateTrip: (id: string, updater: (t: Trip) => Trip) => void,
+) {
+  const toggleTask = (tripId: string, taskId: string) => {
+    hapticTap();
+    updateTrip(tripId, (t) => ({
+      ...t,
+      [field]: t[field].map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
+    }));
+  };
+
+  const addTask = (tripId: string, label: string) => {
+    const trimmed = label.trim();
+    if (!trimmed) return;
+    updateTrip(tripId, (t) => ({
+      ...t,
+      [field]: [...t[field], { id: crypto.randomUUID(), label: trimmed, done: false, isCustom: true }],
+    }));
+  };
+
+  const removeTask = (tripId: string, taskId: string) => {
+    updateTrip(tripId, (t) => ({ ...t, [field]: t[field].filter((task) => task.id !== taskId) }));
+  };
+
+  const restoreTask = (tripId: string, task: HomeTask, index: number) => {
+    updateTrip(tripId, (t) => {
+      const list = [...t[field]];
+      list.splice(Math.min(index, list.length), 0, task);
+      return { ...t, [field]: list };
+    });
+  };
+
+  return { toggleTask, addTask, removeTask, restoreTask };
+}
+
 /**
  * Viajes guardados antes de la v0.7.0 tienen `form.maleta` (una sola)
  * en vez de `form.maletas` (array); antes de la v0.12.0 pasa lo mismo
  * con `form.dest` (un solo valor en vez de array, ver combinar destinos
- * en BACKLOG.md); antes de la v0.13.0 no existía `homeChecklist`. Se
- * migra en lectura, sin tocar lo que ya está en localStorage — así no
- * hace falta un paso de migración explícito ni arriesgarse a corromper
- * datos viejos.
+ * en BACKLOG.md); antes de la v0.13.0 no existía `homeChecklist`; antes
+ * de sumar "navegar" no existía `boatChecklist`. Se migra en lectura,
+ * sin tocar lo que ya está en localStorage — así no hace falta un paso
+ * de migración explícito ni arriesgarse a corromper datos viejos.
  */
 function migrateTrip(t: Trip): Trip {
   const form = t.form as TripFormState & { maleta?: string; dest: TripFormState['dest'] | TripFormState['dest'][number] };
   const needsMaletas = !Array.isArray(form.maletas);
   const needsDest = !Array.isArray(form.dest);
   const needsHomeChecklist = !Array.isArray(t.homeChecklist);
-  if (!needsMaletas && !needsDest && !needsHomeChecklist) return t;
+  const needsBoatChecklist = !Array.isArray(t.boatChecklist);
+  if (!needsMaletas && !needsDest && !needsHomeChecklist && !needsBoatChecklist) return t;
   const migratedForm: TripFormState = {
     ...form,
     maletas: needsMaletas ? (form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry']) : form.maletas,
@@ -31,6 +74,7 @@ function migrateTrip(t: Trip): Trip {
     ...t,
     form: migratedForm,
     homeChecklist: needsHomeChecklist ? buildHomeChecklist(migratedForm) : t.homeChecklist,
+    boatChecklist: needsBoatChecklist ? buildBoatChecklist(migratedForm) : t.boatChecklist,
   };
 }
 
@@ -52,6 +96,7 @@ export function useTrips() {
         form,
         items: buildItems(form),
         homeChecklist: buildHomeChecklist(form),
+        boatChecklist: buildBoatChecklist(form),
       };
       setTrips((prev) => [trip, ...prev]);
       return trip;
@@ -117,41 +162,30 @@ export function useTrips() {
     [updateTrip],
   );
 
+  // Casa y barco comparten el mismo mecanismo de tildar/agregar/borrar/
+  // deshacer (ver createChecklistActions arriba) — una instancia por
+  // campo en vez de duplicar cada función.
+  const homeActions = useMemo(() => createChecklistActions('homeChecklist', updateTrip), [updateTrip]);
+  const boatActions = useMemo(() => createChecklistActions('boatChecklist', updateTrip), [updateTrip]);
+
   /** Tilda/destilda una tarea de "antes de salir de casa" — independiente
    * de los ítems de la valija, no afecta el progreso de empaque. */
-  const toggleHomeTask = useCallback(
-    (tripId: string, taskId: string) => {
-      hapticTap();
-      updateTrip(tripId, (t) => ({
-        ...t,
-        homeChecklist: t.homeChecklist.map((task) => (task.id === taskId ? { ...task, done: !task.done } : task)),
-      }));
-    },
-    [updateTrip],
-  );
+  const toggleHomeTask = useCallback((tripId: string, taskId: string) => homeActions.toggleTask(tripId, taskId), [homeActions]);
 
   /** Agrega una tarea de casa a mano (sin cantidad, como el resto de la
    * lista — no tiene sentido "contar" una tarea). */
-  const addHomeTask = useCallback(
-    (tripId: string, label: string) => {
-      const trimmed = label.trim();
-      if (!trimmed) return;
-      updateTrip(tripId, (t) => ({
-        ...t,
-        homeChecklist: [...t.homeChecklist, { id: crypto.randomUUID(), label: trimmed, done: false, isCustom: true }],
-      }));
-    },
-    [updateTrip],
-  );
+  const addHomeTask = useCallback((tripId: string, label: string) => homeActions.addTask(tripId, label), [homeActions]);
 
   /** Saca una tarea de casa de la lista — cualquiera, generada o
    * agregada a mano (ej. alguien sin plantas saca "Regar las plantas"). */
-  const removeHomeTask = useCallback(
-    (tripId: string, taskId: string) => {
-      updateTrip(tripId, (t) => ({ ...t, homeChecklist: t.homeChecklist.filter((task) => task.id !== taskId) }));
-    },
-    [updateTrip],
-  );
+  const removeHomeTask = useCallback((tripId: string, taskId: string) => homeActions.removeTask(tripId, taskId), [homeActions]);
+
+  /** Mismas 4 operaciones que arriba, para "¿Está todo listo para
+   * zarpar?" — solo tiene tareas cuando `turismo === 'navegar'` (ver
+   * `buildBoatChecklist`), pero la mecánica es idéntica. */
+  const toggleBoatTask = useCallback((tripId: string, taskId: string) => boatActions.toggleTask(tripId, taskId), [boatActions]);
+  const addBoatTask = useCallback((tripId: string, label: string) => boatActions.addTask(tripId, label), [boatActions]);
+  const removeBoatTask = useCallback((tripId: string, taskId: string) => boatActions.removeTask(tripId, taskId), [boatActions]);
 
   const addCustomItem = useCallback(
     (tripId: string, cat: CategoryKey, name: string) => {
@@ -189,16 +223,16 @@ export function useTrips() {
     [updateTrip],
   );
 
-  /** Misma idea que restoreItem, para una tarea de casa/barco. */
+  /** Misma idea que restoreItem, para una tarea de casa. */
   const restoreHomeTask = useCallback(
-    (tripId: string, task: HomeTask, index: number) => {
-      updateTrip(tripId, (t) => {
-        const homeChecklist = [...t.homeChecklist];
-        homeChecklist.splice(Math.min(index, homeChecklist.length), 0, task);
-        return { ...t, homeChecklist };
-      });
-    },
-    [updateTrip],
+    (tripId: string, task: HomeTask, index: number) => homeActions.restoreTask(tripId, task, index),
+    [homeActions],
+  );
+
+  /** Misma idea, para una tarea de barco. */
+  const restoreBoatTask = useCallback(
+    (tripId: string, task: HomeTask, index: number) => boatActions.restoreTask(tripId, task, index),
+    [boatActions],
   );
 
   const removeTrip = useCallback(
@@ -238,6 +272,7 @@ export function useTrips() {
         form: original.form,
         items: original.items.map((item) => ({ ...item, done: false })),
         homeChecklist: original.homeChecklist.map((task) => ({ ...task, done: false })),
+        boatChecklist: original.boatChecklist.map((task) => ({ ...task, done: false })),
       };
       setTrips((prev) => [clone, ...prev]);
       return clone;
@@ -258,10 +293,14 @@ export function useTrips() {
     toggleHomeTask,
     addHomeTask,
     removeHomeTask,
+    toggleBoatTask,
+    addBoatTask,
+    removeBoatTask,
     addCustomItem,
     removeItem,
     restoreItem,
     restoreHomeTask,
+    restoreBoatTask,
     removeTrip,
     removeAllTrips,
     toggleTripFinished,
