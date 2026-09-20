@@ -4,6 +4,17 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.2.1
+
+- **Fix: orden de la categoría "Mascota"** — pasa de estar pegada a
+  "Bebé" (antes de "Ropa") a ir al final, junto a "Camping": sus ítems
+  (correa, comida, transportadora) son logística situacional, no algo
+  relacionado con higiene/vestuario propio.
+- **Fix menor: 3 ítems de "deporte" mal agrupados en la vista rápida**
+  ("Short deportivo", "Championes para correr", "Campera liviana para
+  correr") — ahora se agrupan con calzado/abrigo en vez de caer al
+  genérico "ropa".
+
 ## v1.2.0
 
 **Mascota, deporte, y una tanda de fixes de animación encontrados

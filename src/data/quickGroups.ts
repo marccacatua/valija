@@ -33,7 +33,6 @@ export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
   'documentos',
   'higiene',
   'bebe',
-  'mascota',
   'ropa',
   'trabajo',
   'salir',
@@ -41,6 +40,7 @@ export const QUICK_GROUP_ORDER: QuickGroupKey[] = [
   'calzado',
   'electronica',
   'extras',
+  'mascota',
   'camping',
 ];
 
@@ -68,6 +68,7 @@ const NAME_TO_GROUP: Record<string, QuickGroupKey> = {
   'Traje de baño': 'ropa',
   Cinturón: 'ropa',
   'Gorra o sombrero': 'ropa',
+  'Short deportivo': 'ropa',
   // ropa: abrigo
   'Buzo o campera liviana': 'abrigo',
   Buzos: 'abrigo',
@@ -75,6 +76,7 @@ const NAME_TO_GROUP: Record<string, QuickGroupKey> = {
   'Rompeviento impermeable': 'abrigo',
   Bufanda: 'abrigo',
   'Gorro y guantes': 'abrigo',
+  'Campera liviana para correr': 'abrigo',
   // ropa: trabajo
   Camisas: 'trabajo',
   'Saco o blazer': 'trabajo',
@@ -87,6 +89,7 @@ const NAME_TO_GROUP: Record<string, QuickGroupKey> = {
   'Zapatos de vestir': 'calzado',
   'Calzado para salir': 'calzado',
   'Botas o calzado de abrigo': 'calzado',
+  'Championes para correr': 'calzado',
 };
 
 const CATEGORY_FALLBACK: Record<CategoryKey, QuickGroupKey> = {

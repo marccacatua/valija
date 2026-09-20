@@ -1,5 +1,30 @@
 # Backlog
 
+## ✅ Fix: orden de la categoría "Mascota" (en `main`, 2026-09-20)
+
+El usuario notó que "Mascota" quedaba pegada a "Bebé" (antes de "Ropa"),
+pero sus ítems (correa, comida, transportadora) no tienen nada que ver
+con higiene/vestuario propio — es logística situacional, igual que
+"Camping". Se la movió al final, justo antes de "Camping" (que ya era
+"la más situacional de todas" por diseño): `CATEGORY_ORDER` pasó de
+`[docs, higiene, bebe, mascota, ropa, tech, extras, camping]` a
+`[docs, higiene, bebe, ropa, tech, extras, mascota, camping]`. Mismo
+cambio en `QUICK_GROUP_ORDER` (vista rápida), que a propósito coincide
+con el orden de la vista detallada. "Bebé" se queda donde estaba —
+tiene sentido cerca de higiene por la rutina de cuidado.
+
+De paso, encontrado mientras se tocaba `quickGroups.ts`: los 3 ítems
+nuevos de "deporte" (v1.2.0) no estaban en `NAME_TO_GROUP` — caían al
+fallback genérico de "ropa" en la vista rápida en vez de agruparse con
+lo que corresponde. Se sumaron: "Short deportivo" → ropa (como el resto
+de los shorts), "Championes para correr" → calzado (como el resto del
+calzado), "Campera liviana para correr" → abrigo (como el resto de las
+camperas).
+
+QA: 142/142 Playwright + 752.640 combinaciones sin errores (no hay
+ninguna invariante que dependa del orden entre categorías, así que no
+hizo falta tocar los tests, solo confirmar que seguían pasando).
+
 ## Versionado: de acá en adelante sube en cada tanda mergeada a `main`
 
 El usuario notó que era muy difícil saber cuántos cambios se habían
