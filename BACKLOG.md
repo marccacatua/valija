@@ -513,8 +513,9 @@ retomar a la vuelta, en este orden sugerido:
 
 Pedido del usuario (2026-09-14), implementado el 2026-09-20 junto con
 navegar (mismo patrón, tenía sentido hacerlos juntos). **Todavía sin
-mergear a `main`** — hay algunas decisiones de producto que tomé por mi
-cuenta (marcadas ⚠️ abajo) que quedan pendientes de tu confirmación
+mergear a `main`** — de las 3 decisiones de producto que tomé por mi
+cuenta, la del barco ya se confirmó y corrigió probando un preview real
+(ver más abajo); quedan 2 marcadas ⚠️ pendientes de tu confirmación
 antes de mergear.
 
 **Modelado**: se siguió la recomendación (a) de este documento —
@@ -555,22 +556,23 @@ estanca, pastillas para el mareo). "Rompeviento impermeable" (ya
 existente en Ropa) se reutiliza igual que el protector solar, en vez
 de duplicar.
 
-- ⚠️ **Decisión tomada por mi cuenta, la más grande de las tres**: la
-  segunda lista del barco (`boatChecklist`, nuevo campo en `Trip`) se
-  implementó como **una lista ADICIONAL, no un reemplazo** de "¿Quedó
-  todo pronto en casa?" — las dos aparecen juntas cuando
-  `turismo === 'navegar'` (salir a navegar no te saca la
-  responsabilidad de dejar algo resuelto en tu casa). Título propio:
-  "¿Está todo listo para zarpar?", con 13 tareas por default
-  (seguridad primero: chalecos, botiquín, extintor, bengalas; después
-  logística/mecánica del barco; por último comunicación/planificación
-  de la salida). Mismo mecanismo que `homeChecklist` en todo lo demás
-  (tildar, agregar a mano, borrar, deshacer) — generalizado en
-  `useTrips.ts` con una sola función factory (`createChecklistActions`)
-  parametrizada por campo, en vez de duplicar 4 funciones dos veces.
-  **Esto es lo que más te pediría que confirmes** antes de mergear: si
-  preferís que el barco reemplace la lista de casa en vez de sumarse,
-  es un cambio de una línea (la condición de render en `Checklist.tsx`).
+- ✅ **Decisión confirmada por el usuario probando el preview real**: la
+  segunda lista del barco (`boatChecklist`, nuevo campo en `Trip`)
+  arrancó implementada como lista ADICIONAL a "¿Quedó todo pronto en
+  casa?" — al verlas juntas en un viaje de prueba, el usuario confirmó
+  que se ve mal ("está mal porque sigue mostrando la lista de la
+  casa"), así que se cambió: **el barco REEMPLAZA a la casa** en la
+  pantalla y en "Compartir checklist" (`Checklist.tsx` / `trip.ts`).
+  `homeChecklist` se sigue generando igual por dentro (no se tocó el
+  modelo de datos ni las migraciones), solo cambió cuál de las dos se
+  prioriza al mostrar. Título propio: "¿Está todo listo para zarpar?",
+  con 13 tareas por default (seguridad primero: chalecos, botiquín,
+  extintor, bengalas; después logística/mecánica del barco; por último
+  comunicación/planificación de la salida). Mismo mecanismo que
+  `homeChecklist` en todo lo demás (tildar, agregar a mano, borrar,
+  deshacer) — generalizado en `useTrips.ts` con una sola función
+  factory (`createChecklistActions`) parametrizada por campo, en vez de
+  duplicar 4 funciones dos veces.
 - Las plantillas ("Guardar como plantilla") **no incluyen tareas del
   barco todavía** — se dejó afuera a propósito para no agrandar más el
   cambio; sigue en el backlog si hace falta más adelante.

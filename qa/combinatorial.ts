@@ -577,9 +577,11 @@ for (const motivo of MOTIVO)
 
 // ============================================================
 // Bloque dedicado: "navegar" — mismo criterio que "ski": cruza motivo,
-// turismo (navegar vs baseline), clima y días. También valida que la
-// lista de casa (`homeChecklist`) siga existiendo IGUAL (navegar no la
-// reemplaza) y que `boatChecklist` aparezca solo con navegar.
+// turismo (navegar vs baseline), clima y días. También valida que
+// `buildHomeChecklist` siga generando datos IGUAL con navegar (a nivel
+// de datos no cambia nada — lo único que cambia es que la UI prioriza
+// mostrar el barco por encima de la casa cuando hay boatChecklist, ver
+// Checklist.tsx) y que `boatChecklist` aparezca solo con navegar.
 // ============================================================
 const NAVEGAR_DIAS = [1, 3, 5, 10];
 for (const motivo of MOTIVO)

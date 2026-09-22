@@ -2133,9 +2133,8 @@ try {
   }
 
   // ============================================================
-  // 53) "Navegar" suma su categoría de ítems personales Y una segunda
-  // lista de tareas ("¿Está todo listo para zarpar?") que NO reemplaza
-  // la de casa — las dos aparecen juntas.
+  // 53) "Navegar" suma su categoría de ítems personales Y REEMPLAZA la
+  // lista de casa por la del barco ("¿Está todo listo para zarpar?").
   // ============================================================
   {
     const { ctx, page } = await freshPage(browser, { pro: true });
@@ -2152,7 +2151,7 @@ try {
     const hasChaleco = await page.locator('button', { hasText: 'Chalecos salvavidas' }).count();
     assert(hasChaleco === 1, 'La lista del barco tiene sus tareas (ej. Chalecos salvavidas)', `chaleco=${hasChaleco}`);
     const hasHomeSection = await page.locator('text=¿Quedó todo pronto en casa?').count();
-    assert(hasHomeSection === 1, 'Navegar NO reemplaza la lista de casa: aparecen las dos secciones', `count=${hasHomeSection}`);
+    assert(hasHomeSection === 0, 'Navegar REEMPLAZA la lista de casa por la del barco (no aparecen las dos)', `count=${hasHomeSection}`);
     await ctx.close();
   }
   {

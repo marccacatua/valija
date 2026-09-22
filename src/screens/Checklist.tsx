@@ -494,29 +494,31 @@ export function Checklist() {
           quickGroups.map((g) => groupedQuick(g.key, g.list))
         )}
 
-        {taskSection({
-          title: '¿Quedó todo pronto en casa?',
-          hint: 'No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.',
-          tasks: homeChecklist,
-          sorted: sortedHomeChecklist,
-          onToggle: (taskId) => toggleHomeTask(trip.id, taskId),
-          onRemove: handleRemoveHomeTask,
-          onAdd: (label) => addHomeTask(trip.id, label),
-        })}
-
-        {/* Solo cuando turismo === 'navegar' (ver buildBoatChecklist) — no
-            reemplaza la de casa, se suma aparte: salir a navegar no te
-            saca la responsabilidad de dejar algo resuelto en tu casa. */}
-        {boatChecklist.length > 0 &&
-          taskSection({
-            title: '¿Está todo listo para zarpar?',
-            hint: 'Seguridad y logística de la embarcación — no tiene nada que ver con la valija personal.',
-            tasks: boatChecklist,
-            sorted: sortedBoatChecklist,
-            onToggle: (taskId) => toggleBoatTask(trip.id, taskId),
-            onRemove: handleRemoveBoatTask,
-            onAdd: (label) => addBoatTask(trip.id, label),
-          })}
+        {/* Con turismo === 'navegar' (ver buildBoatChecklist), el barco
+            REEMPLAZA a la de casa en vez de sumarse — decidido por el
+            usuario al ver las dos juntas en un preview real ("se ve
+            mal"). homeChecklist se sigue generando igual por dentro
+            (no se tocó el modelo de datos), solo se prioriza cuál se
+            muestra. */}
+        {boatChecklist.length > 0
+          ? taskSection({
+              title: '¿Está todo listo para zarpar?',
+              hint: 'Seguridad y logística de la embarcación — no tiene nada que ver con la valija personal.',
+              tasks: boatChecklist,
+              sorted: sortedBoatChecklist,
+              onToggle: (taskId) => toggleBoatTask(trip.id, taskId),
+              onRemove: handleRemoveBoatTask,
+              onAdd: (label) => addBoatTask(trip.id, label),
+            })
+          : taskSection({
+              title: '¿Quedó todo pronto en casa?',
+              hint: 'No suma al progreso de la valija — son cosas para dejar resueltas antes de salir.',
+              tasks: homeChecklist,
+              sorted: sortedHomeChecklist,
+              onToggle: (taskId) => toggleHomeTask(trip.id, taskId),
+              onRemove: handleRemoveHomeTask,
+              onAdd: (label) => addHomeTask(trip.id, label),
+            })}
 
         {trip.form.maletas.length > 1 && (
           <Button onClick={() => navigate(`/viaje/${trip.id}/distribucion`)}>Ver cómo repartir en tus valijas</Button>

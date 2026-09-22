@@ -138,17 +138,16 @@ export function shareText(trip: Trip): string {
     lines.push('');
   }
 
-  if (trip.homeChecklist.length) {
-    lines.push('¿Quedó todo pronto en casa?');
-    for (const task of trip.homeChecklist) {
-      lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
-    }
-    lines.push('');
-  }
-
+  // El barco reemplaza a la casa (no se suman), mismo criterio que en
+  // la UI — ver el comentario en Checklist.tsx.
   if (trip.boatChecklist.length) {
     lines.push('¿Está todo listo para zarpar?');
     for (const task of trip.boatChecklist) {
+      lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
+    }
+  } else if (trip.homeChecklist.length) {
+    lines.push('¿Quedó todo pronto en casa?');
+    for (const task of trip.homeChecklist) {
       lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
     }
   }
