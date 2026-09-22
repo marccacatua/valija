@@ -162,6 +162,19 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Cambia las valijas de un viaje ya creado (a prueba — ver
+   * ChangeMaletasSheet). A propósito NO recalcula `items`: eso
+   * borraría lo tildado, las cantidades ajustadas y los ítems propios
+   * para arreglar apenas un par de ítems que dependen de las valijas
+   * (candados, líquidos mini). El aviso de espacio y la pantalla de
+   * Distribución ya leen `trip.form.maletas` en vivo. */
+  const updateMaletas = useCallback(
+    (tripId: string, maletas: TripFormState['maletas']) => {
+      updateTrip(tripId, (t) => ({ ...t, form: { ...t.form, maletas } }));
+    },
+    [updateTrip],
+  );
+
   // Casa y barco comparten el mismo mecanismo de tildar/agregar/borrar/
   // deshacer (ver createChecklistActions arriba) — una instancia por
   // campo en vez de duplicar cada función.
@@ -290,6 +303,7 @@ export function useTrips() {
     bumpItem,
     setItemsDone,
     renameTrip,
+    updateMaletas,
     toggleHomeTask,
     addHomeTask,
     removeHomeTask,

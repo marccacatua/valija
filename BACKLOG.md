@@ -1,5 +1,45 @@
 # Backlog
 
+## 🧪 A PRUEBA: cambiar las valijas de un viaje ya creado (en `main`, 2026-09-22)
+
+Pedido del usuario viendo el aviso de espacio: "quizás convenga sumar
+una valija más" pero no había forma de hacerlo sin rehacer todo el
+formulario. Se agregó un link **"Cambiar valijas"** dentro del mismo
+cartel de aviso, que abre una hoja (`ChangeMaletasSheet.tsx`) con los
+mismos chips de Carry-on/Bodega/Mochila que ya usa el formulario.
+
+**Marcado explícitamente como prueba** — el usuario pidió "armalo como
+prueba y vemos si lo dejamos o volvemos atrás", así que si después de
+usarlo no convence, es un `git revert` limpio (un componente nuevo +
+una función en `useTrips.ts` + un botón en `Checklist.tsx`, nada que
+otro código dependa).
+
+**Decisión de diseño clave: NO recalcula `items`.** `updateMaletas`
+(`useTrips.ts`) solo pisa `trip.form.maletas` — no vuelve a correr
+`buildItems()`. Motivo: de los ~90 ítems que genera un viaje típico,
+solo 2 dependen de las valijas elegidas (qué candado sale — genérico o
+los 2 nombrados de bodega/carry-on — y si hay versión "mini" de los
+líquidos). Recalcular todo para corregir esos 2 arriesgaría borrar el
+progreso real: ítems tildados, cantidades ajustadas a mano, y los
+agregados propios (que ni siquiera existen en `buildItems()`, son del
+viaje). El aviso de espacio y la pantalla de Distribución ya leen
+`trip.form.maletas` en vivo, así que alcanza con actualizar ese dato —
+no hace falta tocar `items` para que el aviso desaparezca.
+
+**Lo que sí queda "stale" a propósito** (aceptado como costo menor): si
+ya tenías bodega+carry-on con sus 2 candados nombrados y sacás la
+bodega, esos candados no se renombran/eliminan solos — quedan como
+estaban. Si en el uso real esto molesta, la corrección sería puntual
+(un patch dirigido a esos 2 casos, no una recalculación completa) y
+puede sumarse después sin tocar el resto.
+
+QA: 4 tests nuevos en `qa/ui.mjs` (aparece el link con bulto
+suficiente, no aparece sin bulto, guardar actualiza los chips en vivo,
+y — el más importante — cambiar las valijas NO borra un ítem ya
+tildado). 159/160 Playwright (el que falla es el flake ya documentado,
+no relacionado) + 752.640 combinaciones sin errores (no se tocó
+`buildItems.ts`, así que el combinatorio no necesitaba cambios).
+
 ## ✅ Fix: el tipo de turismo no aparecía en ningún lado (en `main`, 2026-09-22)
 
 Reportado por el usuario probando esquí en `main` recién mergeado: eligió

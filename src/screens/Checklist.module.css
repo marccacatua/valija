@@ -130,6 +130,15 @@
   color: var(--coral-dark);
 }
 
+.spaceNoteAction {
+  display: block;
+  margin-top: 8px;
+  font: 900 13px/1 'Nunito', sans-serif;
+  color: var(--coral-dark);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .progressCard {
   background: var(--surface);
   border: 2px solid var(--line);

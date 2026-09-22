@@ -2213,6 +2213,52 @@ try {
     assert(hasTurismoChip === 0, 'Con motivo "Trabajo", no aparece un chip de turismo (no se pregunta)', `count=${hasTurismoChip}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 55) "Cambiar valijas" (a prueba): desde el aviso de espacio se puede
+  // cambiar la selección de valijas de un viaje ya creado, sin perder
+  // el progreso de tildado — ver ChangeMaletasSheet.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")');
+    // Carry-on solo (default) alcanza para disparar el aviso con montaña+frío.
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasWarningBefore = await page.locator('text=Cambiar valijas').count();
+    assert(hasWarningBefore === 1, 'Con pocas valijas y bastante bulto, aparece el aviso con el link "Cambiar valijas"', `count=${hasWarningBefore}`);
+
+    await page.click('button:has-text("Cinturón")');
+    await page.waitForTimeout(80);
+
+    await page.click('text=Cambiar valijas');
+    await page.waitForSelector('text=Guardar');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Mochila")');
+    await page.click('text=Guardar');
+    await page.waitForTimeout(200);
+
+    const chipsAfter = (await page.locator('[class*="chip"]').first().textContent()) ?? '';
+    assert(chipsAfter.includes('Bodega') && chipsAfter.includes('Mochila'), 'Guardar actualiza la fila de chips con las nuevas valijas', `chips=${chipsAfter}`);
+
+    const warningAfter = await page.locator('text=Cambiar valijas').count();
+    assert(warningAfter === 0, 'Con más valijas, el aviso de espacio desaparece solo', `count=${warningAfter}`);
+
+    const cinturonAfter = await page.locator('button', { hasText: 'Cinturón' }).locator('[class*="checkboxDone"]').count();
+    assert(cinturonAfter === 1, 'Cambiar valijas NO borra lo que ya estaba tildado', `count=${cinturonAfter}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    // Viaje default (playa/calor) no llega al umbral de bulto.
+    await generateTrip(page, { maletas: ['Carry-on'] });
+    const hasWarning = await page.locator('text=Cambiar valijas').count();
+    assert(hasWarning === 0, 'Sin bulto suficiente, no aparece el aviso ni el link "Cambiar valijas"', `count=${hasWarning}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

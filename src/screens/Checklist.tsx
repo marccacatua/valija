@@ -8,6 +8,7 @@ import { AddItemRow } from '../components/AddItemRow';
 import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
 import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
+import { ChangeMaletasSheet } from '../components/ChangeMaletasSheet';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { BackArrowIcon, EditIcon, LockIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
@@ -33,6 +34,7 @@ export function Checklist() {
     bumpItem,
     setItemsDone,
     renameTrip,
+    updateMaletas,
     toggleHomeTask,
     addHomeTask,
     removeHomeTask,
@@ -59,6 +61,7 @@ export function Checklist() {
   const [nameDraft, setNameDraft] = useState('');
   const [copied, setCopied] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [showChangeMaletas, setShowChangeMaletas] = useState(false);
   const [search, setSearch] = useState('');
   const [onlyPending, setOnlyPending] = useState(false);
   // Guarda lo último borrado (ítem o tarea de casa) para poder ofrecer
@@ -444,6 +447,9 @@ export function Checklist() {
         <div className={styles.spaceNote}>
           ⚠️ Tenés bastantes ítems que ocupan lugar para las valijas que elegiste — quizás convenga sumar una
           valija más, o una más grande.
+          <button type="button" className={styles.spaceNoteAction} onClick={() => setShowChangeMaletas(true)}>
+            Cambiar valijas
+          </button>
         </div>
       )}
 
@@ -558,6 +564,17 @@ export function Checklist() {
       <BottomNav active="checklist" />
 
       {showPaywall && <PaywallSheet onClose={() => setShowPaywall(false)} />}
+
+      {showChangeMaletas && (
+        <ChangeMaletasSheet
+          current={trip.form.maletas}
+          onSave={(maletas) => {
+            updateMaletas(trip.id, maletas);
+            setShowChangeMaletas(false);
+          }}
+          onCancel={() => setShowChangeMaletas(false)}
+        />
+      )}
 
       {pendingUndo && (
         <UndoSnackbar

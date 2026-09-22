@@ -4,6 +4,15 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.4.0
+
+- 🧪 **A prueba: "Cambiar valijas" desde el aviso de espacio** — cuando
+  aparece "quizás convenga sumar una valija más", ahora hay un link que
+  abre una hoja para cambiar Carry-on/Bodega/Mochila sin rehacer el
+  viaje. No borra el progreso ya tildado ni las cantidades ajustadas —
+  ver `BACKLOG.md` para el detalle técnico y por qué está marcado como
+  prueba (fácil de revertir si no convence en el uso real).
+
 ## v1.3.1
 
 - **Fix: el tipo de turismo (Esquí, Navegar, etc.) no aparecía en
