@@ -2259,6 +2259,61 @@ try {
     assert(hasWarning === 0, 'Sin bulto suficiente, no aparece el aviso ni el link "Cambiar valijas"', `count=${hasWarning}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 56) "Buceo" es categoría Pro (mismo criterio que ski/navegar): sin
+  // desbloquear, tocarlo abre el paywall; con Pro, genera su categoría
+  // de ítems y el traje de neopreno correcto según el clima.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser); // sin pro
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Buceo")');
+    const paywallAfterBuceo = await page.locator('text=Desbloqueá todo, para siempre').count();
+    assert(paywallAfterBuceo === 1, 'Sin Pro, tocar "Buceo" abre el paywall', `count=${paywallAfterBuceo}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Buceo")');
+    await page.click('button:has-text("Frío")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasBcd = await page.locator('button', { hasText: 'Chaleco compensador (BCD)' }).count();
+    assert(hasBcd === 1, 'Tildar "Buceo" agrega la categoría con sus ítems (ej. Chaleco compensador)', `bcd=${hasBcd}`);
+    const hasTrajeGrueso = await page.locator('button', { hasText: 'Traje de neopreno grueso' }).count();
+    assert(hasTrajeGrueso === 1, 'Con clima "Frío" aparece el traje de neopreno grueso', `count=${hasTrajeGrueso}`);
+    const hasVaselina = await page.locator('button', { hasText: 'Vaselina' }).count();
+    assert(hasVaselina === 1, 'Buceo suma "Vaselina" en Higiene (para sellar la máscara)', `count=${hasVaselina}`);
+    const hasCert = await page.locator('button', { hasText: 'Certificación de buceo' }).count();
+    assert(hasCert === 1, 'Buceo suma la certificación PADI/SSI en Documentos', `count=${hasCert}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Buceo")');
+    await page.click('button:has-text("Calor")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasTrajeFino = await page.locator('button', { hasText: 'Traje de neopreno fino' }).count();
+    assert(hasTrajeFino === 1, 'Con clima "Calor" aparece el traje de neopreno fino en vez del grueso', `count=${hasTrajeFino}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] }); // turismo por defecto: relax
+    const hasBcd = await page.locator('button', { hasText: 'Chaleco compensador' }).count();
+    assert(hasBcd === 0, 'Sin tildar "Buceo", no aparecen sus ítems', `count=${hasBcd}`);
+    const hasVaselina = await page.locator('button', { hasText: 'Vaselina' }).count();
+    assert(hasVaselina === 0, 'Sin tildar "Buceo", no aparece "Vaselina"', `count=${hasVaselina}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

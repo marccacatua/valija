@@ -1,5 +1,50 @@
 # Backlog
 
+## ✅ Feature: viajar de buceo (en `main`, dentro de Pro, 2026-09-22)
+
+Pedido del usuario ("me acabo de dar cuenta de que falta un tipo de
+turismo: buceo"), con dos precisiones explícitas: solo se alquila el
+tubo de oxígeno (el resto lo lleva la persona) y el tipo de traje
+depende de la temperatura. Mismo patrón que ski/navegar:
+`TurismoKey: 'buceo'` + `CategoryKey: 'buceo'`, gateado con
+`extraCategories` (Pro).
+
+**Traje de neopreno según clima** (a diferencia de ski/navegar, que no
+varían por clima): grueso/semiseco con frío, fino/shorty con calor,
+intermedio con templado o lluvia — tres ítems distintos, mismo criterio
+que ya usa la app para "Campera abrigada" vs "Buzo o campera liviana"
+(ítems nombrados por condición, no un solo ítem con texto dinámico).
+
+**11 ítems en la categoría "Buceo"**, en orden de adentro hacia afuera:
+traje → BCD → regulador y octopus → computadora de buceo → máscara →
+snorkel → aletas → botas de neopreno → guantes de neopreno → cinturón
+de lastre y plomos → boya de señalización. Se asume que solo el tubo de
+oxígeno se alquila (tal como pidió el usuario) — todo lo demás se lista.
+
+**Dos ítems que reutilizan categorías existentes en vez de crear
+duplicados** (mismo criterio que "Protector solar"/"Rompeviento
+impermeable" con ski/navegar):
+- "Vaselina (para la barba, ayuda a sellar la máscara)" en Higiene —
+  pedido explícito del usuario, que tiene barba: sin esto el agua se
+  filtra por donde el vello rompe el sello de goma de la máscara.
+- "Certificación de buceo (tarjeta PADI/SSI) y bitácora" en Documentos
+  — es tan de identificación como el DNI/pasaporte (sin ella no te
+  dejan alquilar el tubo ni sumarte a una salida).
+- "Protector solar" (ya existente) también suma con buceo — se está al
+  sol entre inmersión e inmersión, muchas veces en un barco.
+
+`BULK_WEIGHTS` (`distribute.ts`) subió para BCD, cinturón de lastre y
+traje de neopreno grueso — equipo pesado y voluminoso, el aviso de
+espacio ahora también salta con buceo (verificado con captura real).
+
+QA: bloque dedicado en `qa/combinatorial.ts` (mismo criterio que
+ski/navegar — no va al cruce grande) cruzando motivo/turismo/clima/días,
+verificando el traje correcto por clima, sin duplicados, y que
+Vaselina/certificación aparezcan solo con buceo. 8 tests nuevos en
+`qa/ui.mjs` (paywall, ítems con clima frío y calor, Vaselina,
+certificación, ausencia sin tildar). QA final: 168/168 Playwright +
+752.640 combinaciones sin errores.
+
 ## 🧪 A PRUEBA: cambiar las valijas de un viaje ya creado (en `main`, 2026-09-22)
 
 Pedido del usuario viendo el aviso de espacio: "quizás convenga sumar

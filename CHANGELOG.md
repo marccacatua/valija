@@ -4,6 +4,18 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.5.0
+
+**Viajes de buceo** (dentro de Pro). Nueva categoría de turismo con 11
+ítems personales, asumiendo que solo el tubo de oxígeno se alquila:
+traje de neopreno (grueso/fino/intermedio según el clima), BCD,
+regulador y octopus, computadora de buceo, máscara, snorkel, aletas,
+botas y guantes de neopreno, cinturón de lastre, y boya de
+señalización. Suma "Certificación de buceo (PADI/SSI)" en Documentos y
+"Vaselina" en Higiene (ayuda a sellar la máscara para quienes tienen
+barba), y reutiliza "Protector solar" ya existente. QA: 168/168
+Playwright + 752.640 combinaciones sin errores.
+
 ## v1.4.0
 
 - 🧪 **A prueba: "Cambiar valijas" desde el aviso de espacio** — cuando

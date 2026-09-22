@@ -45,6 +45,7 @@ export const TURISMO_OPTIONS: CatalogOption<TurismoKey>[] = [
   { key: 'fiesta', label: 'Salidas' },
   { key: 'ski', label: 'Esquí' },
   { key: 'navegar', label: 'Navegar' },
+  { key: 'buceo', label: 'Buceo' },
 ];
 
 export const ALOJ_OPTIONS: CatalogOption<AlojKey>[] = [
@@ -81,6 +82,7 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
   mascota: { title: 'Mascota', color: 'var(--clay)' },
   ski: { title: 'Esquí', color: 'var(--ice)' },
   nautica: { title: 'Náutica', color: 'var(--navy)' },
+  buceo: { title: 'Buceo', color: 'var(--abyss)' },
   camping: { title: 'Camping', color: 'var(--forest)' },
 };
 
@@ -90,11 +92,12 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
 // rápida) — mismo orden en las dos vistas, y con el mensaje de progreso
 // que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
 // (misma rutina de cuidado personal, y la misma pregunta del form las
-// junta visualmente). "Mascota", "Esquí", "Náutica" y "Camping", en
-// cambio, no tienen nada que ver con higiene/vestuario — son logística
-// situacional (equipo específico de una actividad puntual), así que van
-// todas juntas al final (y de paso, antes de la sección de casa/barco,
-// que siempre cierra la pantalla).
+// junta visualmente). "Mascota", "Esquí", "Náutica", "Buceo" y
+// "Camping", en cambio, no tienen nada que ver con higiene/vestuario —
+// son logística situacional (equipo específico de una actividad
+// puntual), así que van todas juntas al final (y de paso, antes de la
+// sección de casa/barco, que siempre cierra la pantalla). "Buceo" pegado
+// a "Náutica" porque las dos son actividades de agua.
 export const CATEGORY_ORDER: CategoryKey[] = [
   'docs',
   'higiene',
@@ -105,6 +108,7 @@ export const CATEGORY_ORDER: CategoryKey[] = [
   'mascota',
   'ski',
   'nautica',
+  'buceo',
   'camping',
 ];
 

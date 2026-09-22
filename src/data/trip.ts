@@ -89,6 +89,7 @@ const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
   mascota: 'lo de la mascota',
   ski: 'lo de esquí',
   nautica: 'lo náutico',
+  buceo: 'lo de buceo',
   camping: 'lo de camping',
 };
 

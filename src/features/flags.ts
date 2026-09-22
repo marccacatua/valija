@@ -33,7 +33,7 @@ interface FeatureDef {
 
 export const FEATURE_FLAGS: Record<FeatureKey, FeatureDef> = {
   unlimitedTrips: { label: 'Viajes guardados ilimitados', pro: true },
-  extraCategories: { label: 'Categorías extra (bebé/niño chico, mascota, esquí, navegar, camping)', pro: true },
+  extraCategories: { label: 'Categorías extra (bebé/niño chico, mascota, esquí, navegar, buceo, camping)', pro: true },
   customItems: { label: 'Agregar ítems personalizados a la checklist', pro: true },
   tripTemplates: { label: 'Guardar ítems propios como plantilla reusable', pro: true },
   exportChecklist: { label: 'Exportar o compartir la checklist', pro: false },

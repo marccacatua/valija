@@ -89,6 +89,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // gana la más restrictiva).
   const isSki = leisure && f.turismo === 'ski';
   const isNavegar = leisure && f.turismo === 'navegar';
+  const isBuceo = leisure && f.turismo === 'buceo';
   add('ropa', 'Remeras', cap(isSki ? Math.min(remerasDias, 4) : remerasDias, 8));
   add('ropa', 'Ropa interior', cap(mudaDias + 1, 10));
   add('ropa', 'Medias', cap(mudaDias, 8));
@@ -178,11 +179,16 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('higiene', 'Afeitadora, pinza y corta uñas');
   add('higiene', 'Botiquín básico');
   // También con esquí (la nieve refleja los rayos, quema igual o más que
-  // en la playa) y navegando (el reflejo del agua quema más que en
-  // tierra) — mismo ítem genérico, no versiones propias por actividad.
-  if (f.dest.includes('playa') || f.clima === 'calor' || isSki || isNavegar) add('higiene', 'Protector solar');
+  // en la playa), navegando (el reflejo del agua quema más que en
+  // tierra) y buceando (se está en el sol entre inmersión e inmersión,
+  // muchas veces en un barco) — mismo ítem genérico, no versiones
+  // propias por actividad.
+  if (f.dest.includes('playa') || f.clima === 'calor' || isSki || isNavegar || isBuceo) add('higiene', 'Protector solar');
   if ((leisure && f.turismo === 'aventura') || f.dest.includes('playa') || f.aloj === 'camping') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
+  // Ayuda a sellar la máscara de buceo para quienes tienen barba/bigote
+  // (si no, el agua se filtra por donde el vello rompe el sello de goma).
+  if (isBuceo) add('higiene', 'Vaselina (para la barba, ayuda a sellar la máscara)');
   // El resto de los líquidos (protector solar, skincare, repelente,
   // enjuague bucal) no tienen versión mini propia; si no hay bodega les
   // toca igual entrar en <100ml, así que dejamos el recordatorio general.
@@ -201,6 +207,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.transporte === 'avion') add('docs', 'Seguro de viaje');
   if (f.transporte === 'auto') add('docs', 'Seguro del auto y VTV');
   if (f.motivo === 'trabajo') add('docs', 'Credencial y tarjeta corporativa');
+  // Sin la tarjeta de certificación (PADI/SSI) no te dejan alquilar el
+  // tubo de oxígeno ni sumarte a una salida — es tan de identificación
+  // como el DNI/pasaporte, por eso va en "Documentos" y no en "Buceo".
+  if (isBuceo) add('docs', 'Certificación de buceo (tarjeta PADI/SSI) y bitácora');
 
   addSingle('tech', 'Cargador del celular');
   addSingle('tech', 'Power bank');
@@ -332,6 +342,32 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('nautica', 'Muda de ropa extra (por si te mojás)');
     addSingle('nautica', 'Bolsa estanca para celular y documentos');
     addSingle('nautica', 'Pastillas para el mareo');
+  }
+
+  // Categoría propia: equipo personal de buceo. Se asume que SOLO el
+  // tubo de oxígeno se alquila en el centro de buceo (lo más común) —
+  // el resto (traje, BCD, regulador, etc.) lo lleva la persona. Orden:
+  // de adentro hacia afuera (traje primero, como con ski) -> el
+  // "sistema" que se arma sobre el traje (BCD + regulador) -> lo que se
+  // pone en la cara/manos/pies -> instrumentos -> seguridad/documentos.
+  if (isBuceo) {
+    // El grosor del traje depende de la temperatura del agua, no hay
+    // uno que sirva para todo clima — mismo criterio que la ropa de
+    // abrigo normal (frío/templado/calor son ítems distintos, no un
+    // solo ítem con cantidad variable).
+    if (f.clima === 'frio') addSingle('buceo', 'Traje de neopreno grueso (7mm) o semiseco');
+    else if (f.clima === 'calor') addSingle('buceo', 'Traje de neopreno fino (3mm) o shorty');
+    else addSingle('buceo', 'Traje de neopreno intermedio (5mm)');
+    addSingle('buceo', 'Chaleco compensador (BCD)');
+    addSingle('buceo', 'Regulador y octopus');
+    addSingle('buceo', 'Computadora de buceo');
+    addSingle('buceo', 'Máscara de buceo');
+    addSingle('buceo', 'Snorkel');
+    addSingle('buceo', 'Aletas de buceo');
+    addSingle('buceo', 'Botas de neopreno');
+    addSingle('buceo', 'Guantes de neopreno');
+    addSingle('buceo', 'Cinturón de lastre y plomos');
+    addSingle('buceo', 'Boya de señalización de superficie');
   }
 
   // Solo si el alojamiento es "Camping" — ítems bien distintos al resto,

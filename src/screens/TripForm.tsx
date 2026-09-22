@@ -87,7 +87,7 @@ export function TripForm() {
   };
 
   const selectTurismo = (key: TripFormState['turismo']) => {
-    if ((key === 'ski' || key === 'navegar') && !canExtraCategories) {
+    if ((key === 'ski' || key === 'navegar' || key === 'buceo') && !canExtraCategories) {
       setShowPaywall(true);
       return;
     }
@@ -181,7 +181,7 @@ export function TripForm() {
                     key={opt.key}
                     label={opt.label}
                     selected={form.turismo === opt.key}
-                    locked={(opt.key === 'ski' || opt.key === 'navegar') && !canExtraCategories}
+                    locked={(opt.key === 'ski' || opt.key === 'navegar' || opt.key === 'buceo') && !canExtraCategories}
                     onSelect={() => selectTurismo(opt.key)}
                   />
                 ))}

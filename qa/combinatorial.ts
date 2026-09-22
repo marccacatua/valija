@@ -639,6 +639,68 @@ for (const motivo of MOTIVO)
         }
       }
 
+// ============================================================
+// Bloque dedicado: "buceo" — mismo criterio que ski/navegar. Cruza
+// motivo, turismo (buceo vs baseline) y los 4 climas (el traje de
+// neopreno depende de la temperatura, a diferencia de ski/navegar que
+// no varían por clima) y días.
+// ============================================================
+const BUCEO_DIAS = [1, 3, 7];
+for (const motivo of MOTIVO)
+  for (const turismo of ['relax', 'buceo'] as TurismoKey[])
+    for (const clima of CLIMA)
+      for (const dias of BUCEO_DIAS) {
+        const form: TripFormState = {
+          name: 'QA-buceo',
+          dest: ['playa'],
+          clima,
+          motivo,
+          turismo,
+          aloj: 'depto',
+          transporte: 'avion',
+          maletas: ['carry'],
+          dias,
+          vestidos: false,
+          lavaRopa: false,
+          bebe: false,
+          mascota: false,
+          deporte: false,
+        };
+        const raw = buildRawItems(form);
+        const isBuceo = motivo !== 'trabajo' && turismo === 'buceo';
+        const buceoItems = raw.filter((it) => it.cat === 'buceo');
+        if (buceoItems.length > 0 !== isBuceo) {
+          fail(form, `Categoría "buceo": presente=${buceoItems.length > 0} pero isBuceo=${isBuceo}`);
+        }
+        if (isBuceo) {
+          const names = buceoItems.map((it) => it.name);
+          if (new Set(names).size !== names.length) fail(form, `Categoría "buceo" tiene ítems duplicados: ${names}`);
+          if (buceoItems.length !== 11) fail(form, `Categoría "buceo" esperaba 11 ítems, tiene ${buceoItems.length}: ${names}`);
+
+          // El traje de neopreno depende del clima — exactamente uno de
+          // los 3, nunca más de uno ni ninguno.
+          const trajes = names.filter((n) => n.startsWith('Traje de neopreno'));
+          if (trajes.length !== 1) fail(form, `Se esperaba exactamente 1 traje de neopreno, hay ${trajes.length}: ${trajes}`);
+          const esperado =
+            clima === 'frio'
+              ? 'Traje de neopreno grueso (7mm) o semiseco'
+              : clima === 'calor'
+                ? 'Traje de neopreno fino (3mm) o shorty'
+                : 'Traje de neopreno intermedio (5mm)';
+          if (trajes[0] !== esperado) fail(form, `Con clima=${clima} se esperaba "${esperado}", vino "${trajes[0]}"`);
+
+          const hasSolar = raw.some((it) => it.cat === 'higiene' && it.name === 'Protector solar');
+          if (!hasSolar) fail(form, `Con buceo (clima=${clima}) se esperaba "Protector solar" en higiene`);
+          const hasVaselina = raw.some((it) => it.cat === 'higiene' && it.name.startsWith('Vaselina'));
+          if (!hasVaselina) fail(form, 'Con buceo se esperaba "Vaselina" en higiene');
+          const hasCert = raw.some((it) => it.cat === 'docs' && it.name.startsWith('Certificación de buceo'));
+          if (!hasCert) fail(form, 'Con buceo se esperaba la certificación en docs');
+        } else {
+          const hasVaselina = raw.some((it) => it.name.startsWith('Vaselina'));
+          if (hasVaselina) fail(form, 'Sin buceo, no debería aparecer "Vaselina"');
+        }
+      }
+
 console.log(`Combinaciones de formulario probadas: ${combos}`);
 console.log(`Chequeos de distribución (combo x subconjunto de valijas): ${distributionChecks}`);
 console.log(`Errores encontrados: ${errors.length}`);
