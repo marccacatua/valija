@@ -4,6 +4,30 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.3.0
+
+**Viajes de esquí y navegar** (dentro de Pro). Dos categorías nuevas de
+turismo, cada una con su equipo personal:
+
+- **Esquí**: baja "Remeras" y "Pantalones" de calle porque se pasa el
+  día con el equipo de nieve puesto, y suma 12 ítems técnicos (primera
+  piel térmica, segunda capa de polar, campera y pantalón de nieve,
+  medias de ski, guantes, gorro, cuello/buff, antiparras, botas de
+  nieve para caminar, labial con FPS). Se asume que esquís, botas de
+  esquí y casco se alquilan — no se listan. Permite combinarse con
+  clima cálido (existe el ski de primavera).
+- **Navegar**: suma 8 ítems personales (calzado náutico, guantes de
+  vela, cordón flotante para los lentes de sol, gorra con barbijo,
+  abrigo extra, muda de recambio, bolsa estanca, pastillas para el
+  mareo) y **reemplaza** "¿Quedó todo pronto en casa?" por una lista de
+  seguridad y logística del barco, "¿Está todo listo para zarpar?"
+  (chalecos salvavidas, botiquín, extintor, bengalas, y el resto de lo
+  esperable antes de zarpar).
+- Las dos reutilizan ítems ya existentes en vez de duplicarlos
+  ("Protector solar", "Rompeviento impermeable") y suman al aviso de
+  "puede que necesites más espacio" cuando corresponde.
+- QA: 153/153 Playwright + 752.640 combinaciones sin errores.
+
 ## v1.2.1
 
 - **Fix: orden de la categoría "Mascota"** — pasa de estar pegada a
