@@ -344,12 +344,14 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('nautica', 'Pastillas para el mareo');
   }
 
-  // Categoría propia: equipo personal de buceo. Se asume que SOLO el
-  // tubo de oxígeno se alquila en el centro de buceo (lo más común) —
-  // el resto (traje, BCD, regulador, etc.) lo lleva la persona. Orden:
-  // de adentro hacia afuera (traje primero, como con ski) -> el
-  // "sistema" que se arma sobre el traje (BCD + regulador) -> lo que se
-  // pone en la cara/manos/pies -> instrumentos -> seguridad/documentos.
+  // Categoría propia: equipo personal de buceo. Se asume que el tubo de
+  // oxígeno Y el lastre (plomos + cinturón) se alquilan en el centro de
+  // buceo — el lastre pesa y ocupa mucho para viajar, así que casi
+  // siempre viene incluido junto con el tubo, como un combo. El resto
+  // (traje, BCD, regulador, etc.) lo lleva la persona. Orden: de
+  // adentro hacia afuera (traje primero, como con ski) -> el "sistema"
+  // que se arma sobre el traje (BCD + regulador) -> lo que se pone en
+  // la cara/manos/pies -> instrumentos -> seguridad/documentos.
   if (isBuceo) {
     // El grosor del traje depende de la temperatura del agua, no hay
     // uno que sirva para todo clima — mismo criterio que la ropa de
@@ -366,7 +368,6 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('buceo', 'Aletas de buceo');
     addSingle('buceo', 'Botas de neopreno');
     addSingle('buceo', 'Guantes de neopreno');
-    addSingle('buceo', 'Cinturón de lastre y plomos');
     addSingle('buceo', 'Boya de señalización de superficie');
   }
 

@@ -15,11 +15,14 @@ intermedio con templado o lluvia — tres ítems distintos, mismo criterio
 que ya usa la app para "Campera abrigada" vs "Buzo o campera liviana"
 (ítems nombrados por condición, no un solo ítem con texto dinámico).
 
-**11 ítems en la categoría "Buceo"**, en orden de adentro hacia afuera:
+**10 ítems en la categoría "Buceo"**, en orden de adentro hacia afuera:
 traje → BCD → regulador y octopus → computadora de buceo → máscara →
-snorkel → aletas → botas de neopreno → guantes de neopreno → cinturón
-de lastre y plomos → boya de señalización. Se asume que solo el tubo de
-oxígeno se alquila (tal como pidió el usuario) — todo lo demás se lista.
+snorkel → aletas → botas de neopreno → guantes de neopreno → boya de
+señalización. Se asume que se alquilan el tubo de oxígeno Y el lastre
+(plomos + cinturón) — corregido tras el primer intento: el usuario
+avisó que el lastre también se alquila en la mayoría de los centros
+(pesa y ocupa mucho para viajar, casi siempre viene con el tubo como
+combo), así que se sacó "Cinturón de lastre y plomos" de la lista.
 
 **Dos ítems que reutilizan categorías existentes en vez de crear
 duplicados** (mismo criterio que "Protector solar"/"Rompeviento
@@ -33,9 +36,9 @@ impermeable" con ski/navegar):
 - "Protector solar" (ya existente) también suma con buceo — se está al
   sol entre inmersión e inmersión, muchas veces en un barco.
 
-`BULK_WEIGHTS` (`distribute.ts`) subió para BCD, cinturón de lastre y
-traje de neopreno grueso — equipo pesado y voluminoso, el aviso de
-espacio ahora también salta con buceo (verificado con captura real).
+`BULK_WEIGHTS` (`distribute.ts`) subió para BCD y traje de neopreno
+grueso — equipo pesado y voluminoso, el aviso de espacio ahora también
+salta con buceo (verificado con captura real).
 
 QA: bloque dedicado en `qa/combinatorial.ts` (mismo criterio que
 ski/navegar — no va al cruce grande) cruzando motivo/turismo/clima/días,
@@ -43,7 +46,8 @@ verificando el traje correcto por clima, sin duplicados, y que
 Vaselina/certificación aparezcan solo con buceo. 8 tests nuevos en
 `qa/ui.mjs` (paywall, ítems con clima frío y calor, Vaselina,
 certificación, ausencia sin tildar). QA final: 168/168 Playwright +
-752.640 combinaciones sin errores.
+752.640 combinaciones sin errores (recorrido de nuevo tras sacar el
+cinturón de lastre).
 
 ## 🧪 A PRUEBA: cambiar las valijas de un viaje ya creado (en `main`, 2026-09-22)
 

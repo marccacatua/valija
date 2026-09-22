@@ -675,7 +675,7 @@ for (const motivo of MOTIVO)
         if (isBuceo) {
           const names = buceoItems.map((it) => it.name);
           if (new Set(names).size !== names.length) fail(form, `Categoría "buceo" tiene ítems duplicados: ${names}`);
-          if (buceoItems.length !== 11) fail(form, `Categoría "buceo" esperaba 11 ítems, tiene ${buceoItems.length}: ${names}`);
+          if (buceoItems.length !== 10) fail(form, `Categoría "buceo" esperaba 10 ítems, tiene ${buceoItems.length}: ${names}`);
 
           // El traje de neopreno depende del clima — exactamente uno de
           // los 3, nunca más de uno ni ninguno.

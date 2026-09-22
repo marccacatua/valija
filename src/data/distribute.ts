@@ -117,7 +117,6 @@ const BULK_WEIGHTS: Partial<Record<string, number>> = {
   'Botas de nieve para caminar': 2,
   'Segunda capa de polar': 1,
   'Chaleco compensador (BCD)': 3,
-  'Cinturón de lastre y plomos': 3,
   'Traje de neopreno grueso (7mm) o semiseco': 2,
   'Traje de neopreno intermedio (5mm)': 1,
   'Aletas de buceo': 1,

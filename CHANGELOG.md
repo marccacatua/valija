@@ -4,6 +4,13 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.5.1
+
+- **Fix: buceo ya no lista "Cinturón de lastre y plomos"** — el usuario
+  avisó que el lastre también se alquila en la mayoría de los centros
+  de buceo (junto con el tubo de oxígeno, como combo). La categoría
+  "Buceo" queda en 10 ítems.
+
 ## v1.5.0
 
 **Viajes de buceo** (dentro de Pro). Nueva categoría de turismo con 11
