@@ -48,6 +48,11 @@ export function tripMetaChips(form: TripFormState): string[] {
     labelForMany(DEST_OPTIONS, form.dest),
     labelFor(CLIMA_OPTIONS, form.clima),
     labelFor(MOTIVO_OPTIONS, form.motivo),
+    // No se pregunta con motivo "trabajo" (ver TripForm.tsx) — mostrarlo
+    // igual sería el valor por defecto sin que el usuario lo haya
+    // elegido nunca. Importante que aparezca acá: con esquí/navegar
+    // cambia toda la categoría de ítems, no es un detalle cosmético.
+    ...(form.motivo !== 'trabajo' ? [labelFor(TURISMO_OPTIONS, form.turismo)] : []),
     `${form.dias} días`,
     labelFor(TRANSPORTE_OPTIONS, form.transporte),
     labelForMany(MALETA_OPTIONS, form.maletas),

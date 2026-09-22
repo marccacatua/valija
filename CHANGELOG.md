@@ -4,6 +4,13 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.3.1
+
+- **Fix: el tipo de turismo (Esquí, Navegar, etc.) no aparecía en
+  ningún lado de la checklist** — la fila de chips arriba nunca lo
+  mostraba. Ahora aparece justo después del motivo (oculto con motivo
+  "trabajo", igual que en el formulario).
+
 ## v1.3.0
 
 **Viajes de esquí y navegar** (dentro de Pro). Dos categorías nuevas de

@@ -2180,6 +2180,39 @@ try {
     assert(packedBefore === packedAfter, 'Tildar una tarea del barco NO afecta el contador de empacado de la valija', `antes=${packedBefore} despues=${packedAfter}`);
     await ctx.close();
   }
+
+  // ============================================================
+  // 54) El tipo de turismo aparece en la fila de chips de la checklist
+  // (reportado por el usuario: eligió "Esquí" y no se veía en ningún
+  // lado) — importante con esquí/navegar porque cambia toda una
+  // categoría de ítems, no es un detalle cosmético como con el resto
+  // de las opciones de turismo. No aparece con motivo "trabajo" (no se
+  // pregunta en ese caso).
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Esquí")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasSkiChip = await page.locator('[class*="chip"]', { hasText: 'Esquí' }).count();
+    assert(hasSkiChip >= 1, 'El tipo de turismo (Esquí) aparece en la fila de chips', `count=${hasSkiChip}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Trabajo")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasTurismoChip = await page.locator('[class*="chip"]', { hasText: 'Relax' }).count();
+    assert(hasTurismoChip === 0, 'Con motivo "Trabajo", no aparece un chip de turismo (no se pregunta)', `count=${hasTurismoChip}`);
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {

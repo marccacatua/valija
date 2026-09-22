@@ -1,5 +1,19 @@
 # Backlog
 
+## ✅ Fix: el tipo de turismo no aparecía en ningún lado (en `main`, 2026-09-22)
+
+Reportado por el usuario probando esquí en `main` recién mergeado: eligió
+"Esquí" pero la fila de chips arriba de la checklist (Playa · Calor ·
+Placer · 5 días · Avión · Carry-on) no lo mostraba en ningún lado —
+`tripMetaChips()` (`data/trip.ts`) nunca incluyó el turismo, algo que
+pasaba desapercibido con relax/aventura/cultura/fiesta (un detalle
+cosmético) pero se vuelve confuso con esquí/navegar, que cambian toda
+una categoría de ítems. Se agregó el chip de turismo justo después de
+motivo, oculto con motivo "trabajo" (no se pregunta en ese caso, mismo
+criterio que ya usa el formulario). QA: 2 tests nuevos (aparece con
+esquí, no aparece con trabajo) — 154/155 Playwright (el que falla es el
+flake ya documentado) + 752.640 combinaciones sin errores.
+
 ## ✅ Fix: orden de la categoría "Mascota" (en `main`, 2026-09-20)
 
 El usuario notó que "Mascota" quedaba pegada a "Bebé" (antes de "Ropa"),
