@@ -92,6 +92,7 @@ for (const dest of DEST_SUBSETS)
                     bebe: false,
                     mascota: false,
                     deporte: false,
+                    equipoPropio: false,
                   };
 
                   const raw = buildRawItems(form);
@@ -322,6 +323,7 @@ for (const dest of DEST_SUBSETS)
             bebe,
             mascota: false,
             deporte: false,
+            equipoPropio: false,
           };
           const raw = buildRawItems(form);
           const bebeItems = raw.filter((it) => it.cat === 'bebe');
@@ -373,6 +375,7 @@ for (const dest of DEST_SUBSETS)
           bebe: false,
           mascota,
           deporte: false,
+          equipoPropio: false,
         };
         const raw = buildRawItems(form);
         const mascotaItems = raw.filter((it) => it.cat === 'mascota');
@@ -414,6 +417,7 @@ for (const dias of DIAS)
       bebe: false,
       mascota: false,
       deporte: false,
+      equipoPropio: false,
     };
     const raw = buildRawItems(form);
     const mudaDias = lavaRopa ? Math.min(dias, 4) : dias;
@@ -473,6 +477,7 @@ for (const motivo of MOTIVO)
             bebe: false,
             mascota: false,
             deporte,
+            equipoPropio: false,
           };
           const raw = buildRawItems(form);
           const leisure = motivo !== 'trabajo';
@@ -527,7 +532,8 @@ for (const motivo of MOTIVO)
   for (const turismo of ['relax', 'ski'] as TurismoKey[])
     for (const lavaRopa of LAVA_ROPA)
       for (const clima of ['frio', 'calor'] as ClimaKey[])
-        for (const dias of SKI_DIAS) {
+        for (const dias of SKI_DIAS)
+          for (const equipoPropio of [false, true]) {
           const form: TripFormState = {
             name: 'QA-ski',
             dest: ['montana'],
@@ -543,9 +549,16 @@ for (const motivo of MOTIVO)
             bebe: false,
             mascota: false,
             deporte: false,
+            equipoPropio,
           };
           const raw = buildRawItems(form);
           const isSki = motivo !== 'trabajo' && turismo === 'ski';
+          // Esquís/botas/casco solo con equipo propio (por defecto se alquilan).
+          const skiGear = ['Casco', 'Botas de esquí', 'Esquís y bastones (o tabla de snowboard)'];
+          for (const g of skiGear) {
+            const has = raw.some((it) => it.cat === 'ski' && it.name === g);
+            if (has !== (isSki && equipoPropio)) fail(form, `"${g}" presente=${has} pero isSki=${isSki} equipoPropio=${equipoPropio}`);
+          }
           const skiItems = raw.filter((it) => it.cat === 'ski');
           if (skiItems.length > 0 !== isSki) {
             fail(form, `Categoría "ski": presente=${skiItems.length > 0} pero isSki=${isSki}`);
@@ -603,6 +616,7 @@ for (const motivo of MOTIVO)
           bebe: false,
           mascota: false,
           deporte: false,
+          equipoPropio: false,
         };
         const raw = buildRawItems(form);
         const isNavegar = motivo !== 'trabajo' && turismo === 'navegar';
@@ -649,7 +663,8 @@ const BUCEO_DIAS = [1, 3, 7];
 for (const motivo of MOTIVO)
   for (const turismo of ['relax', 'buceo'] as TurismoKey[])
     for (const clima of CLIMA)
-      for (const dias of BUCEO_DIAS) {
+      for (const dias of BUCEO_DIAS)
+        for (const equipoPropio of [false, true]) {
         const form: TripFormState = {
           name: 'QA-buceo',
           dest: ['playa'],
@@ -665,6 +680,7 @@ for (const motivo of MOTIVO)
           bebe: false,
           mascota: false,
           deporte: false,
+          equipoPropio,
         };
         const raw = buildRawItems(form);
         const isBuceo = motivo !== 'trabajo' && turismo === 'buceo';
@@ -675,19 +691,26 @@ for (const motivo of MOTIVO)
         if (isBuceo) {
           const names = buceoItems.map((it) => it.name);
           if (new Set(names).size !== names.length) fail(form, `Categoría "buceo" tiene ítems duplicados: ${names}`);
-          if (buceoItems.length !== 10) fail(form, `Categoría "buceo" esperaba 10 ítems, tiene ${buceoItems.length}: ${names}`);
+          // 6 de uso personal siempre + 4 de equipo pesado (traje, BCD,
+          // regulador, aletas) solo si lleva equipo propio.
+          const esperados = equipoPropio ? 10 : 6;
+          if (buceoItems.length !== esperados) fail(form, `Categoría "buceo" esperaba ${esperados} ítems, tiene ${buceoItems.length}: ${names}`);
+          for (const g of ['Chaleco compensador (BCD)', 'Regulador y octopus', 'Aletas de buceo']) {
+            if (names.includes(g) !== equipoPropio) fail(form, `"${g}" presente=${names.includes(g)} pero equipoPropio=${equipoPropio}`);
+          }
+          if (names.some((n) => /tubo|lastre|plomo/i.test(n))) fail(form, 'Tubo y lastre se alquilan siempre, no deberían listarse');
 
           // El traje de neopreno depende del clima — exactamente uno de
-          // los 3, nunca más de uno ni ninguno.
+          // los 3 con equipo propio, ninguno si se alquila.
           const trajes = names.filter((n) => n.startsWith('Traje de neopreno'));
-          if (trajes.length !== 1) fail(form, `Se esperaba exactamente 1 traje de neopreno, hay ${trajes.length}: ${trajes}`);
+          if (trajes.length !== (equipoPropio ? 1 : 0)) fail(form, `Se esperaban ${equipoPropio ? 1 : 0} trajes de neopreno, hay ${trajes.length}: ${trajes}`);
           const esperado =
             clima === 'frio'
               ? 'Traje de neopreno grueso (7mm) o semiseco'
               : clima === 'calor'
                 ? 'Traje de neopreno fino (3mm) o shorty'
                 : 'Traje de neopreno intermedio (5mm)';
-          if (trajes[0] !== esperado) fail(form, `Con clima=${clima} se esperaba "${esperado}", vino "${trajes[0]}"`);
+          if (equipoPropio && trajes[0] !== esperado) fail(form, `Con clima=${clima} se esperaba "${esperado}", vino "${trajes[0]}"`);
 
           const hasSolar = raw.some((it) => it.cat === 'higiene' && it.name === 'Protector solar');
           if (!hasSolar) fail(form, `Con buceo (clima=${clima}) se esperaba "Protector solar" en higiene`);

@@ -101,6 +101,12 @@
   gap: 9px;
 }
 
+.equipoHint {
+  margin-top: 8px;
+  font: 700 12px/1.35 'Nunito', sans-serif;
+  color: var(--muted);
+}
+
 .limitState {
   margin-top: 24px;
   display: flex;

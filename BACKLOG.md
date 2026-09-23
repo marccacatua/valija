@@ -1,5 +1,27 @@
 # Backlog
 
+## ✅ Feature: equipo propio o alquilado en esquí y buceo (en `main`, v1.6.0, 2026-09-23)
+
+Pedido del usuario: "en ski y buceo se puede preguntar si es con equipo
+alquilado o no. Así es más certera la recomendación". Nuevo campo
+`equipoPropio: boolean` en `TripFormState` (default `false`), que solo
+se muestra y aplica con turismo `ski` o `buceo`. Es un chip, no una
+pregunta aparte, para mantener el formulario "de un toque".
+
+- **Default = alquilado.** Es lo más común en viajes de esquí o buceo
+  y además evita listar equipo pesado que la mayoría no lleva. **Cambio
+  de comportamiento en buceo:** antes se listaba todo menos el tubo y
+  el lastre. Ahora, sin el chip, solo se listan 6 ítems personales, que
+  casi nadie alquila por higiene o por ajuste (computadora, máscara,
+  snorkel, botas y guantes de neopreno, boya).
+- **Esquí propio:** suma Casco, Botas de esquí y Esquís/tabla, después
+  de las antiparras y antes de las botas de nieve. Esos tres ítems
+  entran en `BULK_WEIGHTS` (4/2/1).
+- **Buceo propio:** suma el traje según el clima, BCD, regulador y
+  aletas. El tubo y el lastre se siguen asumiendo alquilados.
+- Los viajes ya creados no cambian (los ítems se generan una sola vez).
+  `migrateTrip` no necesita tocar nada, porque el form no se vuelve a leer.
+
 ## ✅ Feature: viajar de buceo (en `main`, dentro de Pro, 2026-09-22)
 
 Pedido del usuario ("me acabo de dar cuenta de que falta un tipo de

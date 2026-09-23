@@ -45,6 +45,11 @@ export interface TripFormState {
    * unifica con turismo "aventura" para no duplicar ítems si se dan
    * las dos condiciones juntas (ver buildItems.ts). */
   deporte: boolean;
+  /** Solo aplica con turismo esquí o buceo: true si la persona lleva su
+   * propio equipo en vez de alquilarlo en destino. Cambia qué ítems de
+   * equipo pesado aparecen (esquís/botas/casco, o BCD/regulador/traje/
+   * aletas). El tubo y el lastre de buceo se alquilan siempre. */
+  equipoPropio: boolean;
 }
 
 export interface PackingItem {

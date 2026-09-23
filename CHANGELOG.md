@@ -4,6 +4,24 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.6.0
+
+**Pregunta de equipo propio o alquilado en esquí y buceo.** Al elegir
+Esquí o Buceo aparece el chip "Llevo mi propio equipo", con una línea
+que explica qué se suma o qué se asume alquilado.
+
+- **Esquí:** con equipo propio se suman Casco, Botas de esquí y "Esquís
+  y bastones (o tabla de snowboard)". Si es alquilado, la lista queda
+  como antes.
+- **Buceo:** ⚠️ ahora, por defecto, se asume que el equipo es alquilado
+  y la categoría lista solo lo personal (6 ítems: computadora, máscara,
+  snorkel, botas y guantes de neopreno, boya). Con equipo propio se
+  suman el traje (según el clima), el BCD, el regulador y octopus, y las
+  aletas (10 ítems). El tubo y el lastre no aparecen nunca.
+- El aviso de espacio también tiene en cuenta los esquís y las botas.
+- QA: Playwright 173/174 (solo el flake conocido del fade de la
+  mascota) y combinatorio sin errores.
+
 ## v1.5.1
 
 - **Fix: buceo ya no lista "Cinturón de lastre y plomos"** — el usuario

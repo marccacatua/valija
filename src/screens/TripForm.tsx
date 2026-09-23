@@ -186,6 +186,26 @@ export function TripForm() {
                   />
                 ))}
               </div>
+              {(form.turismo === 'ski' || form.turismo === 'buceo') && (
+                <>
+                  <div className={styles.wrap} style={{ marginTop: 8 }}>
+                    <OptionChip
+                      label="Llevo mi propio equipo"
+                      selected={form.equipoPropio}
+                      onSelect={() => set('equipoPropio', !form.equipoPropio)}
+                    />
+                  </div>
+                  <div className={styles.equipoHint}>
+                    {form.turismo === 'ski'
+                      ? form.equipoPropio
+                        ? 'Sumamos esquís, botas y casco a tu lista.'
+                        : 'Asumimos que alquilás esquís, botas y casco allá.'
+                      : form.equipoPropio
+                        ? 'Sumamos traje, chaleco, regulador y aletas. El tubo y el lastre se alquilan siempre.'
+                        : 'Asumimos que alquilás traje, chaleco, regulador, aletas, tubo y lastre allá.'}
+                  </div>
+                </>
+              )}
             </div>
           )}
 

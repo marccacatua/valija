@@ -296,8 +296,8 @@ export function buildRawItems(f: TripFormState): RawItem[] {
 
   // Categoría propia: equipo técnico de esquí, distinto de la ropa de
   // calle de arriba (que ya baja de cantidad más arriba, ver isSki).
-  // Se asume que esquís, botas de esquí y casco se ALQUILAN en el
-  // centro de ski (lo más común) — solo se lista lo personal. Orden:
+  // Esquís, botas de esquí y casco solo se listan si la persona lleva
+  // equipo propio (`equipoPropio`); por defecto se alquilan. Orden:
   // de adentro hacia afuera por capas (primera piel -> polar -> campera
   // y pantalón de nieve), después los accesorios que se usan puestos,
   // el calzado para andar por el pueblo (no la pista) al final, y la
@@ -318,6 +318,13 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('ski', 'Gorro térmico');
     addSingle('ski', 'Cuello o buff');
     addSingle('ski', 'Antiparras');
+    // Por defecto se asume que esto se alquila en el centro de ski; solo
+    // aparece si la persona avisa que lleva su propio equipo.
+    if (f.equipoPropio) {
+      addSingle('ski', 'Casco');
+      addSingle('ski', 'Botas de esquí');
+      addSingle('ski', 'Esquís y bastones (o tabla de snowboard)');
+    }
     addSingle('ski', 'Botas de nieve para caminar');
     addSingle('ski', 'Labial con protector solar (FPS)');
   }
@@ -344,28 +351,30 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('nautica', 'Pastillas para el mareo');
   }
 
-  // Categoría propia: equipo personal de buceo. Se asume que el tubo de
-  // oxígeno Y el lastre (plomos + cinturón) se alquilan en el centro de
-  // buceo — el lastre pesa y ocupa mucho para viajar, así que casi
-  // siempre viene incluido junto con el tubo, como un combo. El resto
-  // (traje, BCD, regulador, etc.) lo lleva la persona. Orden: de
-  // adentro hacia afuera (traje primero, como con ski) -> el "sistema"
-  // que se arma sobre el traje (BCD + regulador) -> lo que se pone en
-  // la cara/manos/pies -> instrumentos -> seguridad/documentos.
+  // Categoría propia: equipo personal de buceo. El tubo de oxígeno y el
+  // lastre (plomos + cinturón) se alquilan SIEMPRE — pesan demasiado
+  // para viajar. Traje, BCD, regulador y aletas solo se listan si la
+  // persona lleva equipo propio (`equipoPropio`); por defecto se
+  // alquilan. Lo de uso personal (máscara, snorkel, computadora, botas,
+  // guantes, boya) aparece siempre: se lleva propio por calce e
+  // higiene. Orden: de adentro hacia afuera (traje primero, como con
+  // ski) -> el "sistema" que se arma sobre el traje (BCD + regulador)
+  // -> lo que se pone en la cara/manos/pies -> seguridad.
   if (isBuceo) {
-    // El grosor del traje depende de la temperatura del agua, no hay
-    // uno que sirva para todo clima — mismo criterio que la ropa de
-    // abrigo normal (frío/templado/calor son ítems distintos, no un
-    // solo ítem con cantidad variable).
-    if (f.clima === 'frio') addSingle('buceo', 'Traje de neopreno grueso (7mm) o semiseco');
-    else if (f.clima === 'calor') addSingle('buceo', 'Traje de neopreno fino (3mm) o shorty');
-    else addSingle('buceo', 'Traje de neopreno intermedio (5mm)');
-    addSingle('buceo', 'Chaleco compensador (BCD)');
-    addSingle('buceo', 'Regulador y octopus');
+    if (f.equipoPropio) {
+      // El grosor del traje depende de la temperatura del agua, no hay
+      // uno que sirva para todo clima — mismo criterio que la ropa de
+      // abrigo normal (frío/templado/calor son ítems distintos).
+      if (f.clima === 'frio') addSingle('buceo', 'Traje de neopreno grueso (7mm) o semiseco');
+      else if (f.clima === 'calor') addSingle('buceo', 'Traje de neopreno fino (3mm) o shorty');
+      else addSingle('buceo', 'Traje de neopreno intermedio (5mm)');
+      addSingle('buceo', 'Chaleco compensador (BCD)');
+      addSingle('buceo', 'Regulador y octopus');
+    }
     addSingle('buceo', 'Computadora de buceo');
     addSingle('buceo', 'Máscara de buceo');
     addSingle('buceo', 'Snorkel');
-    addSingle('buceo', 'Aletas de buceo');
+    if (f.equipoPropio) addSingle('buceo', 'Aletas de buceo');
     addSingle('buceo', 'Botas de neopreno');
     addSingle('buceo', 'Guantes de neopreno');
     addSingle('buceo', 'Boya de señalización de superficie');

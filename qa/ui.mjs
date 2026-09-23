@@ -2277,13 +2277,14 @@ try {
     const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
     await page.click('button:has-text("Buceo")');
+    await page.click('button:has-text("Llevo mi propio equipo")');
     await page.click('button:has-text("Frío")');
     await page.click('button:has-text("Bodega")');
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
     const hasBcd = await page.locator('button', { hasText: 'Chaleco compensador (BCD)' }).count();
-    assert(hasBcd === 1, 'Tildar "Buceo" agrega la categoría con sus ítems (ej. Chaleco compensador)', `bcd=${hasBcd}`);
+    assert(hasBcd === 1, 'Buceo con equipo propio suma el equipo pesado (ej. Chaleco compensador)', `bcd=${hasBcd}`);
     const hasTrajeGrueso = await page.locator('button', { hasText: 'Traje de neopreno grueso' }).count();
     assert(hasTrajeGrueso === 1, 'Con clima "Frío" aparece el traje de neopreno grueso', `count=${hasTrajeGrueso}`);
     const hasVaselina = await page.locator('button', { hasText: 'Vaselina' }).count();
@@ -2296,6 +2297,7 @@ try {
     const { ctx, page } = await freshPage(browser, { pro: true });
     await goToNewTripForm(page);
     await page.click('button:has-text("Buceo")');
+    await page.click('button:has-text("Llevo mi propio equipo")');
     await page.click('button:has-text("Calor")');
     await page.click('button:has-text("Bodega")');
     await page.click('button:has-text("Armar mi valija")');
@@ -2312,6 +2314,63 @@ try {
     assert(hasBcd === 0, 'Sin tildar "Buceo", no aparecen sus ítems', `count=${hasBcd}`);
     const hasVaselina = await page.locator('button', { hasText: 'Vaselina' }).count();
     assert(hasVaselina === 0, 'Sin tildar "Buceo", no aparece "Vaselina"', `count=${hasVaselina}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 57) Esquí y buceo preguntan si se lleva equipo propio (por defecto
+  // se asume alquilado). La pregunta solo aparece con esas dos.
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    const chipRelax = await page.locator('button', { hasText: 'Llevo mi propio equipo' }).count();
+    assert(chipRelax === 0, 'Con turismo "Relax" no aparece la pregunta de equipo propio', `count=${chipRelax}`);
+    await page.click('button:has-text("Navegar")');
+    const chipNavegar = await page.locator('button', { hasText: 'Llevo mi propio equipo' }).count();
+    assert(chipNavegar === 0, 'Con "Navegar" tampoco aparece', `count=${chipNavegar}`);
+    await page.click('button:has-text("Esquí")');
+    const chipSki = await page.locator('button', { hasText: 'Llevo mi propio equipo' }).count();
+    assert(chipSki === 1, 'Con "Esquí" aparece la pregunta de equipo propio', `count=${chipSki}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Buceo")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasBcd = await page.locator('button', { hasText: 'Chaleco compensador' }).count();
+    const hasMascara = await page.locator('button', { hasText: 'Máscara de buceo' }).count();
+    assert(hasBcd === 0 && hasMascara === 1, 'Buceo con equipo alquilado: sin BCD, pero con lo personal (máscara)', `bcd=${hasBcd} mascara=${hasMascara}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Esquí")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasBotasAlq = await page.locator('button', { hasText: 'Botas de esquí' }).count();
+    assert(hasBotasAlq === 0, 'Esquí con equipo alquilado: no aparecen botas de esquí', `count=${hasBotasAlq}`);
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Esquí")');
+    await page.click('button:has-text("Llevo mi propio equipo")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const hasBotas = await page.locator('button', { hasText: 'Botas de esquí' }).count();
+    const hasCasco = await page.locator('button', { hasText: 'Casco' }).count();
+    assert(hasBotas === 1 && hasCasco === 1, 'Esquí con equipo propio suma botas de esquí y casco', `botas=${hasBotas} casco=${hasCasco}`);
     await ctx.close();
   }
 } catch (err) {
