@@ -4,6 +4,15 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.7.0
+
+- **Aviso de esquí con calor:** si elegís Esquí con clima Calor, abajo
+  del turismo aparece "¿Esquí con calor? En la nieve suele hacer frío."
+  con un botón "Cambiar a Frío" de un toque. Es solo una sugerencia, no
+  se cambia nada solo. Con Templado no aparece, porque el esquí de
+  primavera existe. QA: Playwright 178/179 (solo el flake conocido del
+  fade de la mascota).
+
 ## v1.6.1
 
 - **Nuevo orden del formulario:** ¿A dónde? → Motivo → Destino → Clima →

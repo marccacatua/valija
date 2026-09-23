@@ -222,6 +222,14 @@ export function TripForm() {
                   </div>
                 </>
               )}
+              {form.turismo === 'ski' && form.clima === 'calor' && (
+                <div className={styles.climaWarning}>
+                  <span>¿Esquí con calor? En la nieve suele hacer frío.</span>
+                  <button type="button" className={styles.climaFix} onClick={() => set('clima', 'frio')}>
+                    Cambiar a Frío
+                  </button>
+                </div>
+              )}
             </div>
           )}
 

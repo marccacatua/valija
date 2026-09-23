@@ -107,6 +107,30 @@
   color: var(--muted);
 }
 
+.climaWarning {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  font: 800 13px/1.35 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.climaFix {
+  flex: none;
+  background: none;
+  border: none;
+  padding: 4px 0;
+  font: 900 13px 'Nunito', sans-serif;
+  color: var(--coral);
+  cursor: pointer;
+}
+
 .limitState {
   margin-top: 24px;
   display: flex;

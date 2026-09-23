@@ -1,5 +1,20 @@
 # Backlog
 
+## ✅ Aviso de clima incoherente: esquí con calor (en `main`, v1.7.0, 2026-09-23)
+
+Sale del nuevo orden del formulario (v1.6.1): como el clima ahora se
+elige antes que el turismo, se puede detectar la combinación rara. Y
+como Calor es el clima por defecto, es un caso que pasa seguido.
+Decisiones:
+- **Sugerir, no corregir solo:** puede ser un viaje combinado (playa y
+  después un día de nieve). Por eso es un aviso con un botón "Cambiar a
+  Frío" y no un cambio automático.
+- **Solo esquí + calor.** Templado y lluvia son posibles en temporada de
+  esquí (primavera). Buceo con frío también es válido (agua fría, traje
+  grueso). Navegar va con cualquier clima.
+- Si más adelante aparecen otras combinaciones raras, conviene generalizarlo
+  en una tabla de reglas (turismo, clima → mensaje, sugerencia).
+
 ## ✅ Feature: equipo propio o alquilado en esquí y buceo (en `main`, v1.6.0, 2026-09-23)
 
 Pedido del usuario: "en ski y buceo se puede preguntar si es con equipo

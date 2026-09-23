@@ -2373,6 +2373,24 @@ try {
     assert(hasBotas === 1 && hasCasco === 1, 'Esquí con equipo propio suma botas de esquí y casco', `botas=${hasBotas} casco=${hasCasco}`);
     await ctx.close();
   }
+
+  // --- 58. Aviso de esquí con calor ---
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    const warning = page.locator('text=¿Esquí con calor?');
+    await page.click('button:has-text("Buceo")');
+    assert((await warning.count()) === 0, 'Buceo con calor no muestra el aviso de clima', '');
+    await page.click('button:has-text("Esquí")');
+    assert((await warning.count()) === 1, 'Esquí con calor muestra el aviso de clima', '');
+    await page.click('button:has-text("Cambiar a Frío")');
+    assert((await warning.count()) === 0, '"Cambiar a Frío" cambia el clima y el aviso desaparece', '');
+    await page.click('button:has-text("Templado")');
+    assert((await warning.count()) === 0, 'Esquí con templado no muestra el aviso (esquí de primavera)', '');
+    await page.click('button:has-text("Calor")');
+    assert((await warning.count()) === 1, 'Volver a Calor con esquí muestra el aviso otra vez', '');
+    await ctx.close();
+  }
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
