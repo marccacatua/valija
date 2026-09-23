@@ -4,6 +4,13 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.6.1
+
+- **Nuevo orden del formulario:** ¿A dónde? → Motivo → Destino → Clima →
+  Tipo de turismo (lo demás no cambia). Primero se define el contexto
+  del viaje (para qué, dónde y con qué clima) y después la actividad.
+  Además, si el motivo es trabajo, el turismo ni aparece.
+
 ## v1.6.0
 
 **Pregunta de equipo propio o alquilado en esquí y buceo.** Al elegir

@@ -144,6 +144,20 @@ export function TripForm() {
           </div>
 
           <div>
+            <SectionLabel>Motivo</SectionLabel>
+            <div className={styles.wrap}>
+              {MOTIVO_OPTIONS.map((opt) => (
+                <OptionChip
+                  key={opt.key}
+                  label={opt.label}
+                  selected={form.motivo === opt.key}
+                  onSelect={() => set('motivo', opt.key)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
             <SectionLabel hint="elegí uno o varios">Destino</SectionLabel>
             <div className={styles.grid3}>
               {DEST_OPTIONS.map((opt) => (
@@ -159,14 +173,16 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Motivo</SectionLabel>
-            <div className={styles.wrap}>
-              {MOTIVO_OPTIONS.map((opt) => (
-                <OptionChip
+            <SectionLabel>Clima</SectionLabel>
+            <div className={styles.grid4}>
+              {CLIMA_OPTIONS.map((opt) => (
+                <OptionCard
                   key={opt.key}
+                  compact
                   label={opt.label}
-                  selected={form.motivo === opt.key}
-                  onSelect={() => set('motivo', opt.key)}
+                  icon={ClimaIcons[opt.key]}
+                  selected={form.clima === opt.key}
+                  onSelect={() => set('clima', opt.key)}
                 />
               ))}
             </div>
@@ -208,22 +224,6 @@ export function TripForm() {
               )}
             </div>
           )}
-
-          <div>
-            <SectionLabel>Clima</SectionLabel>
-            <div className={styles.grid4}>
-              {CLIMA_OPTIONS.map((opt) => (
-                <OptionCard
-                  key={opt.key}
-                  compact
-                  label={opt.label}
-                  icon={ClimaIcons[opt.key]}
-                  selected={form.clima === opt.key}
-                  onSelect={() => set('clima', opt.key)}
-                />
-              ))}
-            </div>
-          </div>
 
           <div>
             <SectionLabel>Vestuario</SectionLabel>
