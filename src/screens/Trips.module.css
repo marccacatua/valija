@@ -200,3 +200,13 @@
   color: var(--muted-3);
   text-decoration: underline;
 }
+
+.langSwitch {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: 800 11px/1 'Nunito', sans-serif;
+  color: var(--muted-3);
+  text-decoration: underline;
+}

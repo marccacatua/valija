@@ -1,9 +1,10 @@
+import { t } from '../i18n';
 import styles from './DurationStepper.module.css';
 
 const PRESETS = [
-  { label: 'Finde · 3', value: 3 },
-  { label: 'Semana · 7', value: 7 },
-  { label: 'Largo · 14', value: 14 },
+  { label: t('Finde · 3'), value: 3 },
+  { label: t('Semana · 7'), value: 7 },
+  { label: t('Largo · 14'), value: 14 },
 ];
 
 export function DurationStepper({ days, onChange }: { days: number; onChange: (next: number) => void }) {
@@ -17,7 +18,7 @@ export function DurationStepper({ days, onChange }: { days: number; onChange: (n
         </button>
         <div className={styles.center}>
           <div className={styles.value}>{days}</div>
-          <div className={styles.label}>días de viaje</div>
+          <div className={styles.label}>{t('días de viaje')}</div>
         </div>
         <button type="button" className={`${styles.stepBtn} ${styles.inc}`} onClick={() => onChange(clamp(days + 1))}>
           +

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { PRO_PRICE_LABEL, usePurchase } from '../features/purchase';
 import { Button } from './Button';
 import { UnlockIcon } from './icons';
+import { t } from '../i18n';
 import styles from './PaywallSheet.module.css';
 
 interface PaywallSheetProps {
@@ -18,11 +19,11 @@ function isUserCancelled(error: unknown): boolean {
 }
 
 const BENEFITS = [
-  'Viajes guardados ilimitados',
-  'Agregar tus propios ítems y tareas',
-  'Guardar y aplicar plantillas',
-  'Repetir un viaje anterior con un toque',
-  'Categorías extra: bebé/niño chico, mascota, esquí, navegar, buceo y camping',
+  t('Viajes guardados ilimitados'),
+  t('Agregar tus propios ítems y tareas'),
+  t('Guardar y aplicar plantillas'),
+  t('Repetir un viaje anterior con un toque'),
+  t('Categorías extra: bebé/niño chico, mascota, esquí, navegar, buceo y camping'),
 ];
 
 export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
@@ -39,13 +40,13 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
         onUnlocked?.();
         onClose();
       } else {
-        setError('No se pudo completar la compra. Probá de nuevo.');
+        setError(t('No se pudo completar la compra. Probá de nuevo.'));
       }
     } catch (e) {
       // RevenueCat rechaza la promesa (no la resuelve en false) ante un
       // error real o una compra cancelada — lo segundo no es un error,
       // el usuario simplemente cerró el cartel nativo de Apple.
-      if (!isUserCancelled(e)) setError('No se pudo completar la compra. Probá de nuevo.');
+      if (!isUserCancelled(e)) setError(t('No se pudo completar la compra. Probá de nuevo.'));
     } finally {
       setBusy(false);
     }
@@ -60,10 +61,10 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
         onUnlocked?.();
         onClose();
       } else {
-        setError('No encontramos ninguna compra anterior para restaurar.');
+        setError(t('No encontramos ninguna compra anterior para restaurar.'));
       }
     } catch {
-      setError('No se pudo restaurar la compra. Probá de nuevo.');
+      setError(t('No se pudo restaurar la compra. Probá de nuevo.'));
     } finally {
       setBusy(false);
     }
@@ -73,7 +74,7 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
     <div className={styles.overlay} onClick={onClose}>
       <div className={styles.card} onClick={(e) => e.stopPropagation()}>
         <div className={styles.badge}>{UnlockIcon} Valija Pro</div>
-        <div className={styles.title}>Desbloqueá todo, para siempre</div>
+        <div className={styles.title}>{t('Desbloqueá todo, para siempre')}</div>
         <ul className={styles.benefits}>
           {BENEFITS.map((b) => (
             <li key={b}>
@@ -82,14 +83,14 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
           ))}
         </ul>
         <Button onClick={handlePurchase} disabled={busy}>
-          Desbloquear — {PRO_PRICE_LABEL} (pago único)
+          {t('Desbloquear — {price} (pago único)', { price: PRO_PRICE_LABEL })}
         </Button>
         <button type="button" className={styles.restoreBtn} onClick={handleRestore} disabled={busy}>
-          Ya compré antes — restaurar
+          {t('Ya compré antes — restaurar')}
         </button>
         {error && <div className={styles.error}>{error}</div>}
         <button type="button" className={styles.closeBtn} onClick={onClose}>
-          Ahora no
+          {t('Ahora no')}
         </button>
       </div>
     </div>

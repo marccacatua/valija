@@ -12,6 +12,7 @@ import {
   labelForMany,
 } from './catalog';
 import type { CategoryKey, PackingItem, Trip, TripFormState } from '../types';
+import { dateLocale, itemLabel, t, tn } from '../i18n';
 
 export const DEFAULT_FORM: TripFormState = {
   name: '',
@@ -32,10 +33,10 @@ export const DEFAULT_FORM: TripFormState = {
 };
 
 /** "1 día" / "5 días": la duración mínima del stepper es 1. */
-export const diasLabel = (n: number) => (n === 1 ? '1 día' : `${n} días`);
+export const diasLabel = (n: number) => tn(n, '{n} día', '{n} días');
 
 export function tripTitle(form: TripFormState): string {
-  return form.name.trim() || `${labelForMany(DEST_OPTIONS, form.dest)} en ${diasLabel(form.dias)}`;
+  return form.name.trim() || t('{dest} en {dias}', { dest: labelForMany(DEST_OPTIONS, form.dest), dias: diasLabel(form.dias) });
 }
 
 export function tripMetaLine(form: TripFormState): string {
@@ -83,24 +84,26 @@ export function progressPct(items: PackingItem[]): number {
 // Frase natural para invitar a seguir con la próxima categoría (con
 // artículo, no el título tal cual de CATEGORY_META) una vez que la
 // anterior queda completa.
+// Frases completas (no "Ahora seguí con" + fragmento) para que cada idioma
+// pueda armar la oración a su manera.
 const NEXT_CATEGORY_PHRASE: Record<CategoryKey, string> = {
-  docs: 'los documentos',
-  ropa: 'la ropa',
-  higiene: 'la higiene',
-  tech: 'la electrónica',
-  extras: 'los extras',
-  bebe: 'lo del bebé',
-  mascota: 'lo de la mascota',
-  ski: 'lo de esquí',
-  nautica: 'lo náutico',
-  buceo: 'lo de buceo',
-  camping: 'lo de camping',
+  docs: t('Ahora seguí con los documentos'),
+  ropa: t('Ahora seguí con la ropa'),
+  higiene: t('Ahora seguí con la higiene'),
+  tech: t('Ahora seguí con la electrónica'),
+  extras: t('Ahora seguí con los extras'),
+  bebe: t('Ahora seguí con lo del bebé'),
+  mascota: t('Ahora seguí con lo de la mascota'),
+  ski: t('Ahora seguí con lo de esquí'),
+  nautica: t('Ahora seguí con lo náutico'),
+  buceo: t('Ahora seguí con lo de buceo'),
+  camping: t('Ahora seguí con lo de camping'),
 };
 
 export function progressNote(items: PackingItem[]): string {
   const packed = packedCount(items);
-  if (packed === 0) return 'Arrancá por los documentos';
-  if (packed === items.length) return '¡Valija lista! Buen viaje.';
+  if (packed === 0) return t('Arrancá por los documentos');
+  if (packed === items.length) return t('¡Valija lista! Buen viaje.');
 
   // Si una categoría quedó recién completa, invitamos a seguir con la
   // próxima en el orden de la checklist en vez de repetir siempre "te
@@ -113,23 +116,22 @@ export function progressNote(items: PackingItem[]): string {
     const catDone = catItems.length > 0 && catItems.every((it) => it.done);
     const nextPending = nextItems.some((it) => !it.done);
     if (catDone && nextPending) {
-      return `Ahora seguí con ${NEXT_CATEGORY_PHRASE[next]}`;
+      return NEXT_CATEGORY_PHRASE[next];
     }
   }
 
-  const left = items.length - packed;
-  return left === 1 ? 'Te falta 1 ítem' : `Te faltan ${left} ítems`;
+  return tn(items.length - packed, 'Te falta {n} ítem', 'Te faltan {n} ítems');
 }
 
 /** Ejemplo de nombre de plantilla, sugerido según el viaje actual — para
  * que el placeholder inspire algo relevante en vez de un genérico fijo. */
 export function templatePlaceholder(form: TripFormState): string {
-  if (form.dest.includes('playa')) return 'Kit snorkel';
-  if (form.dest.includes('montana')) return 'Kit escalada';
+  if (form.dest.includes('playa')) return t('Kit snorkel');
+  if (form.dest.includes('montana')) return t('Kit escalada');
   // ciudad
-  if (form.turismo === 'fiesta') return 'Kit noche de salida';
-  if (form.motivo === 'trabajo') return 'Kit oficina';
-  return 'Kit museos';
+  if (form.turismo === 'fiesta') return t('Kit noche de salida');
+  if (form.motivo === 'trabajo') return t('Kit oficina');
+  return t('Kit museos');
 }
 
 /** Texto plano para compartir por WhatsApp/notas/mail — agrupado igual que
@@ -144,7 +146,7 @@ export function shareText(trip: Trip): string {
     lines.push(CATEGORY_META[key].title);
     for (const item of list) {
       const qty = item.noQty || item.qty <= 1 ? '' : ` (x${item.qty})`;
-      lines.push(`${item.done ? '✅' : '☐'} ${item.name}${qty}`);
+      lines.push(`${item.done ? '✅' : '☐'} ${itemLabel(item.name)}${qty}`);
     }
     lines.push('');
   }
@@ -152,14 +154,14 @@ export function shareText(trip: Trip): string {
   // El barco reemplaza a la casa (no se suman), mismo criterio que en
   // la UI — ver el comentario en Checklist.tsx.
   if (trip.boatChecklist.length) {
-    lines.push('¿Está todo listo para zarpar?');
+    lines.push(t('¿Está todo listo para zarpar?'));
     for (const task of trip.boatChecklist) {
-      lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
+      lines.push(`${task.done ? '✅' : '☐'} ${itemLabel(task.label)}`);
     }
   } else if (trip.homeChecklist.length) {
-    lines.push('¿Quedó todo pronto en casa?');
+    lines.push(t('¿Quedó todo pronto en casa?'));
     for (const task of trip.homeChecklist) {
-      lines.push(`${task.done ? '✅' : '☐'} ${task.label}`);
+      lines.push(`${task.done ? '✅' : '☐'} ${itemLabel(task.label)}`);
     }
   }
 
@@ -167,6 +169,6 @@ export function shareText(trip: Trip): string {
 }
 
 export function tripListMeta(trip: Trip): string {
-  const when = new Date(trip.createdAt).toLocaleDateString('es-AR', { month: 'short', year: 'numeric' });
+  const when = new Date(trip.createdAt).toLocaleDateString(dateLocale, { month: 'short', year: 'numeric' });
   return `${tripMetaLine(trip.form)} · ${when}`;
 }

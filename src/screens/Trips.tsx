@@ -12,6 +12,7 @@ import { prefersReducedMotion } from '../features/motion';
 import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
+import { lang, switchLang, t, tn } from '../i18n';
 import styles from './Trips.module.css';
 
 // Antes de sacarlo de verdad, un fade + deslizamiento corto — sin esto,
@@ -81,8 +82,8 @@ export function Trips() {
 
   const deleteTrip = (id: string, name: string) => {
     setConfirm({
-      title: `¿Borrar "${name}"?`,
-      message: 'No se puede deshacer.',
+      title: t('¿Borrar "{name}"?', { name }),
+      message: t('No se puede deshacer.'),
       onConfirm: () => {
         setConfirm(null);
         playExitThenRemove(id);
@@ -114,14 +115,14 @@ export function Trips() {
 
   const deleteAllTrips = () => {
     setConfirm({
-      title: trips.length === 1 ? '¿Borrar el viaje guardado?' : `¿Borrar los ${trips.length} viajes guardados?`,
-      message: 'Vas a perder todo el progreso de empacado. Esto no se puede deshacer.',
+      title: tn(trips.length, '¿Borrar el viaje guardado?', '¿Borrar los {n} viajes guardados?'),
+      message: t('Vas a perder todo el progreso de empacado. Esto no se puede deshacer.'),
       onConfirm: () => {
         // segunda confirmación, encadenada — centrada, para que se note
         // que este paso es el que realmente importa
         setConfirm({
-          title: 'Última confirmación',
-          message: 'Se van a borrar TODOS tus viajes para siempre. ¿Continuar?',
+          title: t('Última confirmación'),
+          message: t('Se van a borrar TODOS tus viajes para siempre. ¿Continuar?'),
           variant: 'center',
           onConfirm: () => {
             removeAllTrips();
@@ -135,14 +136,14 @@ export function Trips() {
   return (
     <div className={styles.screen}>
       <div className={styles.header}>
-        <div className={styles.title}>Mis viajes</div>
-        <div className={styles.subtitle}>Repetí una valija que ya te funcionó.</div>
+        <div className={styles.title}>{t('Mis viajes')}</div>
+        <div className={styles.subtitle}>{t('Repetí una valija que ya te funcionó.')}</div>
         <Button className={styles.newTripBtn} onClick={() => navigate('/nuevo')}>
           <svg width="18" height="18" viewBox="0 0 24 24">
             <rect x="10" y="4" width="4" height="16" rx="2" fill="var(--paper)" />
             <rect x="4" y="10" width="16" height="4" rx="2" fill="var(--paper)" />
           </svg>
-          Nuevo viaje
+          {t('Nuevo viaje')}
         </Button>
       </div>
 
@@ -150,8 +151,8 @@ export function Trips() {
         {trips.length === 0 ? (
           <div className={styles.emptyState}>
             <Mascot size={64} />
-            <div className={styles.emptyTitle}>Todavía no armaste ninguna valija</div>
-            <div className={styles.emptyDesc}>Creá tu primer viaje y va a aparecer acá, listo para repetir.</div>
+            <div className={styles.emptyTitle}>{t('Todavía no armaste ninguna valija')}</div>
+            <div className={styles.emptyDesc}>{t('Creá tu primer viaje y va a aparecer acá, listo para repetir.')}</div>
           </div>
         ) : (
           sortedTrips.map((trip) => {
@@ -175,10 +176,10 @@ export function Trips() {
                   <div className={styles.tripMeta}>{tripListMeta(trip)}</div>
                   <div className={styles.tripState} style={{ color: finished ? 'var(--muted)' : color }}>
                     {finished
-                      ? 'Viaje finalizado'
+                      ? t('Viaje finalizado')
                       : done
-                        ? 'Empacado completo'
-                        : `${trip.items.filter((i) => i.done).length} de ${trip.items.length} empacado`}
+                        ? t('Empacado completo')
+                        : t('{done} de {total} empacado', { done: trip.items.filter((i) => i.done).length, total: trip.items.length })}
                   </div>
                 </div>
                 <span
@@ -188,7 +189,7 @@ export function Trips() {
                     e.stopPropagation();
                     toggleTripFinished(trip.id);
                   }}
-                  aria-label={finished ? `Reactivar ${tripTitle(trip.form)}` : `Marcar ${tripTitle(trip.form)} como finalizado`}
+                  aria-label={finished ? t('Reactivar {name}', { name: tripTitle(trip.form) }) : t('Marcar {name} como finalizado', { name: tripTitle(trip.form) })}
                 >
                   <svg width="14" height="11" viewBox="0 0 14 11">
                     <path
@@ -208,7 +209,7 @@ export function Trips() {
                     e.stopPropagation();
                     deleteTrip(trip.id, tripTitle(trip.form));
                   }}
-                  aria-label={`Borrar ${tripTitle(trip.form)}`}
+                  aria-label={t('Borrar {item}', { item: tripTitle(trip.form) })}
                 >
                   ×
                 </span>
@@ -228,7 +229,7 @@ export function Trips() {
           {trips.length > 0 && (
             <div className={styles.tip}>
               <Mascot size={46} />
-              <div className={styles.tipText}>Tip de Valu: guardá la valija del último viaje de trabajo y la reusás en 2 toques.</div>
+              <div className={styles.tipText}>{t('Tip de Valu: guardá la valija del último viaje de trabajo y la reusás en 2 toques.')}</div>
             </div>
           )}
 
@@ -238,13 +239,13 @@ export function Trips() {
               renderiza bien en el WebView nativo (ver LockIcon/UnlockIcon arriba). */}
           {!Capacitor.isNativePlatform() && (
             <button type="button" className={styles.backupBtn} onClick={() => setShowBackup(true)}>
-              Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)
+              {t('Llevar mis datos a otro acceso (Safari ↔ pantalla de inicio)')}
             </button>
           )}
 
           {trips.length > 0 && (
             <button type="button" className={styles.deleteAllBtn} onClick={deleteAllTrips}>
-              Borrar todos los viajes
+              {t('Borrar todos los viajes')}
             </button>
           )}
 
@@ -257,8 +258,13 @@ export function Trips() {
               v{__APP_VERSION__} · {__BUILD_ID__}
             </div>
             <div className={styles.legalLinks}>
-              <Link to="/privacidad">Privacidad</Link>
-              <Link to="/soporte">Soporte</Link>
+              <Link to="/privacidad">{t('Privacidad')}</Link>
+              <Link to="/soporte">{t('Soporte')}</Link>
+              {/* Cambio de idioma manual: por defecto se usa el del
+                  dispositivo, esto es solo para quien quiera el otro. */}
+              <button type="button" className={styles.langSwitch} onClick={() => switchLang(lang === 'es' ? 'en' : 'es')}>
+                {lang === 'es' ? 'English' : 'Español'}
+              </button>
             </div>
           </div>
           <div style={{ height: 20 }} />

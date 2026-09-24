@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { HomeTask, PackingItem } from '../types';
+import { itemLabel, t } from '../i18n';
 import styles from './TemplateSheets.module.css';
 
 interface SaveTemplateSheetProps {
@@ -45,18 +46,18 @@ export function SaveTemplateSheet({ items, homeTasks, placeholderExample, onSave
   return (
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.card} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.title}>Guardar como plantilla</div>
-        <div className={styles.subtitle}>Elegí qué entra y ponele un nombre.</div>
+        <div className={styles.title}>{t('Guardar como plantilla')}</div>
+        <div className={styles.subtitle}>{t('Elegí qué entra y ponele un nombre.')}</div>
 
         {items.length > 0 && (
           <div className={styles.list}>
-            {showGroupLabels && <div className={styles.groupLabel}>De la valija</div>}
+            {showGroupLabels && <div className={styles.groupLabel}>{t('De la valija')}</div>}
             {items.map((item) => {
               const on = selectedItems.has(item.id);
               return (
                 <button type="button" key={item.id} className={styles.row} onClick={() => toggleItem(item.id)}>
                   <span className={`${styles.checkbox} ${on ? styles.checkboxOn : ''}`}>✓</span>
-                  <span className={styles.name}>{item.name}</span>
+                  <span className={styles.name}>{itemLabel(item.name)}</span>
                 </button>
               );
             })}
@@ -65,13 +66,13 @@ export function SaveTemplateSheet({ items, homeTasks, placeholderExample, onSave
 
         {homeTasks.length > 0 && (
           <div className={styles.list}>
-            {showGroupLabels && <div className={styles.groupLabel}>De casa</div>}
+            {showGroupLabels && <div className={styles.groupLabel}>{t('De casa')}</div>}
             {homeTasks.map((task) => {
               const on = selectedTasks.has(task.id);
               return (
                 <button type="button" key={task.id} className={styles.row} onClick={() => toggleTask(task.id)}>
                   <span className={`${styles.checkbox} ${on ? styles.checkboxOn : ''}`}>✓</span>
-                  <span className={styles.name}>{task.label}</span>
+                  <span className={styles.name}>{itemLabel(task.label)}</span>
                 </button>
               );
             })}
@@ -82,7 +83,7 @@ export function SaveTemplateSheet({ items, homeTasks, placeholderExample, onSave
           className={styles.nameInput}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder={`Ej. ${placeholderExample}`}
+          placeholder={t('Ej. {example}', { example: placeholderExample })}
         />
 
         <div className={styles.actions}>
@@ -91,10 +92,10 @@ export function SaveTemplateSheet({ items, homeTasks, placeholderExample, onSave
             className={`${styles.primary} ${!canSave ? styles.primaryDisabled : ''}`}
             onClick={() => canSave && onSave(name, chosenItems, chosenTasks)}
           >
-            Guardar plantilla
+            {t('Guardar plantilla')}
           </button>
           <button type="button" className={styles.cancel} onClick={onCancel}>
-            Cancelar
+            {t('Cancelar')}
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { armMascotMorph } from '../features/mascotMorph';
 import { prefersReducedMotion } from '../features/motion';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
+import { t } from '../i18n';
 import styles from './Welcome.module.css';
 
 // Cuánto se queda la mascota en pantalla antes de pasar sola — usuario
@@ -80,7 +81,7 @@ export function Welcome() {
       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && goNow()}
       role="button"
       tabIndex={0}
-      aria-label="Continuar"
+      aria-label={t('Continuar')}
     >
       {/* Referenciado por ref: armMascotMorph clona este fondo tal cual
           para desvanecerlo en la pantalla de destino (ver goNow arriba). */}
@@ -95,11 +96,11 @@ export function Welcome() {
       {!hasTrips && (
         <div className={styles.content}>
           <h1 className={styles.title}>
-            A partir de ahora
+            {t('A partir de ahora')}
             <br />
-            no te olvidás más nada
+            {t('no te olvidás más nada')}
           </h1>
-          <p className={styles.subtitle}>Armá la valija perfecta en 30 segundos. Vos elegís el viaje, nosotros la lista.</p>
+          <p className={styles.subtitle}>{t('Armá la valija perfecta en 30 segundos. Vos elegís el viaje, nosotros la lista.')}</p>
         </div>
       )}
       <div style={{ flex: 1 }} />

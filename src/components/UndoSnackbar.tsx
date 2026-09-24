@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import styles from './UndoSnackbar.module.css';
 
 interface UndoSnackbarProps {
@@ -14,7 +15,7 @@ export function UndoSnackbar({ message, onUndo }: UndoSnackbarProps) {
     <div className={styles.snackbar} role="status">
       <span className={styles.message}>{message}</span>
       <button type="button" className={styles.undoBtn} onClick={onUndo}>
-        Deshacer
+        {t('Deshacer')}
       </button>
     </div>
   );

@@ -4,6 +4,7 @@ import type { TripFormState } from '../types';
 import { Button } from './Button';
 import { MaletaIcons } from './icons';
 import { OptionCard } from './OptionCard';
+import { t } from '../i18n';
 import styles from './ChangeMaletasSheet.module.css';
 
 interface ChangeMaletasSheetProps {
@@ -33,8 +34,8 @@ export function ChangeMaletasSheet({ current, onSave, onCancel }: ChangeMaletasS
   return (
     <div className={styles.overlay} onClick={onCancel}>
       <div className={styles.card} onClick={(e) => e.stopPropagation()}>
-        <div className={styles.title}>Cambiar valijas</div>
-        <div className={styles.hint}>elegí una o varias</div>
+        <div className={styles.title}>{t('Cambiar valijas')}</div>
+        <div className={styles.hint}>{t('elegí una o varias')}</div>
         <div className={styles.grid3}>
           {MALETA_OPTIONS.map((opt) => (
             <OptionCard
@@ -47,10 +48,10 @@ export function ChangeMaletasSheet({ current, onSave, onCancel }: ChangeMaletasS
           ))}
         </div>
         <Button onClick={() => onSave(maletas)} style={{ marginTop: 18, width: '100%' }}>
-          Guardar
+          {t('Guardar')}
         </Button>
         <button type="button" className={styles.cancelBtn} onClick={onCancel}>
-          Cancelar
+          {t('Cancelar')}
         </button>
       </div>
     </div>

@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "qa:logic": "tsx qa/combinatorial.ts",
     "qa:ui": "npm run build && node qa/ui.mjs",
-    "qa": "npm run qa:logic && npm run qa:ui"
+    "qa": "npm run qa:logic && npm run qa:i18n && npm run qa:ui && node qa/ui-en.mjs",
+    "qa:i18n": "tsx qa/i18n-check.ts",
+    "qa:en": "npm run build && node qa/ui-en.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.5.2",

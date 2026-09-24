@@ -1,7 +1,8 @@
 import { Capacitor } from '@capacitor/core';
+import { t } from '../i18n';
 import { useIsPro, writeIsPro } from './flags';
 
-export const PRO_PRICE_LABEL = 'USD 0,99';
+export const PRO_PRICE_LABEL = t('USD 0,99');
 
 /** Tienen que coincidir exactamente con lo que se cree en App Store Connect
  * y en el dashboard de RevenueCat (mismo identificador de producto, mismo

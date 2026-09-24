@@ -46,7 +46,7 @@ function assert(cond, label, detail) {
 const externalRequests = new Set();
 
 async function freshPage(browser, { pro = false } = {}) {
-  const ctx = await browser.newContext({ viewport: { width: 420, height: 900 } });
+  const ctx = await browser.newContext({ viewport: { width: 420, height: 900 }, locale: 'es-AR' });
   // La app no debería hacer NINGUNA request fuera de su propio origen
   // (desde v1.7.1 la tipografía viene empaquetada, ya no de Google
   // Fonts). Cualquier request externa se corta y queda anotada: al final
@@ -414,7 +414,7 @@ try {
 
     await page.click('text=Rápida');
     await page.waitForTimeout(100);
-    const groupCountTexts = await page.locator('text=/^\\d+ ítems$/').allTextContents();
+    const groupCountTexts = await page.locator('text=/^\\d+ ítems?$/').allTextContents();
     const sumGroupItems = groupCountTexts.reduce((acc, t) => acc + parseInt(t, 10), 0);
     assert(
       sumGroupItems === totalItems,

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BackArrowIcon } from './icons';
+import { t } from '../i18n';
 import styles from './LegalPage.module.css';
 
 interface LegalPageProps {
@@ -17,7 +18,7 @@ export function LegalPage({ title, children }: LegalPageProps) {
   return (
     <div className={styles.screen}>
       <div className={styles.header}>
-        <button type="button" className={styles.backBtn} onClick={() => navigate('/')} aria-label="Volver a Valija">
+        <button type="button" className={styles.backBtn} onClick={() => navigate('/')} aria-label={t('Volver a Valija')}>
           {BackArrowIcon}
         </button>
         <div className={styles.headerTitle}>{title}</div>

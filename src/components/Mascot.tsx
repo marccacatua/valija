@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 interface MascotProps {
   size?: number;
   bodyColor?: string;
@@ -13,7 +14,7 @@ export function Mascot({ size = 56, bodyColor = 'var(--mustard)', strapColor = '
       width={size}
       height={size}
       viewBox="0 0 120 120"
-      aria-label="Valu, la valija mascota"
+      aria-label={t('Valu, la valija mascota')}
       // display:block evita el espacio fantasma que deja un <svg> inline
       // debajo suyo (alineado a la línea de base, como una <img>) — sin
       // esto, el div que lo envuelve mide unos px más de lo que ocupa el

@@ -1,5 +1,6 @@
 import type { ItemTemplate, Trip } from '../types';
 import { persistItem } from './storage';
+import { t } from '../i18n';
 
 const TRIPS_KEY = 'valija:trips';
 const TEMPLATES_KEY = 'valija:templates';
@@ -57,10 +58,10 @@ export function importBackup(raw: string): ImportResult {
   try {
     payload = JSON.parse(raw.trim());
   } catch {
-    throw new Error('Ese texto no se pudo leer — ¿lo pegaste completo?');
+    throw new Error(t('Ese texto no se pudo leer — ¿lo pegaste completo?'));
   }
   if (!payload || payload.v !== 1 || !Array.isArray(payload.trips)) {
-    throw new Error('Ese texto no tiene el formato esperado de un backup de Valija.');
+    throw new Error(t('Ese texto no tiene el formato esperado de un backup de Valija.'));
   }
 
   const currentTrips = readJSON<Trip[]>(TRIPS_KEY, []);

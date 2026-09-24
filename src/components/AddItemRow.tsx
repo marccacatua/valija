@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../i18n';
 import styles from './AddItemRow.module.css';
 
 export function AddItemRow({ onAdd }: { onAdd: (name: string) => void }) {
@@ -18,11 +19,11 @@ export function AddItemRow({ onAdd }: { onAdd: (name: string) => void }) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => e.key === 'Enter' && submit()}
-        placeholder="Agregar ítem…"
+        placeholder={t('Agregar ítem…')}
       />
       {value.trim() && (
         <button type="button" className={styles.confirm} onClick={submit}>
-          Agregar
+          {t('Agregar')}
         </button>
       )}
     </div>

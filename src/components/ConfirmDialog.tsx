@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import styles from './ConfirmDialog.module.css';
 
 interface ConfirmDialogProps {
@@ -22,8 +23,8 @@ interface ConfirmDialogProps {
 export function ConfirmDialog({
   title,
   message,
-  confirmLabel = 'Sí, borrar',
-  cancelLabel = 'Cancelar',
+  confirmLabel = t('Sí, borrar'),
+  cancelLabel = t('Cancelar'),
   variant = 'sheet',
   onConfirm,
   onCancel,

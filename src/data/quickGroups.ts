@@ -1,4 +1,5 @@
 import type { CategoryKey, PackingItem } from '../types';
+import { t } from '../i18n';
 
 export type QuickGroupKey =
   | 'documentos'
@@ -18,21 +19,21 @@ export type QuickGroupKey =
   | 'camping';
 
 export const QUICK_GROUP_META: Record<QuickGroupKey, { title: string; color: string }> = {
-  documentos: { title: 'Documentos', color: 'var(--violet)' },
-  higiene: { title: 'Higiene', color: 'var(--teal)' },
-  ropa: { title: 'Ropa', color: 'var(--coral)' },
-  trabajo: { title: 'Ropa de trabajo', color: 'var(--coral-dark)' },
-  salir: { title: 'Ropa para salir', color: 'var(--coral-mid)' },
-  abrigo: { title: 'Abrigo', color: 'var(--sky)' },
-  calzado: { title: 'Calzado', color: 'var(--muted)' },
-  electronica: { title: 'Electrónica', color: 'var(--mustard-dark)' },
-  extras: { title: 'Extras', color: 'var(--sky)' },
-  bebe: { title: 'Bebé', color: 'var(--baby-pink)' },
-  mascota: { title: 'Mascota', color: 'var(--clay)' },
-  ski: { title: 'Esquí', color: 'var(--ice)' },
-  nautica: { title: 'Náutica', color: 'var(--navy)' },
-  buceo: { title: 'Buceo', color: 'var(--abyss)' },
-  camping: { title: 'Camping', color: 'var(--forest)' },
+  documentos: { title: t('Documentos'), color: 'var(--violet)' },
+  higiene: { title: t('Higiene'), color: 'var(--teal)' },
+  ropa: { title: t('Ropa'), color: 'var(--coral)' },
+  trabajo: { title: t('Ropa de trabajo'), color: 'var(--coral-dark)' },
+  salir: { title: t('Ropa para salir'), color: 'var(--coral-mid)' },
+  abrigo: { title: t('Abrigo'), color: 'var(--sky)' },
+  calzado: { title: t('Calzado'), color: 'var(--muted)' },
+  electronica: { title: t('Electrónica'), color: 'var(--mustard-dark)' },
+  extras: { title: t('Extras'), color: 'var(--sky)' },
+  bebe: { title: t('Bebé'), color: 'var(--baby-pink)' },
+  mascota: { title: t('Mascota'), color: 'var(--clay)' },
+  ski: { title: t('Esquí'), color: 'var(--ice)' },
+  nautica: { title: t('Náutica'), color: 'var(--navy)' },
+  buceo: { title: t('Buceo'), color: 'var(--abyss)' },
+  camping: { title: t('Camping'), color: 'var(--forest)' },
 };
 
 export const QUICK_GROUP_ORDER: QuickGroupKey[] = [

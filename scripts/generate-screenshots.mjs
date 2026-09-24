@@ -54,10 +54,8 @@ try {
     const ctx = await browser.newContext({
       viewport: { width: device.width, height: device.height },
       deviceScaleFactor: device.scale,
+      locale: 'es-AR',
     });
-    // La fuente de Google Fonts puede no cargar en un entorno sin salida a
-    // esa red — no es crítico para la captura (cae al fallback del stack).
-    await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
     const page = await ctx.newPage();
 
     // Armamos un viaje de ejemplo con progreso real (no vacío) para que la

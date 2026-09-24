@@ -4,6 +4,33 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## Sin publicar — rama `i18n-en` (versión en inglés, a prueba)
+
+- **La app entera en inglés.** Usa el idioma del dispositivo: español si
+  el teléfono está en español, inglés en cualquier otro caso. Hay un link
+  "English" / "Español" en el pie de "Mis viajes" para cambiarlo a mano,
+  y `?lang=en` en la URL para probar.
+- **Cómo funciona:** el texto en español es la clave (`t('Mis viajes')`),
+  y el inglés vive en `src/i18n/en.ts` (226 frases) y
+  `src/i18n/enItems.ts` (174 ítems y tareas). Los ítems se siguen
+  guardando con su nombre en español y se traducen recién al mostrarse,
+  así que los viajes ya guardados se ven en inglés sin migrar nada. Los
+  ítems que escribió el usuario se muestran tal cual.
+- Frases completas en vez de pedazos pegados ("Next up: toiletries"),
+  plurales correctos en los dos idiomas, fechas con formato del idioma,
+  precio "USD 0.99", y privacidad y soporte traducidos completos.
+- **QA nuevo:**
+  - `npm run qa:i18n`: verifica que cada frase y cada ítem que la app
+    puede generar tenga traducción, que no sobren traducciones y que los
+    `{parámetros}` coincidan.
+  - `npm run qa:en`: recorre 46 pantallas y estados en inglés (formulario,
+    8 tipos de viaje en vista detallada y rápida, paywall, límite gratis,
+    plantillas, deshacer, borrar, backup, distribución, privacidad,
+    soporte, texto para compartir, cambio de idioma). En cada una chequea
+    que no haya texto en español, que no falten traducciones y que nada
+    se salga del ancho: 160/160.
+  - Español sin cambios: 180/180.
+
 ## v1.8.0
 
 **Los viajes y la compra de Pro, más seguros en la app nativa.** Hay

@@ -1,8 +1,10 @@
 import { LegalPage } from '../components/LegalPage';
 import styles from '../components/LegalPage.module.css';
 import { SUPPORT_EMAIL } from '../data/contact';
+import { lang } from '../i18n';
 
 export function Privacy() {
+  if (lang === 'en') return <PrivacyEn />;
   return (
     <LegalPage title="Política de privacidad">
       <p>
@@ -64,6 +66,69 @@ export function Privacy() {
       </p>
 
       <div className={styles.updated}>Última actualización: septiembre de 2026.</div>
+    </LegalPage>
+  );
+}
+
+// Versión en inglés: texto completo aparte (no frase por frase),
+// porque es un documento legal que se lee de corrido.
+function PrivacyEn() {
+  return (
+    <LegalPage title="Privacy policy">
+      <p>
+        Valija is designed so you can build your packing checklist without creating an account or handing over any
+        data. This page explains, in plain words, what information the app touches and what it doesn't.
+      </p>
+
+      <h2>What data we collect</h2>
+      <p>None. Valija has no server of its own: there is nowhere for your data to "travel" to or be stored outside your phone.</p>
+
+      <h2>Where your information lives</h2>
+      <p>
+        Everything you enter — your trips, the items you add yourself, your templates — is stored only in your own
+        device's local storage (the same mechanism any website uses to remember your preferences). It never leaves
+        your phone unless you choose to share it on purpose (for example, with the "Share checklist" button, or with
+        "Move my data between Safari and Home Screen").
+      </p>
+
+      <h2>What we DON'T do</h2>
+      <ul>
+        <li>We don't ask for or store your name, email or any contact details.</li>
+        <li>We don't use analytics that identify people or track your activity.</li>
+        <li>We don't show third-party ads.</li>
+        <li>We don't sell or share information with anyone — we don't have any information to share.</li>
+        <li>We don't access your camera, contacts, location or any other phone permission.</li>
+      </ul>
+
+      <h2>Internet connections</h2>
+      <p>To build and save your trips, Valija doesn't connect to the internet: everything (including the font) ships inside the app.</p>
+
+      <h2>In-app purchase</h2>
+      <p>
+        If you unlock Valija Pro, the purchase is processed by Apple through the App Store — we never see or store
+        your payment information. To confirm the purchase and let you restore it, the app uses RevenueCat, a service
+        that receives the purchase receipt from Apple, tied to an anonymous identifier (not your name, your email or
+        your trips).
+      </p>
+
+      <h2>Deleting your data</h2>
+      <p>
+        You can delete a single trip or all of your trips at any time from "My trips" inside the app. If you also want
+        to remove every local trace, just clear the site/app data from your browser or phone settings.
+      </p>
+
+      <h2>Changes to this policy</h2>
+      <p>
+        If we ever add something that does collect data (for example, anonymous usage analytics to improve the app),
+        this page will be updated before that happens, with the date of the change.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about this? Write to us at <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+
+      <div className={styles.updated}>Last updated: September 2026.</div>
     </LegalPage>
   );
 }

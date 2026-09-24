@@ -4,6 +4,7 @@ import { distributeItems, isPackingTight } from '../data/distribute';
 import { Button } from '../components/Button';
 import { BackArrowIcon, CampingIcon, MaletaIcons } from '../components/icons';
 import { useTrips } from '../hooks/useTrips';
+import { itemLabel, t, tn } from '../i18n';
 import styles from './Distribution.module.css';
 
 export function Distribution() {
@@ -17,9 +18,9 @@ export function Distribution() {
     return (
       <div className={styles.screen}>
         <div style={{ padding: 80 }}>
-          No encontramos ese viaje.
+          {t('No encontramos ese viaje.')}
           <div style={{ marginTop: 16 }}>
-            <Button onClick={() => navigate('/viajes')}>Ir a mis viajes</Button>
+            <Button onClick={() => navigate('/viajes')}>{t('Ir a mis viajes')}</Button>
           </div>
         </div>
       </div>
@@ -34,26 +35,23 @@ export function Distribution() {
     <div className={styles.screen}>
       <div className={styles.header}>
         <div className={styles.headerRow}>
-          <button type="button" className={styles.backBtn} onClick={() => navigate(`/viaje/${trip.id}`)} aria-label="Volver">
+          <button type="button" className={styles.backBtn} onClick={() => navigate(`/viaje/${trip.id}`)} aria-label={t('Volver')}>
             {BackArrowIcon}
           </button>
           <div>
-            <div className={styles.headerTitle}>Cómo repartir tu equipaje</div>
+            <div className={styles.headerTitle}>{t('Cómo repartir tu equipaje')}</div>
             <div className={styles.headerSubtitle}>{labelForMany(MALETA_OPTIONS, bags)}</div>
           </div>
         </div>
       </div>
 
       <div className={styles.note}>
-        💡 Separamos algunas unidades entre valijas para que un imprevisto
-        con una (pérdida, demora) no te deje sin nada de eso. Es solo una
-        sugerencia — no cambia tu checklist ni lo que ya tildaste.
+        💡 {t('Separamos algunas unidades entre valijas para que un imprevisto con una (pérdida, demora) no te deje sin nada de eso. Es solo una sugerencia — no cambia tu checklist ni lo que ya tildaste.')}
       </div>
 
       {tight && (
         <div className={`${styles.note} ${styles.noteWarning}`}>
-          ⚠️ Tenés bastantes ítems que ocupan lugar para las valijas que
-          elegiste — quizás convenga sumar una valija más, o una más grande.
+          ⚠️ {t('Tenés bastantes ítems que ocupan lugar para las valijas que elegiste — quizás convenga sumar una valija más, o una más grande.')}
         </div>
       )}
 
@@ -65,15 +63,15 @@ export function Distribution() {
               <div className={styles.bagHeader}>
                 <div className={styles.bagIcon}>{MaletaIcons[bag]}</div>
                 <span className={styles.bagTitle}>{labelFor(MALETA_OPTIONS, bag)}</span>
-                <span className={styles.bagCount}>{list.length} ítems</span>
+                <span className={styles.bagCount}>{tn(list.length, '{n} ítem', '{n} ítems')}</span>
               </div>
               {list.length === 0 ? (
-                <div className={styles.empty}>Nada asignado acá.</div>
+                <div className={styles.empty}>{t('Nada asignado acá.')}</div>
               ) : (
                 list.map((d, i) => (
                   <div className={styles.item} key={`${d.item.id}-${i}`}>
-                    <span className={styles.itemName}>{d.item.name}</span>
-                    {d.isSplit && <span className={styles.splitTag}>de {d.item.qty}</span>}
+                    <span className={styles.itemName}>{itemLabel(d.item.name)}</span>
+                    {d.isSplit && <span className={styles.splitTag}>{t('de {total}', { total: d.item.qty })}</span>}
                     <span className={styles.itemQty}>×{d.qty}</span>
                   </div>
                 ))
@@ -86,13 +84,13 @@ export function Distribution() {
           <div className={styles.bag}>
             <div className={styles.bagHeader}>
               <div className={styles.bagIcon}>{CampingIcon}</div>
-              <span className={styles.bagTitle}>Camping</span>
-              <span className={styles.bagCount}>{campingItems.length} ítems</span>
+              <span className={styles.bagTitle}>{t('Camping')}</span>
+              <span className={styles.bagCount}>{tn(campingItems.length, '{n} ítem', '{n} ítems')}</span>
             </div>
-            <div className={styles.empty}>Va aparte, no entra en ninguna valija.</div>
+            <div className={styles.empty}>{t('Va aparte, no entra en ninguna valija.')}</div>
             {campingItems.map((item) => (
               <div className={styles.item} key={item.id}>
-                <span className={styles.itemName}>{item.name}</span>
+                <span className={styles.itemName}>{itemLabel(item.name)}</span>
                 <span className={styles.itemQty}>×{item.qty}</span>
               </div>
             ))}

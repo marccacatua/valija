@@ -23,6 +23,7 @@ import { FREE_TRIP_LIMIT, useFeatureFlag, useIsPro } from '../features/flags';
 import { useTrips } from '../hooks/useTrips';
 import { useLastTripId } from '../hooks/useLastTripId';
 import type { TripFormState } from '../types';
+import { t } from '../i18n';
 import styles from './TripForm.module.css';
 
 export function TripForm() {
@@ -106,12 +107,12 @@ export function TripForm() {
     <div className={styles.screen}>
       <div className={styles.header}>
         <div className={styles.headerRow}>
-          <button type="button" className={styles.backBtn} onClick={() => navigate('/viajes')} aria-label="Volver">
+          <button type="button" className={styles.backBtn} onClick={() => navigate('/viajes')} aria-label={t('Volver')}>
             {BackArrowIcon}
           </button>
           <div>
-            <div className={styles.headerTitle}>Nuevo viaje</div>
-            <div className={styles.headerSubtitle}>Todo con un toque · sin escribir nada</div>
+            <div className={styles.headerTitle}>{t('Nuevo viaje')}</div>
+            <div className={styles.headerSubtitle}>{t('Todo con un toque · sin escribir nada')}</div>
           </div>
         </div>
       </div>
@@ -120,31 +121,30 @@ export function TripForm() {
         <div className={styles.body}>
           <div className={styles.limitState}>
             <Mascot size={64} />
-            <div className={styles.limitTitle}>Llegaste al límite de {FREE_TRIP_LIMIT} viajes gratis</div>
+            <div className={styles.limitTitle}>{t('Llegaste al límite de {n} viajes gratis', { n: FREE_TRIP_LIMIT })}</div>
             <div className={styles.limitDesc}>
-              Borrá o pausá alguno de tus viajes guardados en "Mis viajes" para hacer lugar, o desbloqueá viajes
-              ilimitados con Valija Pro.
+              {t('Borrá o pausá alguno de tus viajes guardados en "Mis viajes" para hacer lugar, o desbloqueá viajes ilimitados con Valija Pro.')}
             </div>
-            <Button onClick={() => setShowPaywall(true)}>Desbloquear Valija Pro</Button>
+            <Button onClick={() => setShowPaywall(true)}>{t('Desbloquear Valija Pro')}</Button>
             <Button variant="inverted" onClick={() => navigate('/viajes')}>
-              Ir a mis viajes
+              {t('Ir a mis viajes')}
             </Button>
           </div>
         </div>
       ) : (
         <div className={styles.body}>
           <div>
-            <SectionLabel hint="opcional">¿A dónde?</SectionLabel>
+            <SectionLabel hint={t('opcional')}>{t('¿A dónde?')}</SectionLabel>
             <input
               className={styles.nameInput}
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
-              placeholder="Ej. Bariloche"
+              placeholder={t('Ej. Bariloche')}
             />
           </div>
 
           <div>
-            <SectionLabel>Motivo</SectionLabel>
+            <SectionLabel>{t('Motivo')}</SectionLabel>
             <div className={styles.wrap}>
               {MOTIVO_OPTIONS.map((opt) => (
                 <OptionChip
@@ -158,7 +158,7 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel hint="elegí uno o varios">Destino</SectionLabel>
+            <SectionLabel hint={t('elegí uno o varios')}>{t('Destino')}</SectionLabel>
             <div className={styles.grid3}>
               {DEST_OPTIONS.map((opt) => (
                 <OptionCard
@@ -173,7 +173,7 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Clima</SectionLabel>
+            <SectionLabel>{t('Clima')}</SectionLabel>
             <div className={styles.grid4}>
               {CLIMA_OPTIONS.map((opt) => (
                 <OptionCard
@@ -190,7 +190,7 @@ export function TripForm() {
 
           {form.motivo !== 'trabajo' && (
             <div>
-              <SectionLabel>Tipo de turismo</SectionLabel>
+              <SectionLabel>{t('Tipo de turismo')}</SectionLabel>
               <div className={styles.wrap}>
                 {TURISMO_OPTIONS.map((opt) => (
                   <OptionChip
@@ -206,7 +206,7 @@ export function TripForm() {
                 <>
                   <div className={styles.wrap} style={{ marginTop: 8 }}>
                     <OptionChip
-                      label="Llevo mi propio equipo"
+                      label={t('Llevo mi propio equipo')}
                       selected={form.equipoPropio}
                       onSelect={() => set('equipoPropio', !form.equipoPropio)}
                     />
@@ -214,19 +214,19 @@ export function TripForm() {
                   <div className={styles.equipoHint}>
                     {form.turismo === 'ski'
                       ? form.equipoPropio
-                        ? 'Sumamos esquís, botas y casco a tu lista.'
-                        : 'Asumimos que alquilás esquís, botas y casco allá.'
+                        ? t('Sumamos esquís, botas y casco a tu lista.')
+                        : t('Asumimos que alquilás esquís, botas y casco allá.')
                       : form.equipoPropio
-                        ? 'Sumamos traje, chaleco, regulador y aletas. El tubo y el lastre se alquilan siempre.'
-                        : 'Asumimos que alquilás traje, chaleco, regulador, aletas, tubo y lastre allá.'}
+                        ? t('Sumamos traje, chaleco, regulador y aletas. El tubo y el lastre se alquilan siempre.')
+                        : t('Asumimos que alquilás traje, chaleco, regulador, aletas, tubo y lastre allá.')}
                   </div>
                 </>
               )}
               {form.turismo === 'ski' && form.clima === 'calor' && (
                 <div className={styles.climaWarning}>
-                  <span>¿Esquí con calor? En la nieve suele hacer frío.</span>
+                  <span>{t('¿Esquí con calor? En la nieve suele hacer frío.')}</span>
                   <button type="button" className={styles.climaFix} onClick={() => set('clima', 'frio')}>
-                    Cambiar a Frío
+                    {t('Cambiar a Frío')}
                   </button>
                 </div>
               )}
@@ -234,15 +234,15 @@ export function TripForm() {
           )}
 
           <div>
-            <SectionLabel>Vestuario</SectionLabel>
+            <SectionLabel>{t('Vestuario')}</SectionLabel>
             <div className={styles.wrap}>
               <OptionChip
-                label="Sumar vestidos / pollera"
+                label={t('Sumar vestidos / pollera')}
                 selected={form.vestidos}
                 onSelect={() => set('vestidos', !form.vestidos)}
               />
               <OptionChip
-                label="Voy a hacer deporte"
+                label={t('Voy a hacer deporte')}
                 selected={form.deporte}
                 onSelect={() => set('deporte', !form.deporte)}
               />
@@ -250,15 +250,15 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel hint="opcional, elegí uno o los dos">¿Viajás con niño chico y/o mascota?</SectionLabel>
+            <SectionLabel hint={t('opcional, elegí uno o los dos')}>{t('¿Viajás con niño chico y/o mascota?')}</SectionLabel>
             <div className={styles.grid2}>
-              <OptionCard label="Niño chico" icon={NinoIcon} selected={form.bebe} locked={!canExtraCategories} onSelect={selectBebe} />
-              <OptionCard label="Mascota" icon={MascotaIcon} selected={form.mascota} locked={!canExtraCategories} onSelect={selectMascota} />
+              <OptionCard label={t('Niño chico')} icon={NinoIcon} selected={form.bebe} locked={!canExtraCategories} onSelect={selectBebe} />
+              <OptionCard label={t('Mascota')} icon={MascotaIcon} selected={form.mascota} locked={!canExtraCategories} onSelect={selectMascota} />
             </div>
           </div>
 
           <div>
-            <SectionLabel>Alojamiento</SectionLabel>
+            <SectionLabel>{t('Alojamiento')}</SectionLabel>
             <div className={styles.wrap}>
               {ALOJ_OPTIONS.map((opt) => (
                 <OptionChip
@@ -272,7 +272,7 @@ export function TripForm() {
             </div>
             <div className={styles.wrap} style={{ marginTop: 8 }}>
               <OptionChip
-                label="Pienso lavar ropa en el viaje"
+                label={t('Pienso lavar ropa en el viaje')}
                 selected={form.lavaRopa}
                 onSelect={() => set('lavaRopa', !form.lavaRopa)}
               />
@@ -280,7 +280,7 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Transporte</SectionLabel>
+            <SectionLabel>{t('Transporte')}</SectionLabel>
             <div className={styles.wrap}>
               {TRANSPORTE_OPTIONS.map((opt) => (
                 <OptionChip
@@ -294,12 +294,12 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Duración</SectionLabel>
+            <SectionLabel>{t('Duración')}</SectionLabel>
             <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
           </div>
 
           <div>
-            <SectionLabel hint="elegí una o varias">Tipo de maleta</SectionLabel>
+            <SectionLabel hint={t('elegí una o varias')}>{t('Tipo de maleta')}</SectionLabel>
             <div className={styles.grid3}>
               {MALETA_OPTIONS.map((opt) => (
                 <OptionCard
@@ -319,7 +319,7 @@ export function TripForm() {
 
       {!atFreeLimit && (
         <div className={styles.footer}>
-          <Button onClick={handleGenerate}>Armar mi valija · {itemsPreview} ítems</Button>
+          <Button onClick={handleGenerate}>{t('Armar mi valija · {n} ítems', { n: itemsPreview })}</Button>
         </div>
       )}
 

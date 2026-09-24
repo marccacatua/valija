@@ -1,6 +1,7 @@
 import type { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLastTripId } from '../hooks/useLastTripId';
+import { t } from '../i18n';
 import styles from './BottomNav.module.css';
 
 type Tab = 'checklist' | 'nuevo' | 'viajes';
@@ -34,9 +35,9 @@ export function BottomNav({ active }: { active: Tab }) {
   const goChecklist = () => navigate(lastTripId ? `/viaje/${lastTripId}` : '/nuevo');
 
   const tabs: { key: Tab; label: string; onClick: () => void }[] = [
-    { key: 'checklist', label: 'Valija', onClick: goChecklist },
-    { key: 'nuevo', label: 'Nuevo', onClick: () => navigate('/nuevo') },
-    { key: 'viajes', label: 'Viajes', onClick: () => navigate('/viajes') },
+    { key: 'checklist', label: t('Valija'), onClick: goChecklist },
+    { key: 'nuevo', label: t('Nuevo'), onClick: () => navigate('/nuevo') },
+    { key: 'viajes', label: t('Viajes'), onClick: () => navigate('/viajes') },
   ];
 
   return (
