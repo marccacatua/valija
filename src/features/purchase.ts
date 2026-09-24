@@ -1,5 +1,5 @@
 import { Capacitor } from '@capacitor/core';
-import { useIsPro } from './flags';
+import { useIsPro, writeIsPro } from './flags';
 
 export const PRO_PRICE_LABEL = 'USD 0,99';
 
@@ -23,6 +23,27 @@ function loadPurchases() {
     });
   }
   return configuring;
+}
+
+/**
+ * Se llama una vez al abrir la app nativa (ver main.tsx), sin bloquear
+ * la primera pantalla. Le pregunta a RevenueCat si la compra de Pro sigue
+ * vigente y actualiza el flag local:
+ * - si el storage se perdió pero la compra existe → vuelve Pro solo, sin
+ *   tener que tocar "Restaurar compras";
+ * - si Apple reembolsó la compra → se apaga Pro.
+ * Si la consulta falla (sin internet, error del SDK) no se toca nada:
+ * nunca le sacamos Pro a alguien por un error de red.
+ */
+export async function syncProEntitlement(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const { Purchases } = await loadPurchases();
+    const { customerInfo } = await Purchases.getCustomerInfo();
+    writeIsPro(Boolean(customerInfo.entitlements.active[ENTITLEMENT_ID]));
+  } catch {
+    // sin cambios
+  }
 }
 
 /**

@@ -4,6 +4,28 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.8.0
+
+**Los viajes y la compra de Pro, más seguros en la app nativa.** Hay
+que probarlo en un iPhone antes de publicar (ver ROADMAP.md).
+
+- **Guardado durable:** en la app de iOS, todo lo que se guarda (viajes,
+  plantillas, Pro, último viaje) se copia también a Preferences
+  (UserDefaults), que iOS no borra por falta de espacio y que entra en el
+  backup de iCloud y en la migración a un iPhone nuevo. Al abrir la app
+  se restaura desde ahí. Quienes vengan de una versión anterior se migran
+  solos la primera vez que la abran. En la web no cambia nada.
+- **Pro se verifica al abrir la app:** se le consulta a RevenueCat en
+  segundo plano. Si el almacenamiento se había perdido, Pro vuelve solo;
+  si Apple reembolsó la compra, se apaga. Si no hay internet, no se toca
+  nada.
+- **Fix: la vibración (haptics) no estaba incluida en el proyecto iOS.**
+  Faltaba sincronizar el plugin (`npx cap sync ios`). Ya quedó en
+  `Package.swift` junto con Preferences.
+- Manifiesto de privacidad: se declara el uso de UserDefaults (motivo
+  CA92.1), que Apple exige.
+- QA: Playwright 180/180.
+
 ## v1.7.1
 
 Primera tanda de la revisión general de código (seguridad, performance,

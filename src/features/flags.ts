@@ -1,4 +1,5 @@
 import { useCallback, useSyncExternalStore } from 'react';
+import { persistItem } from '../data/storage';
 
 /**
  * Registro central de features "gateables" — un cambio de flag acá en vez
@@ -12,11 +13,12 @@ import { useCallback, useSyncExternalStore } from 'react';
  * checklist compartida es publicidad gratis de la app para quien la
  * recibe, no tiene sentido trabarlo).
  *
- * Importante: esto vive en un simple booleano de localStorage (`isPro`),
- * todavía no hay compra real. El botón "Desbloquear Valija Pro" (ver
- * `features/purchase.ts` y `PaywallSheet`) ya funciona de punta a punta,
- * pero hoy solo prende el flag sin cobrar nada — placeholder hasta
- * conectar StoreKit/RevenueCat (ver el roadmap de publicación).
+ * El flag `isPro` se guarda localmente (localStorage, espejado en
+ * Preferences en la app nativa, ver data/storage.ts). En la app nativa lo
+ * prende una compra real vía RevenueCat y se vuelve a verificar contra
+ * RevenueCat cada vez que se abre la app (`syncProEntitlement` en
+ * features/purchase.ts). En la web no hay compra posible: se desbloquea
+ * gratis.
  */
 export type FeatureKey =
   | 'unlimitedTrips'
@@ -71,12 +73,10 @@ function readIsPro(): boolean {
   }
 }
 
-function writeIsPro(value: boolean) {
-  try {
-    window.localStorage.setItem(IS_PRO_KEY, JSON.stringify(value));
-  } catch {
-    // si no se puede persistir, esta pestaña sigue funcionando en memoria
-  }
+/** Exportada para `syncProEntitlement` (features/purchase.ts), que la
+ * llama fuera de React al abrir la app. */
+export function writeIsPro(value: boolean) {
+  persistItem(IS_PRO_KEY, JSON.stringify(value));
   listeners.forEach((notify) => notify());
 }
 

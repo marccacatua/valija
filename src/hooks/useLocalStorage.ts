@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { persistItem } from '../data/storage';
 
 type SetValue<T> = T | ((prev: T) => T);
 
@@ -22,7 +23,7 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
       setValue((prev) => {
         const resolved = typeof next === 'function' ? (next as (p: T) => T)(prev) : next;
         try {
-          window.localStorage.setItem(key, JSON.stringify(resolved));
+          persistItem(key, JSON.stringify(resolved));
         } catch {
           // idem: si no se puede persistir, la sesión sigue funcionando en memoria
         }

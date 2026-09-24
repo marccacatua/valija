@@ -3,6 +3,8 @@ import { createRoot } from 'react-dom/client'
 import './fonts.css'
 import './index.css'
 import App from './App.tsx'
+import { hydrateStorage } from './data/storage'
+import { syncProEntitlement } from './features/purchase'
 
 // Atajo para desbloquear Pro por link, sin devtools — hace falta mientras
 // no existe compra real vía StoreKit (ver features/flags.ts). Abrir la app
@@ -17,8 +19,14 @@ try {
   // localStorage puede fallar (modo privado, cuota llena) — no es crítico
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+// En la app nativa, primero se restauran los datos guardados de forma
+// durable (ver data/storage.ts) y recién después se muestra la app; la
+// verificación de Pro corre después, en segundo plano.
+hydrateStorage().finally(() => {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  )
+  void syncProEntitlement()
+})

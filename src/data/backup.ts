@@ -1,4 +1,5 @@
 import type { ItemTemplate, Trip } from '../types';
+import { persistItem } from './storage';
 
 const TRIPS_KEY = 'valija:trips';
 const TEMPLATES_KEY = 'valija:templates';
@@ -65,16 +66,16 @@ export function importBackup(raw: string): ImportResult {
   const currentTrips = readJSON<Trip[]>(TRIPS_KEY, []);
   const currentTripIds = new Set(currentTrips.map((t) => t.id));
   const newTrips = payload.trips.filter((t) => !currentTripIds.has(t.id));
-  localStorage.setItem(TRIPS_KEY, JSON.stringify([...currentTrips, ...newTrips]));
+  persistItem(TRIPS_KEY, JSON.stringify([...currentTrips, ...newTrips]));
 
   const currentTemplates = readJSON<ItemTemplate[]>(TEMPLATES_KEY, []);
   const currentTemplateIds = new Set(currentTemplates.map((t) => t.id));
   const newTemplates = (payload.templates ?? []).filter((t) => !currentTemplateIds.has(t.id));
-  localStorage.setItem(TEMPLATES_KEY, JSON.stringify([...currentTemplates, ...newTemplates]));
+  persistItem(TEMPLATES_KEY, JSON.stringify([...currentTemplates, ...newTemplates]));
 
   const wasAlreadyPro = readJSON<boolean>(IS_PRO_KEY, false);
   const unlockedPro = !wasAlreadyPro && Boolean(payload.isPro);
-  if (payload.isPro) localStorage.setItem(IS_PRO_KEY, 'true');
+  if (payload.isPro) persistItem(IS_PRO_KEY, 'true');
 
   return { addedTrips: newTrips.length, addedTemplates: newTemplates.length, unlockedPro };
 }
