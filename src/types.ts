@@ -18,9 +18,13 @@ export interface TripFormState {
   /** Array porque se puede combinar más de un destino en el mismo viaje:
    * playa + montaña, playa + ciudad, etc. */
   dest: DestKey[];
-  clima: ClimaKey;
+  /** Array: un viaje largo puede pasar por más de un clima (calor en la
+   * playa y frío en la montaña). La lista suma lo de cada uno. */
+  clima: ClimaKey[];
   motivo: MotivoKey;
-  turismo: TurismoKey;
+  /** Array: en un mismo viaje se pueden hacer varias cosas (relax y
+   * esquí, cultural y salidas...). Se ignora con motivo "trabajo". */
+  turismo: TurismoKey[];
   aloj: AlojKey;
   transporte: TransporteKey;
   /** Array porque se puede viajar con más de una: carry-on + mochila, bodega + mochila, etc. */

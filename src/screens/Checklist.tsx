@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
-import { isPackingTight } from '../data/distribute';
+import { fitToBags, spaceSummary } from '../data/distribute';
 import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
 import { packedCount, progressNote, progressPct, shareText, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
@@ -12,6 +12,7 @@ import { ChangeMaletasSheet } from '../components/ChangeMaletasSheet';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { BackArrowIcon, EditIcon, LockIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
+import { SpaceMeter } from '../components/SpaceMeter';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { UndoSnackbar } from '../components/UndoSnackbar';
@@ -34,6 +35,7 @@ export function Checklist() {
     toggleItem,
     bumpItem,
     setItemsDone,
+    setItemQtys,
     renameTrip,
     updateMaletas,
     toggleHomeTask,
@@ -72,6 +74,7 @@ export function Checklist() {
     | { kind: 'item'; data: PackingItem; index: number }
     | { kind: 'homeTask'; data: HomeTask; index: number }
     | { kind: 'boatTask'; data: HomeTask; index: number }
+    | { kind: 'qty'; data: Record<string, number>; removed: number }
     | null
   >(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -218,6 +221,7 @@ export function Checklist() {
     if (pendingUndo?.kind === 'item') restoreItem(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'boatTask') restoreBoatTask(trip.id, pendingUndo.data, pendingUndo.index);
+    else if (pendingUndo?.kind === 'qty') setItemQtys(trip.id, pendingUndo.data);
     setPendingUndo(null);
   };
 
@@ -247,6 +251,18 @@ export function Checklist() {
   // que usa tripTitle(), útil como placeholder para no mostrar un campo
   // en blanco sin ninguna pista de qué va a pasar
   const autoTitle = tripTitle({ ...trip.form, name: '' });
+
+  // Espacio en las valijas (ver data/volume.ts) y, si no entra, el plan
+  // para bajar cantidades de prendas que se pueden lavar y repetir.
+  const space = spaceSummary(items, trip.form.maletas);
+  const fitPlan = space.overflow ? fitToBags(items, trip.form.maletas) : null;
+  const handleFit = () => {
+    if (!fitPlan?.fits) return;
+    const previous: Record<string, number> = {};
+    for (const id of Object.keys(fitPlan.qtys)) previous[id] = items.find((i) => i.id === id)!.qty;
+    setItemQtys(trip.id, fitPlan.qtys);
+    armUndo({ kind: 'qty', data: previous, removed: fitPlan.removed });
+  };
 
   const packed = packedCount(items);
   const pct = progressPct(items);
@@ -444,14 +460,12 @@ export function Checklist() {
         </div>
       </div>
 
-      {isPackingTight(items, trip.form.maletas) && (
-        <div className={styles.spaceNote}>
-          ⚠️ {t('Tenés bastantes ítems que ocupan lugar para las valijas que elegiste — quizás convenga sumar una valija más, o una más grande.')}
-          <button type="button" className={styles.spaceNoteAction} onClick={() => setShowChangeMaletas(true)}>
-            {t('Cambiar valijas')}
-          </button>
-        </div>
-      )}
+      <SpaceMeter
+        summary={space}
+        fitPlan={fitPlan}
+        onFit={handleFit}
+        onChangeBags={() => setShowChangeMaletas(true)}
+      />
 
       <div className={styles.viewToggle}>
         <button
@@ -579,9 +593,11 @@ export function Checklist() {
       {pendingUndo && (
         <UndoSnackbar
           message={
-            pendingUndo.kind === 'item'
-              ? t('"{item}" borrado', { item: itemLabel(pendingUndo.data.name) })
-              : t('"{item}" borrada', { item: itemLabel(pendingUndo.data.label) })
+            pendingUndo.kind === 'qty'
+              ? tn(pendingUndo.removed, 'Llevás {n} prenda menos: vas a lavar en el viaje', 'Llevás {n} prendas menos: vas a lavar en el viaje')
+              : pendingUndo.kind === 'item'
+                ? t('"{item}" borrado', { item: itemLabel(pendingUndo.data.name) })
+                : t('"{item}" borrada', { item: itemLabel(pendingUndo.data.label) })
           }
           onUndo={handleUndo}
         />

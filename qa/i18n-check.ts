@@ -70,13 +70,24 @@ for (const dest of opts.dest)
               for (const dias of opts.dias)
                 for (const flags of [false, true]) {
                   const f = {
-                    ...DEFAULT_FORM, dest: [...dest], clima, motivo, turismo, aloj, transporte, maletas: [...maletas], dias,
+                    ...DEFAULT_FORM, dest: [...dest], clima: [clima], motivo, turismo: [turismo], aloj, transporte, maletas: [...maletas], dias,
                     vestidos: flags, lavaRopa: flags, bebe: flags, mascota: flags, deporte: flags, equipoPropio: flags,
                   } as TripFormState;
                   for (const it of buildRawItems(f)) itemKeys.add(it.name);
                   for (const task of buildHomeChecklist(f)) itemKeys.add(task.label);
                   for (const task of buildBoatChecklist(f)) itemKeys.add(task.label);
                 }
+
+// Combinaciones múltiples de clima y turismo (por si alguna regla solo
+// aparece al combinar).
+for (const flags of [false, true]) {
+  const f = {
+    ...DEFAULT_FORM, dest: ['playa', 'montana', 'ciudad'], clima: [...opts.clima], turismo: [...opts.turismo], dias: 14,
+    maletas: ['carry', 'bodega', 'mochila'], vestidos: flags, lavaRopa: flags, bebe: flags, mascota: flags, deporte: flags, equipoPropio: flags,
+  } as TripFormState;
+  for (const it of buildRawItems(f)) itemKeys.add(it.name);
+  for (const task of buildBoatChecklist(f)) itemKeys.add(task.label);
+}
 
 // --- 3. Comparación
 const params = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');

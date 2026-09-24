@@ -31,6 +31,78 @@ junto con el número de versión en `package.json` (visible en el pie de
     se salga del ancho: 160/160.
   - Español sin cambios: 180/180.
 
+## v1.10.0
+
+**Clima y turismo múltiples, espacio en litros y ajuste para que entre.**
+Une las ramas `multi-turismo-clima` y `espacio-litros`, que el usuario
+aprobó, y suma:
+
+- **"Ajustar cantidades para que entre":** cuando las valijas no alcanzan,
+  la tarjeta de espacio dice cuántas prendas menos harían falta y ofrece
+  bajarlas con un toque. Baja de a una la prenda reducible más grande
+  (remeras, ropa interior, medias, pantalones, buzos, primera piel...),
+  sin pasar de un mínimo razonable y sin tocar lo ya tildado. Aparece un
+  aviso con "Deshacer". Si ni bajando todo al mínimo entra, lo dice y
+  sugiere sumar una valija. Por ejemplo, 7 días con calor + frío en
+  carry-on pasa de 115 % a 99 % con 5 prendas menos.
+- **Shorts con varios climas:** si además del calor hay otro clima, se
+  lleva la mitad de shorts (tope 2) en vez de lo de un viaje solo de
+  calor.
+- QA: combinatorio sin errores, con reglas nuevas para el ajuste (nunca
+  baja de 1, no toca lo tildado, si dice que entra entra, no baja nada si
+  ya entraba). Playwright 217/217.
+
+### Selección múltiple (ex rama `multi-turismo-clima`)
+
+- **Clima y tipo de turismo se pueden elegir de a varios**, igual que el
+  destino ("elegí uno o varios", siempre queda al menos uno). Pensado
+  para viajes largos: por ejemplo, calor + frío, o relax + cultural +
+  esquí.
+- **La lista suma lo de cada opción**, salvo tres reemplazos a propósito:
+  - Con frío, el buzo liviano de "templado" sobra, porque ya van los
+    buzos y la campera.
+  - Con esquí, sigue sin bufanda, botas de abrigo ni rompeviento, porque
+    los cubre el equipo de esquí. El rompeviento vuelve si además se
+    navega.
+  - En buceo va un solo traje: el del clima más frío.
+- **La ropa de calle baja solo si el viaje es únicamente de esquí.** Con
+  esquí + otra actividad, esos otros días se usa ropa normal.
+- Esquí con calor sin frío: el aviso ahora ofrece **"Sumar Frío"** en vez
+  de reemplazar el clima. "Llevo mi propio equipo" con esquí y buceo a la
+  vez explica los dos equipos.
+- **Viajes ya guardados:** se migran solos al abrirlos (un clima y un
+  turismo pasan a ser una lista de uno), sin perder nada. Hay un test con
+  un viaje viejo de navegar.
+- QA: combinatorio sin errores, con 840 combinaciones múltiples nuevas
+  que verifican que la lista incluya todo lo de cada opción suelta.
+  Playwright 203/203.
+
+### Espacio en litros (ex rama `espacio-litros`)
+
+- **Cada ítem tiene un tamaño estándar en litros** (`src/data/volume.ts`):
+  remera 0,8 L, pantalón 1,5 L, campera abrigada 6 L, zapatillas 4,5 L,
+  BCD 10 L, etc. Los ítems que agrega el usuario usan un valor por
+  categoría. Las valijas tienen una capacidad útil: mochila 20 L,
+  carry-on 38 L y bodega 75 L.
+- **Lo que llevás puesto no cuenta:** el abrigo más grande, el calzado más
+  grande, un pantalón y una remera.
+- **Checklist:** en lugar del aviso viejo aparece "Espacio en tu carry-on ·
+  70 %" con una barra. Hasta 85 % se ve verde, hasta 100 % mostaza ("va
+  justo") y coral cuando no entra, con el link "Cambiar valijas".
+- **Reparto:** cada valija muestra sus litros ("9,6 de 38 L · 25 %"). Si una
+  se pasa y otra tiene lugar, se mueven ítems enteros, los más grandes
+  primero. La sección "Camping" pasa a ser "Va aparte" y suma el
+  cochecito, la butaca, la transportadora y los esquís, que no van dentro
+  de ninguna valija.
+- Reemplaza al aviso anterior por "puntos de bulto", que no contaba
+  cantidades (30 remeras no pesaban nada) y trataba igual a una mochila y
+  a una bodega. Ejemplos: 7 días de playa en carry-on queda al 70 %; esquí
+  con frío en carry-on, al 113 % (no entra); esquí en bodega + mochila ya
+  no da un falso aviso.
+- QA: combinatorio sin errores. Se agregaron chequeos de que los litros
+  cuadren en 5,2 millones de repartos y de que cada ítem posible tenga su
+  tamaño. Playwright 195/195.
+
 ## v1.9.0
 
 **Cantidades más certeras** (salió de la revisión de la lógica).

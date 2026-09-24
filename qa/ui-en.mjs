@@ -134,8 +134,8 @@ try {
     await checkScreen(page, 'Formulario - esquí alquilado + aviso de calor');
     await click(page, "I'm bringing my own gear");
     await checkScreen(page, 'Formulario - esquí equipo propio');
-    await click(page, 'Switch to Cold');
-    assert((await page.locator('text=Skiing in hot weather?').count()) === 0, '"Switch to Cold" saca el aviso');
+    await click(page, 'Add Cold');
+    assert((await page.locator('text=Skiing in hot weather?').count()) === 0, '"Add Cold" saca el aviso');
     await click(page, 'Diving');
     await checkScreen(page, 'Formulario - buceo equipo propio');
     await click(page, "I'm bringing my own gear");
@@ -278,6 +278,20 @@ try {
     await click(page, 'Detailed');
     const left = await note();
     assert(/items? left|All packed/.test(left), 'Progreso en inglés después de tildar todo en la vista rápida', left);
+    await ctx.close();
+  }
+
+  // --- 4b. Espacio en litros y "Adjust quantities so it fits"
+  {
+    const { ctx, page } = await freshPage(browser);
+    await createTrip(page, ['Mountains', 'Cold', 'Culture', 'Week · 7']);
+    await page.waitForSelector('text=Not everything fits.');
+    await checkScreen(page, 'Espacio: no entra, con ajuste');
+    await click(page, 'Adjust quantities so it fits');
+    await page.waitForSelector("text=/fewer pieces? of clothing: you'll do laundry/");
+    await checkScreen(page, 'Espacio: después de ajustar (aviso con Undo)');
+    const liters = await page.locator('text=/About \\d+(\\.\\d)? L of 38 L/').count();
+    assert(liters === 1, 'Los litros se muestran en inglés con punto decimal', `count=${liters}`);
     await ctx.close();
   }
 

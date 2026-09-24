@@ -1,4 +1,4 @@
-import type { CategoryKey, PackingItem, TripFormState } from '../types';
+import type { CategoryKey, ClimaKey, PackingItem, TripFormState, TurismoKey } from '../types';
 
 interface RawItem {
   cat: CategoryKey;
@@ -87,15 +87,24 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // completa como en un viaje normal. Se aplica un tope propio, más bajo
   // que el que ya calcula lavaRopa (si se dan las dos condiciones juntas
   // gana la más restrictiva).
-  const isSki = leisure && f.turismo === 'ski';
-  const isNavegar = leisure && f.turismo === 'navegar';
-  const isBuceo = leisure && f.turismo === 'buceo';
-  add('ropa', 'Remeras', cap(isSki ? Math.min(remerasDias, 4) : remerasDias, 8));
+  // Clima y turismo admiten varias opciones (un viaje largo puede tener
+  // playa con calor y una escapada a la nieve): cada regla pregunta si esa
+  // opción está entre las elegidas, y la lista suma lo de todas.
+  const hasClima = (c: ClimaKey) => f.clima.includes(c);
+  const turismos = leisure ? f.turismo : [];
+  const hasTurismo = (t: TurismoKey) => turismos.includes(t);
+  const isSki = hasTurismo('ski');
+  const isNavegar = hasTurismo('navegar');
+  const isBuceo = hasTurismo('buceo');
+  // La ropa de calle solo baja con esquí cuando el viaje es SOLO de esquí:
+  // si además hay ciudad, cultura, playa..., esos días se usa ropa normal.
+  const skiOnly = isSki && turismos.length === 1;
+  add('ropa', 'Remeras', cap(skiOnly ? Math.min(remerasDias, 4) : remerasDias, 8));
   add('ropa', 'Ropa interior', cap(mudaDias + 1, 10));
   // Con esquí, los días de pista van con "Medias de ski" (categoría ski):
   // las comunes solo hacen falta para las noches y los días de viaje.
   // Sin este tope, 7 días de esquí listaban 7 pares comunes + 6 de ski.
-  add('ropa', 'Medias', cap(isSki ? Math.min(mudaDias, 3) : mudaDias, 8));
+  add('ropa', 'Medias', cap(skiOnly ? Math.min(mudaDias, 3) : mudaDias, 8));
   // Lavando ropa los pantalones no necesitan escalar con la duración del
   // viaje: se reusan varios días antes de lavarse, a diferencia de
   // remeras/interior/medias.
@@ -104,10 +113,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // general de 4 cubre a quien desmarca "lavar ropa" en un viaje largo.
   const pantalonesSinLavar = cap(Math.max(1, Math.ceil(d / 4)), 4);
   const pantalonesBase = f.lavaRopa ? Math.min(pantalonesSinLavar, 2) : pantalonesSinLavar;
-  add('ropa', 'Pantalones', isSki ? Math.min(pantalonesBase, 2) : pantalonesBase);
+  add('ropa', 'Pantalones', skiOnly ? Math.min(pantalonesBase, 2) : pantalonesBase);
   add('ropa', 'Pijama', d > 5 ? 2 : 1);
   add('ropa', 'Cinturón');
-  if (f.clima === 'frio') {
+  if (hasClima('frio')) {
     // Con esquí se mantiene la ropa de abrigo "de calle" que se usa fuera
     // de la pista (salir a comer, pasear por el pueblo): campera abrigada
     // y gorro y guantes. Lo que el equipo de ski ya cubre se saca: el
@@ -121,29 +130,36 @@ export function buildRawItems(f: TripFormState): RawItem[] {
       add('ropa', 'Botas o calzado de abrigo');
     }
   }
-  if (f.clima === 'templado') add('ropa', 'Buzo o campera liviana');
+  // Con frío ya están los buzos y la campera abrigada: el buzo liviano de
+  // los días templados sobra.
+  if (hasClima('templado') && !hasClima('frio')) add('ropa', 'Buzo o campera liviana');
   // También para navegar: en el mar hace falta un rompeviento/impermeable
   // igual que en la montaña o con lluvia — mismo ítem, no uno propio de
   // "náutica" (evita duplicar algo que ya existe).
   // Con esquí no: la campera de nieve ya es impermeable y cortaviento.
-  if ((f.clima === 'lluvia' || f.dest.includes('montana') || isNavegar) && !isSki) add('ropa', 'Rompeviento impermeable');
-  if (f.dest.includes('playa') || f.clima === 'calor') {
+  // Navegando hace falta siempre (en el barco no se usa la campera de nieve).
+  if (((hasClima('lluvia') || f.dest.includes('montana')) && !isSki) || isNavegar) add('ropa', 'Rompeviento impermeable');
+  if (f.dest.includes('playa') || hasClima('calor')) {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
-    add('ropa', 'Shorts o bermudas', cap(Math.ceil(d / 2), 4));
+    // Si además hay otro clima (un tramo con frío o templado), no todos los
+    // días son de short: la mitad de lo que se llevaría a un viaje solo de
+    // calor.
+    const soloCalor = f.clima.every((c) => c === 'calor');
+    add('ropa', 'Shorts o bermudas', soloCalor ? cap(Math.ceil(d / 2), 4) : cap(Math.ceil(d / 4), 2));
   }
   if (f.dest.includes('playa')) add('ropa', 'Ojotas o sandalias');
   if (f.vestidos) add('ropa', 'Vestido o pollera', Math.max(1, Math.ceil(d / 3)));
   // En un viaje de esquí a la montaña, para caminar ya están las botas de
   // nieve (categoría ski): las zapatillas de trekking sobran.
-  if ((f.dest.includes('montana') && !isSki) || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
-  if (leisure && f.turismo === 'aventura') add('ropa', 'Short o pantalón de trekking');
+  if ((f.dest.includes('montana') && !isSki) || hasTurismo('aventura')) add('ropa', 'Zapatillas de trekking');
+  if (hasTurismo('aventura')) add('ropa', 'Short o pantalón de trekking');
   // Turismo "aventura" ya asume que hacés actividad física, pero el
   // checkbox de deporte cubre al resto (trabajo con gimnasio en el
   // hotel, relax en la playa pero corriendo todas las mañanas, etc.) —
   // se unifica para no duplicar "Remeras deportivas" si se dan las dos
   // condiciones juntas.
-  const haceDeporte = f.deporte || (leisure && f.turismo === 'aventura');
+  const haceDeporte = f.deporte || hasTurismo('aventura');
   if (haceDeporte) {
     // Deportivas se ensucian/transpiran más rápido que la ropa normal —
     // escala con los días en vez de quedar fija en 2, con un piso de 2
@@ -151,7 +167,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Remeras deportivas', cap(Math.max(2, Math.ceil(d / 2)), 5));
     add('ropa', 'Short deportivo', cap(Math.ceil(d / 3), 3));
     addSingle('ropa', 'Championes para correr');
-    if (f.clima === 'frio' || f.clima === 'lluvia') addSingle('ropa', 'Campera liviana para correr');
+    if (hasClima('frio') || hasClima('lluvia')) addSingle('ropa', 'Campera liviana para correr');
   }
   if (f.dest.includes('ciudad')) add('ropa', 'Zapatillas cómodas para caminar');
   // Viaje solo de playa pero largo: en algún momento del viaje hace falta
@@ -162,7 +178,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('ropa', 'Saco o blazer');
     add('ropa', 'Zapatos de vestir');
   }
-  if (leisure && f.turismo === 'fiesta') {
+  if (hasTurismo('fiesta')) {
     add('ropa', 'Outfit para salir', 2);
     add('ropa', 'Calzado para salir');
   }
@@ -200,8 +216,8 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // tierra) y buceando (se está en el sol entre inmersión e inmersión,
   // muchas veces en un barco) — mismo ítem genérico, no versiones
   // propias por actividad.
-  if (f.dest.includes('playa') || f.clima === 'calor' || isSki || isNavegar || isBuceo) add('higiene', 'Protector solar');
-  if ((leisure && f.turismo === 'aventura') || f.dest.includes('playa') || f.aloj === 'camping') add('higiene', 'Repelente');
+  if (f.dest.includes('playa') || hasClima('calor') || isSki || isNavegar || isBuceo) add('higiene', 'Protector solar');
+  if (hasTurismo('aventura') || f.dest.includes('playa') || f.aloj === 'camping') add('higiene', 'Repelente');
   if (f.aloj === 'hostel' || f.aloj === 'amigos') add('higiene', 'Toalla de secado rápido');
   // Ayuda a sellar la máscara de buceo para quienes tienen barba/bigote
   // (si no, el agua se filtra por donde el vello rompe el sello de goma).
@@ -235,7 +251,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   addSingle('tech', 'Cable de carga extra');
   if (f.transporte === 'avion') addSingle('tech', 'Adaptador de enchufe');
   if (f.motivo === 'trabajo') addSingle('tech', 'Notebook y cargador');
-  if (leisure && (f.turismo === 'cultura' || f.turismo === 'aventura')) addSingle('tech', 'Cámara y memoria');
+  if (hasTurismo('cultura') || hasTurismo('aventura')) addSingle('tech', 'Cámara y memoria');
 
   // El candado va primero en "extras" a propósito: conviene tenerlo bien
   // visible y no perdido en el medio de la lista. Con bodega + carry-on
@@ -264,10 +280,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('extras', 'Mate y termo');
     add('extras', 'Snacks para el camino');
   }
-  if (leisure && (f.turismo === 'aventura' || f.turismo === 'cultura')) addSingle('extras', 'Riñonera o bolso cruzado');
-  if (f.clima === 'lluvia') addSingle('extras', 'Paraguas plegable');
+  if (hasTurismo('aventura') || hasTurismo('cultura')) addSingle('extras', 'Riñonera o bolso cruzado');
+  if (hasClima('lluvia')) addSingle('extras', 'Paraguas plegable');
   if (f.dest.includes('playa')) addSingle('extras', 'Toallón de playa');
-  if (leisure && f.turismo === 'relax') addSingle('extras', 'Libro o e-reader');
+  if (hasTurismo('relax')) addSingle('extras', 'Libro o e-reader');
 
   // Categoría propia y separada del resto (no se mezcla con la ropa/
   // higiene del adulto) — mismo criterio que llevó a separar "¿Quedó
@@ -286,7 +302,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     addSingle('bebe', 'Mantita o saco de dormir');
     add('bebe', 'Mudas de ropa de bebé', cap(d + 2, 10));
     add('bebe', 'Pijamas de bebé', d > 5 ? 2 : 1);
-    if (f.dest.includes('playa') || f.clima === 'calor') {
+    if (f.dest.includes('playa') || hasClima('calor')) {
       add('bebe', 'Traje de baño de bebé', 2);
       addSingle('bebe', 'Gorro y protector solar de bebé');
     }
@@ -382,8 +398,10 @@ export function buildRawItems(f: TripFormState): RawItem[] {
       // El grosor del traje depende de la temperatura del agua, no hay
       // uno que sirva para todo clima — mismo criterio que la ropa de
       // abrigo normal (frío/templado/calor son ítems distintos).
-      if (f.clima === 'frio') addSingle('buceo', 'Traje de neopreno grueso (7mm) o semiseco');
-      else if (f.clima === 'calor') addSingle('buceo', 'Traje de neopreno fino (3mm) o shorty');
+      // Con varios climas manda el más frío: un traje fino en agua fría no
+      // sirve, uno grueso en agua cálida sí (aunque dé calor).
+      if (hasClima('frio')) addSingle('buceo', 'Traje de neopreno grueso (7mm) o semiseco');
+      else if (!hasClima('templado') && !hasClima('lluvia')) addSingle('buceo', 'Traje de neopreno fino (3mm) o shorty');
       else addSingle('buceo', 'Traje de neopreno intermedio (5mm)');
       addSingle('buceo', 'Chaleco compensador (BCD)');
       addSingle('buceo', 'Regulador y octopus');

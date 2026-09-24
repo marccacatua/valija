@@ -96,3 +96,10 @@ export function itemLabel(name: string): string {
   if (lang === 'es') return name;
   return EN_ITEMS[name] ?? name;
 }
+
+/** Litros con un decimal si son pocos: "9,6" en español, "9.6" en inglés. */
+export function fmtLiters(l: number): string {
+  if (l >= 10) return String(Math.round(l));
+  const fixed = l.toFixed(1);
+  return lang === 'es' ? fixed.replace('.', ',') : fixed;
+}

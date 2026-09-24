@@ -1602,14 +1602,14 @@ try {
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
-    const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
+    const hasWarning = await page.locator('text=No te entra todo').count();
     assert(hasWarning === 1, 'Aviso de espacio aparece en la Checklist incluso con 1 sola valija', `count=${hasWarning}`);
     await ctx.close();
   }
   {
     const { ctx, page } = await freshPage(browser); // viaje liviano por defecto
     await generateTrip(page, { maletas: ['Bodega'] });
-    const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
+    const hasWarning = await page.locator('text=No te entra todo').count();
     assert(hasWarning === 0, 'Sin bulto real, no aparece el aviso de espacio en la Checklist', `count=${hasWarning}`);
     await ctx.close();
   }
@@ -2226,9 +2226,13 @@ try {
   {
     const { ctx, page } = await freshPage(browser);
     await goToNewTripForm(page);
-    await page.click('button:has-text("Montaña")');
+    // Trabajo en la ciudad con frío, solo con mochila: ~33 L en 20 L.
+    await page.click('button:has-text("Ciudad")');
+    await page.click('button:has-text("Playa")');
+    await page.click('button:has-text("Trabajo")');
     await page.click('button:has-text("Frío")');
-    // Carry-on solo (default) alcanza para disparar el aviso con montaña+frío.
+    await page.click('button:has-text("Mochila")');
+    await page.click('button:has-text("Carry-on")');
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
@@ -2241,7 +2245,6 @@ try {
     await page.click('text=Cambiar valijas');
     await page.waitForSelector('text=Guardar');
     await page.click('button:has-text("Bodega")');
-    await page.click('button:has-text("Mochila")');
     await page.click('text=Guardar');
     await page.waitForTimeout(200);
 
@@ -2387,14 +2390,117 @@ try {
     assert((await warning.count()) === 0, 'Buceo con calor no muestra el aviso de clima', '');
     await page.click('button:has-text("Esquí")');
     assert((await warning.count()) === 1, 'Esquí con calor muestra el aviso de clima', '');
-    await page.click('button:has-text("Cambiar a Frío")');
-    assert((await warning.count()) === 0, '"Cambiar a Frío" cambia el clima y el aviso desaparece', '');
+    await page.click('button:has-text("Sumar Frío")');
+    assert((await warning.count()) === 0, '"Sumar Frío" suma el frío y el aviso desaparece', '');
+    const calorPressed = await page.locator('button', { hasText: /^Calor$/ }).getAttribute('aria-pressed');
+    assert(calorPressed === 'true', '"Sumar Frío" no saca el calor ya elegido (clima múltiple)', `aria-pressed=${calorPressed}`);
+    await page.click('button:has-text("Frío")'); // lo vuelve a sacar
+    assert((await warning.count()) === 1, 'Sin frío, con esquí y calor, el aviso vuelve', '');
     await page.click('button:has-text("Templado")');
+    await page.click('button:has-text("Calor")'); // queda solo templado
     assert((await warning.count()) === 0, 'Esquí con templado no muestra el aviso (esquí de primavera)', '');
-    await page.click('button:has-text("Calor")');
-    assert((await warning.count()) === 1, 'Volver a Calor con esquí muestra el aviso otra vez', '');
     await ctx.close();
   }
+
+  // --- 62. Clima y turismo múltiples ---
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")'); // calor + frío
+    await page.click('button:has-text("Cultural")'); // relax + cultural
+    await page.click('button:has-text("Esquí")'); // + esquí
+    const pressed = async (name) => page.locator('button', { hasText: new RegExp(`^${name}$`) }).first().getAttribute('aria-pressed');
+    assert((await pressed('Calor')) === 'true' && (await pressed('Frío')) === 'true', 'Se pueden elegir dos climas a la vez');
+    assert(
+      (await pressed('Relax')) === 'true' && (await pressed('Cultural')) === 'true' && (await pressed('Esquí')) === 'true',
+      'Se pueden elegir varios tipos de turismo a la vez',
+    );
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chips.includes('Calor + Frío'), 'Los chips muestran los dos climas', `chips=${chips}`);
+    assert(chips.includes('Relax + Cultural + Esquí'), 'Los chips muestran los tres turismos', `chips=${chips}`);
+    const need = ['Traje de baño', 'Campera abrigada', 'Campera de nieve', 'Cámara y memoria', 'Libro o e-reader'];
+    for (const n of need) {
+      const c = await page.locator('button', { hasText: n }).count();
+      assert(c >= 1, `Calor + frío + relax + cultural + esquí incluye "${n}"`, `count=${c}`);
+    }
+    await ctx.close();
+  }
+  {
+    // Siempre queda al menos un clima y un turismo elegido.
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Calor")');
+    const calor = await page.locator('button', { hasText: /^Calor$/ }).getAttribute('aria-pressed');
+    assert(calor === 'true', 'No se puede dejar el clima vacío', `aria-pressed=${calor}`);
+    await page.click('button:has-text("Relax")');
+    const relax = await page.locator('button', { hasText: /^Relax$/ }).getAttribute('aria-pressed');
+    assert(relax === 'true', 'No se puede dejar el turismo vacío', `aria-pressed=${relax}`);
+    await ctx.close();
+  }
+  {
+    // Viajes guardados antes de v1.10.0: clima y turismo como un solo valor.
+    const { ctx, page } = await freshPage(browser);
+    const old = {
+      id: 'viejo1', createdAt: '2026-09-01T00:00:00.000Z',
+      form: { name: '', dest: ['playa'], clima: 'frio', motivo: 'placer', turismo: 'navegar', aloj: 'hotel', transporte: 'avion', maletas: ['carry'], dias: 5, vestidos: false, lavaRopa: false, bebe: false, mascota: false, deporte: false, equipoPropio: false },
+      items: [{ id: 'i1', cat: 'docs', name: 'DNI y pasaporte', qty: 1, done: true }],
+      homeChecklist: [], boatChecklist: [{ id: 'boat-0', label: 'Botiquín', done: false }],
+    };
+    await page.evaluate((t) => localStorage.setItem('valija:trips', JSON.stringify([t])), old);
+    await page.goto(`${BASE}/viaje/viejo1`);
+    await page.waitForSelector('text=Tu valija para');
+    const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chips.includes('Frío') && chips.includes('Navegar'), 'Un viaje viejo (clima y turismo de un solo valor) se abre y muestra sus chips', `chips=${chips}`);
+    assert((await page.locator('text=¿Está todo listo para zarpar?').count()) === 1, 'El viaje viejo de navegar conserva su lista del barco');
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    assert((await page.locator('text=/Frío|Playa/').count()) >= 1, 'El viaje viejo aparece bien en "Mis viajes"');
+    await ctx.close();
+  }
+
+  // --- 63. "Ajustar cantidades para que entre" ---
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")'); // calor + frío
+    await page.click('button:has-text("Cultural")'); // relax + cultural
+    await page.click('button:has-text("Semana · 7")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    assert((await page.locator('text=No te entra todo').count()) === 1, 'Calor + frío, 7 días, en carry-on: no entra');
+    const fitBtn = page.locator('button', { hasText: 'Ajustar cantidades para que entre' });
+    assert((await fitBtn.count()) === 1, 'Se ofrece "Ajustar cantidades para que entre"');
+    await fitBtn.click();
+    await page.waitForTimeout(150);
+    assert((await page.locator('text=No te entra todo').count()) === 0, 'Después de ajustar, el aviso de que no entra desaparece');
+    assert((await page.locator('text=/prendas? menos: vas a lavar en el viaje/').count()) === 1, 'Aparece el aviso con "Deshacer" diciendo cuántas prendas se bajaron');
+    await page.click('button:has-text("Deshacer")');
+    await page.waitForTimeout(150);
+    assert((await page.locator('text=No te entra todo').count()) === 1, '"Deshacer" vuelve las cantidades como estaban');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")');
+    await page.click('button:has-text("Cultural")');
+    await page.click('button:has-text("Esquí")');
+    await page.click('button:has-text("Semana · 7")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    assert((await page.locator('text=Ni bajando cantidades entra').count()) === 1, 'Si ni bajando cantidades entra, lo dice');
+    assert((await page.locator('button', { hasText: 'Ajustar cantidades para que entre' }).count()) === 0, 'Y no ofrece un ajuste que no alcanza');
+    await ctx.close();
+  }
+
   // --- 60. "Lavar ropa" automático en viajes de 10 días o más ---
   {
     const { ctx, page } = await freshPage(browser);
@@ -2424,6 +2530,42 @@ try {
     await page.click('button:has-text("Largo · 14")');
     const pressed = await page.locator('button', { hasText: 'Pienso lavar ropa en el viaje' }).getAttribute('aria-pressed');
     assert(pressed === 'false', 'Si ya lo tocó a mano antes, 14 días no lo marca solo', `aria-pressed=${pressed}`);
+    await ctx.close();
+  }
+
+  // --- 61. Espacio en litros ---
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page); // carry-on solo (default): playa 5 días
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const meter = await page.locator('text=Espacio en tu carry-on').count();
+    assert(meter === 1, 'La checklist muestra "Espacio en tu carry-on"', `count=${meter}`);
+    const pctText = (await page.locator('text=/^\\d+ %$/').first().textContent()) ?? '';
+    const pct = parseInt(pctText, 10);
+    assert(pct > 30 && pct < 85, 'Playa 5 días en carry-on queda holgado (entre 30 % y 85 %)', `pct=${pctText}`);
+    assert((await page.locator('text=/de 38 L/').count()) === 1, 'Muestra los litros usados sobre 38 L');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Niño chico")');
+    await page.click('button:has-text("Auto")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    assert((await page.locator('text=Espacio en tus valijas').count()) === 1, 'Con dos valijas dice "Espacio en tus valijas"');
+    await page.click('text=Ver cómo repartir en tus valijas');
+    await page.waitForSelector('text=Cómo repartir tu equipaje');
+    const loads = await page.locator('text=/de (38|75) L · \\d+ %/').count();
+    assert(loads === 2, 'El reparto muestra la carga en litros de cada valija', `count=${loads}`);
+    const aparte = await page.locator('text=Va aparte').count();
+    assert(aparte === 1, 'El cochecito y la butaca van en "Va aparte"', `count=${aparte}`);
+    const cochecitoAparte = await page.locator('text=No entra en ninguna valija').locator('xpath=..').locator('text=Cochecito o mochila portabebé').count();
+    assert(cochecitoAparte === 1, 'El cochecito figura en "Va aparte", no dentro de una valija', `count=${cochecitoAparte}`);
     await ctx.close();
   }
 

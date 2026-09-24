@@ -1,5 +1,6 @@
 import { buildRawItems, ROPA_ORDER } from '../src/data/buildItems';
-import { distributeItems } from '../src/data/distribute';
+import { distributeItems, fitToBags, spaceSummary } from '../src/data/distribute';
+import { ITEM_LITERS, isSeparateItem, itemLiters, wornItemIds } from '../src/data/volume';
 import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
 import { QUICK_GROUP_META, quickGroupFor } from '../src/data/quickGroups';
 import type { AlojKey, ClimaKey, DestKey, MaletaKey, MotivoKey, TransporteKey, TripFormState, TurismoKey } from '../src/types';
@@ -80,9 +81,9 @@ for (const dest of DEST_SUBSETS)
                   const form: TripFormState = {
                     name: 'QA',
                     dest,
-                    clima,
+                    clima: [clima],
                     motivo,
-                    turismo,
+                    turismo: [turismo],
                     aloj,
                     transporte,
                     maletas,
@@ -219,6 +220,12 @@ for (const dest of DEST_SUBSETS)
                     }
                     groupCounts.set(g, (groupCounts.get(g) ?? 0) + 1);
                   }
+                  // Invariante: todo ítem generado que va en una valija tiene su
+                  // tamaño estándar en litros (si falta, se usaría el genérico de
+                  // la categoría y el cálculo de espacio sería impreciso).
+                  for (const it of items) {
+                    if (!isSeparateItem(it) && !(it.name in ITEM_LITERS)) fail(form, `"${it.name}" no tiene litros en ITEM_LITERS`);
+                  }
                   const sumGrouped = [...groupCounts.values()].reduce((a, b) => a + b, 0);
                   if (sumGrouped !== items.length) {
                     fail(form, `Vista rápida: suma de grupos (${sumGrouped}) != total de ítems (${items.length})`);
@@ -226,7 +233,7 @@ for (const dest of DEST_SUBSETS)
 
                   for (const bags of MALETA_SUBSETS) {
                     distributionChecks++;
-                    const { byBag, campingItems } = distributeItems(items, bags);
+                    const { byBag, separateItems, loads } = distributeItems(items, bags);
 
                     // Invariante: bolsas no seleccionadas quedan vacías
                     for (const bag of ALL_BAGS) {
@@ -235,20 +242,39 @@ for (const dest of DEST_SUBSETS)
                       }
                     }
 
-                    // Invariante: los ítems de "camping" nunca entran en ninguna valija;
-                    // van aparte, completos, en campingItems.
+                    // Invariante: lo que va aparte (camping, cochecito, butaca,
+                    // transportadora, esquís) nunca entra en ninguna valija;
+                    // va completo en separateItems.
                     for (const bag of ALL_BAGS) {
-                      if (byBag[bag].some((d) => d.item.cat === 'camping')) {
-                        fail(form, `Ítem de camping asignado a una valija (bags=${bags})`);
+                      if (byBag[bag].some((d) => isSeparateItem(d.item))) {
+                        fail(form, `Ítem que va aparte asignado a una valija (bags=${bags})`);
                       }
                     }
-                    const campingExpected = items.filter((it) => it.cat === 'camping').map((it) => it.name).sort();
-                    const campingGot = campingItems.map((it) => it.name).sort();
-                    if (JSON.stringify(campingExpected) !== JSON.stringify(campingGot)) {
-                      fail(form, `campingItems (${campingGot}) no coincide con la categoría camping (${campingExpected})`);
+                    const separateExpected = items.filter(isSeparateItem).map((it) => it.name).sort();
+                    const separateGot = separateItems.map((it) => it.name).sort();
+                    if (JSON.stringify(separateExpected) !== JSON.stringify(separateGot)) {
+                      fail(form, `separateItems (${separateGot}) no coincide con lo esperado (${separateExpected})`);
                     }
 
-                    const packableItems = items.filter((it) => it.cat !== 'camping');
+                    const packableItems = items.filter((it) => !isSeparateItem(it));
+
+                    // Invariante: los litros cuadran. La suma de lo que carga cada
+                    // valija == litros de todos los ítems empacables menos 1 unidad
+                    // de lo que se lleva puesto (el reparto mueve, nunca crea ni
+                    // pierde espacio).
+                    const worn = wornItemIds(packableItems);
+                    const expectedL = packableItems.reduce((acc, it) => acc + itemLiters(it) * (it.qty - (worn.has(it.id) ? 1 : 0)), 0);
+                    const gotL = bags.reduce((acc, b) => acc + loads[b], 0);
+                    if (Math.abs(expectedL - gotL) > 1e-6) {
+                      fail(form, `Litros no cuadran: esperado ${expectedL.toFixed(2)}, repartido ${gotL.toFixed(2)} (bags=${bags})`);
+                    }
+                    for (const bag of ALL_BAGS) {
+                      if (loads[bag] < -1e-6) fail(form, `Carga negativa en "${bag}" (${loads[bag]})`);
+                    }
+                    // Invariante: si una valija quedó pasada de su capacidad, es
+                    // porque no había a dónde mover nada entero.
+                    const summary = spaceSummary(items, bags);
+                    if (summary.pct < 0 || !Number.isFinite(summary.pct)) fail(form, `Porcentaje inválido: ${summary.pct}`);
 
                     // Invariante: la suma de qty distribuida por ítem == qty original
                     // (solo ítems "empacables" — camping queda afuera del reparto)
@@ -311,9 +337,9 @@ for (const dest of DEST_SUBSETS)
           const form: TripFormState = {
             name: 'QA-bebe',
             dest,
-            clima,
+            clima: [clima],
             motivo: 'placer',
-            turismo: 'relax',
+            turismo: ['relax'],
             aloj: 'depto',
             transporte,
             maletas: ['carry'],
@@ -363,9 +389,9 @@ for (const dest of DEST_SUBSETS)
         const form: TripFormState = {
           name: 'QA-mascota',
           dest,
-          clima: 'templado',
+          clima: ['templado'],
           motivo: 'placer',
-          turismo: 'relax',
+          turismo: ['relax'],
           aloj: 'depto',
           transporte,
           maletas: ['carry'],
@@ -405,9 +431,9 @@ for (const dias of DIAS)
     const form: TripFormState = {
       name: 'QA-lavaRopa',
       dest: ['ciudad'],
-      clima: 'templado',
+      clima: ['templado'],
       motivo: 'placer',
-      turismo: 'relax',
+      turismo: ['relax'],
       aloj: 'depto',
       transporte: 'avion',
       maletas: ['carry'],
@@ -473,9 +499,9 @@ for (const motivo of MOTIVO)
           const form: TripFormState = {
             name: 'QA-deporte',
             dest: ['ciudad'],
-            clima,
+            clima: [clima],
             motivo,
-            turismo,
+            turismo: [turismo],
             aloj: 'depto',
             transporte: 'avion',
             maletas: ['carry'],
@@ -545,9 +571,9 @@ for (const motivo of MOTIVO)
           const form: TripFormState = {
             name: 'QA-ski',
             dest: ['montana'],
-            clima,
+            clima: [clima],
             motivo,
-            turismo,
+            turismo: [turismo],
             aloj: 'depto',
             transporte: 'avion',
             maletas: ['carry'],
@@ -631,9 +657,9 @@ for (const motivo of MOTIVO)
         const form: TripFormState = {
           name: 'QA-navegar',
           dest: ['playa'],
-          clima,
+          clima: [clima],
           motivo,
-          turismo,
+          turismo: [turismo],
           aloj: 'depto',
           transporte: 'avion',
           maletas: ['carry'],
@@ -695,9 +721,9 @@ for (const motivo of MOTIVO)
         const form: TripFormState = {
           name: 'QA-buceo',
           dest: ['playa'],
-          clima,
+          clima: [clima],
           motivo,
-          turismo,
+          turismo: [turismo],
           aloj: 'depto',
           transporte: 'avion',
           maletas: ['carry'],
@@ -750,6 +776,120 @@ for (const motivo of MOTIVO)
           if (hasVaselina) fail(form, 'Sin buceo, no debería aparecer "Vaselina"');
         }
       }
+
+// ============================================================
+// Bloque dedicado: clima y turismo múltiples. Propiedad central: un viaje
+// con varias opciones incluye todo lo que tendría cada opción por
+// separado (la lista SUMA), salvo los reemplazos documentados:
+// - con frío, el buzo liviano de "templado" sobra (ya hay buzos);
+// - con esquí, lo que cubre su equipo (bufanda, botas de abrigo, trekking
+//   por montaña, rompeviento salvo navegando);
+// - en buceo va un solo traje: el del clima más frío.
+// ============================================================
+{
+  const subsets = <T,>(xs: T[], maxSize: number): T[][] => {
+    const out: T[][] = [];
+    const rec = (start: number, acc: T[]) => {
+      if (acc.length > 0) out.push([...acc]);
+      if (acc.length === maxSize) return;
+      for (let i = start; i < xs.length; i++) rec(i + 1, [...acc, xs[i]]);
+    };
+    rec(0, []);
+    return out;
+  };
+  const TURISMOS: TurismoKey[] = ['relax', 'aventura', 'cultura', 'fiesta', 'ski', 'navegar', 'buceo'];
+  const WETSUITS = ['Traje de neopreno grueso (7mm) o semiseco', 'Traje de neopreno intermedio (5mm)', 'Traje de neopreno fino (3mm) o shorty'];
+  for (const climas of subsets(CLIMA, 4))
+    for (const turismos of subsets(TURISMOS, 2))
+      for (const equipoPropio of [false, true]) {
+        const base: TripFormState = {
+          name: 'QA-multi', dest: ['playa', 'montana'], clima: climas, motivo: 'placer', turismo: turismos, aloj: 'hotel',
+          transporte: 'avion', maletas: ['carry'], dias: 7, vestidos: false, lavaRopa: false, bebe: false, mascota: false,
+          deporte: false, equipoPropio,
+        };
+        combos++;
+        const multi = new Set(buildRawItems(base).map((r) => r.name));
+        const isSki = turismos.includes('ski');
+        const excluded = new Set<string>(WETSUITS);
+        if (climas.includes('frio')) excluded.add('Buzo o campera liviana');
+        if (isSki) {
+          for (const n of ['Bufanda', 'Botas o calzado de abrigo', 'Zapatillas de trekking']) excluded.add(n);
+          if (!turismos.includes('navegar')) excluded.add('Rompeviento impermeable');
+        }
+        if (turismos.includes('aventura')) excluded.delete('Zapatillas de trekking');
+        for (const c of climas)
+          for (const t of turismos) {
+            const single = buildRawItems({ ...base, clima: [c], turismo: [t] });
+            for (const r of single) {
+              if (!multi.has(r.name) && !excluded.has(r.name)) {
+                fail(base, `Con clima=[${climas}] turismo=[${turismos}] falta "${r.name}" (aparece con clima=${c}, turismo=${t})`);
+              }
+            }
+          }
+        // Buceo con equipo propio: un solo traje, el del clima más frío.
+        const suits = WETSUITS.filter((w) => multi.has(w));
+        if (turismos.includes('buceo') && equipoPropio) {
+          const expected = climas.includes('frio') ? WETSUITS[0] : climas.includes('templado') || climas.includes('lluvia') ? WETSUITS[1] : WETSUITS[2];
+          if (suits.length !== 1 || suits[0] !== expected) fail(base, `Buceo con clima=[${climas}]: trajes=${suits}, esperado ${expected}`);
+        } else if (suits.length > 0) {
+          fail(base, `Sin buceo con equipo propio no debería haber traje de neopreno (${suits})`);
+        }
+        // Esquí + otra actividad: la ropa de calle NO baja (los otros días se usa).
+        if (isSki && turismos.length > 1) {
+          const other = turismos.find((t) => t !== 'ski')!;
+          const remerasMulti = buildRawItems(base).find((r) => r.name === 'Remeras')?.qty;
+          const remerasOther = buildRawItems({ ...base, turismo: [other] }).find((r) => r.name === 'Remeras')?.qty;
+          if (remerasMulti !== remerasOther) fail(base, `Esquí + ${other}: Remeras=${remerasMulti}, esperado ${remerasOther} (sin el tope de solo-esquí)`);
+        }
+        // "Ajustar cantidades para que entre", en carry-on solo y en mochila
+        // sola (donde más se pasa): nunca baja de 1, solo toca prendas
+        // reducibles no tildadas, y si dice que entra, entra.
+        for (const bags of [['carry'], ['mochila']] as MaletaKey[][]) {
+          const items = buildRawItems(base).map((r, i) => ({ ...r, id: String(i), done: i % 5 === 0 }));
+          const plan = fitToBags(items, bags);
+          let removed = 0;
+          for (const [id, qty] of Object.entries(plan.qtys)) {
+            const it = items.find((i) => i.id === id)!;
+            if (it.done) fail(base, `fitToBags tocó "${it.name}", que ya estaba tildado`);
+            if (qty < 1 || qty >= it.qty) fail(base, `fitToBags dejó "${it.name}" en ${qty} (antes ${it.qty})`);
+            removed += it.qty - qty;
+          }
+          if (removed !== plan.removed) fail(base, `fitToBags: removed=${plan.removed} pero la suma de cambios es ${removed}`);
+          const applied = items.map((i) => (i.id in plan.qtys ? { ...i, qty: plan.qtys[i.id] } : i));
+          if (plan.fits && spaceSummary(applied, bags).overflow) fail(base, `fitToBags dice que entra pero no entra (bags=${bags})`);
+          if (!spaceSummary(items, bags).overflow && plan.removed > 0) fail(base, `fitToBags bajó cantidades sin que hiciera falta (bags=${bags})`);
+        }
+        // La lista del barco aparece si y solo si navegar está entre los elegidos.
+        const boat = buildBoatChecklist(base);
+        if ((boat.length > 0) !== turismos.includes('navegar')) fail(base, `boatChecklist=${boat.length} con turismo=[${turismos}]`);
+      }
+}
+
+// ============================================================
+// Bloque dedicado: litros de TODOS los ítems posibles, incluidos los de
+// los bloques de arriba que no están en el cruce grande (esquí, buceo,
+// navegar, bebé, mascota, equipo propio).
+// ============================================================
+{
+  const seen = new Set<string>();
+  for (const turismo of ['relax', 'aventura', 'cultura', 'fiesta', 'ski', 'navegar', 'buceo'] as TurismoKey[])
+    for (const clima of CLIMA)
+      for (const flag of [false, true])
+        for (const transporte of ['avion', 'auto', 'bus'] as TransporteKey[])
+          for (const aloj of ['hotel', 'hostel', 'camping'] as AlojKey[]) {
+            const form: TripFormState = {
+              name: 'QA-litros', dest: ['playa', 'montana', 'ciudad'], clima: [clima], motivo: 'placer', turismo: [turismo], aloj, transporte,
+              maletas: ['carry', 'bodega', 'mochila'], dias: 10, vestidos: flag, lavaRopa: flag, bebe: flag, mascota: flag,
+              deporte: flag, equipoPropio: flag,
+            };
+            for (const it of buildRawItems(form)) {
+              if (seen.has(it.name)) continue;
+              seen.add(it.name);
+              const asItem = { id: 'x', done: false, ...it };
+              if (!isSeparateItem(asItem) && !(it.name in ITEM_LITERS)) fail(form, `"${it.name}" no tiene litros en ITEM_LITERS`);
+            }
+          }
+}
 
 console.log(`Combinaciones de formulario probadas: ${combos}`);
 console.log(`Chequeos de distribución (combo x subconjunto de valijas): ${distributionChecks}`);
