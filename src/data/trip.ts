@@ -34,6 +34,11 @@ export const DEFAULT_FORM: TripFormState = {
 /** "1 día" / "5 días": la duración mínima del stepper es 1. */
 export const diasLabel = (n: number) => (n === 1 ? '1 día' : `${n} días`);
 
+/** Desde esta duración, el formulario marca solo "Pienso lavar ropa en el
+ * viaje" (y lo avisa): nadie lleva ropa limpia para 30 días, y sin lavar
+ * la lista tampoco alcanzaría con los topes de cantidad. */
+export const LAVA_ROPA_AUTO_DIAS = 10;
+
 export function tripTitle(form: TripFormState): string {
   return form.name.trim() || `${labelForMany(DEST_OPTIONS, form.dest)} en ${diasLabel(form.dias)}`;
 }

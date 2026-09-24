@@ -2395,6 +2395,38 @@ try {
     assert((await warning.count()) === 1, 'Volver a Calor con esquí muestra el aviso otra vez', '');
     await ctx.close();
   }
+  // --- 60. "Lavar ropa" automático en viajes de 10 días o más ---
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    const lavaChip = page.locator('button', { hasText: 'Pienso lavar ropa en el viaje' });
+    const notice = page.locator('text=/Como son 10 días o más/');
+    assert((await lavaChip.getAttribute('aria-pressed')) === 'false', 'Viaje corto: "lavar ropa" arranca sin marcar');
+    await page.click('button:has-text("Largo · 14")');
+    assert((await lavaChip.getAttribute('aria-pressed')) === 'true', 'Con 14 días se marca solo "lavar ropa"');
+    assert((await notice.count()) === 1, 'Con 14 días aparece el aviso de que se marcó "lavar ropa"');
+    await page.click('button:has-text("Semana · 7")');
+    assert((await lavaChip.getAttribute('aria-pressed')) === 'false', 'Si se vuelve a 7 días, se desmarca solo');
+    assert((await notice.count()) === 0, 'Y el aviso desaparece');
+    await page.click('button:has-text("Largo · 14")');
+    await page.click('button:has-text("No voy a lavar")');
+    assert((await lavaChip.getAttribute('aria-pressed')) === 'false', '"No voy a lavar" lo desmarca');
+    await page.click('button:has-text("Semana · 7")');
+    await page.click('button:has-text("Largo · 14")');
+    assert((await lavaChip.getAttribute('aria-pressed')) === 'false', 'Después de elegir a mano, no se vuelve a marcar solo');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Pienso lavar ropa en el viaje")');
+    await page.click('button:has-text("Pienso lavar ropa en el viaje")');
+    await page.click('button:has-text("Largo · 14")');
+    const pressed = await page.locator('button', { hasText: 'Pienso lavar ropa en el viaje' }).getAttribute('aria-pressed');
+    assert(pressed === 'false', 'Si ya lo tocó a mano antes, 14 días no lo marca solo', `aria-pressed=${pressed}`);
+    await ctx.close();
+  }
+
   // --- 59. Sin requests externas (privacidad + funciona offline) ---
   assert(externalRequests.size === 0, 'La app no hace ninguna request fuera de su propio origen', [...externalRequests].slice(0, 3).join(', '));
 } catch (err) {

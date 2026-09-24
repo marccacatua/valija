@@ -10,7 +10,7 @@ import {
   TURISMO_OPTIONS,
 } from '../data/catalog';
 import { countItems } from '../data/buildItems';
-import { DEFAULT_FORM } from '../data/trip';
+import { DEFAULT_FORM, LAVA_ROPA_AUTO_DIAS } from '../data/trip';
 import { Button } from '../components/Button';
 import { Mascot } from '../components/Mascot';
 import { OptionCard } from '../components/OptionCard';
@@ -33,6 +33,12 @@ export function TripForm() {
   const canExtraCategories = useFeatureFlag('extraCategories');
   const [form, setForm] = useState<TripFormState>(DEFAULT_FORM);
   const [showPaywall, setShowPaywall] = useState(false);
+  // "Lavar ropa" automático en viajes largos: se marca solo al llegar a
+  // LAVA_ROPA_AUTO_DIAS, y se desmarca solo si se vuelve a acortar el
+  // viaje — mientras la persona no lo haya tocado a mano. Si lo toca, su
+  // elección manda y no se vuelve a cambiar solo.
+  const [lavaRopaTouched, setLavaRopaTouched] = useState(false);
+  const [lavaRopaAuto, setLavaRopaAuto] = useState(false);
 
   // Tope de la versión gratis: se chequea acá (antes de mostrar el
   // formulario) y no recién al tocar "Armar mi valija", para no hacer
@@ -92,6 +98,26 @@ export function TripForm() {
       return;
     }
     set('turismo', key);
+  };
+
+  const setDias = (next: number) => {
+    if (!lavaRopaTouched && next >= LAVA_ROPA_AUTO_DIAS && !form.lavaRopa) {
+      setForm((prev) => ({ ...prev, dias: next, lavaRopa: true }));
+      setLavaRopaAuto(true);
+      return;
+    }
+    if (!lavaRopaTouched && next < LAVA_ROPA_AUTO_DIAS && lavaRopaAuto) {
+      setForm((prev) => ({ ...prev, dias: next, lavaRopa: false }));
+      setLavaRopaAuto(false);
+      return;
+    }
+    set('dias', next);
+  };
+
+  const toggleLavaRopa = (next: boolean) => {
+    setLavaRopaTouched(true);
+    setLavaRopaAuto(false);
+    set('lavaRopa', next);
   };
 
   const handleGenerate = () => {
@@ -274,7 +300,7 @@ export function TripForm() {
               <OptionChip
                 label="Pienso lavar ropa en el viaje"
                 selected={form.lavaRopa}
-                onSelect={() => set('lavaRopa', !form.lavaRopa)}
+                onSelect={() => toggleLavaRopa(!form.lavaRopa)}
               />
             </div>
           </div>
@@ -295,7 +321,18 @@ export function TripForm() {
 
           <div>
             <SectionLabel>Duración</SectionLabel>
-            <DurationStepper days={form.dias} onChange={(next) => set('dias', next)} />
+            <DurationStepper days={form.dias} onChange={setDias} />
+            {lavaRopaAuto && form.lavaRopa && (
+              <div className={styles.autoNotice}>
+                <span>
+                  Como son {LAVA_ROPA_AUTO_DIAS} días o más, marcamos "Pienso lavar ropa en el viaje": la lista calcula la
+                  ropa para lavar en el camino.
+                </span>
+                <button type="button" className={styles.climaFix} onClick={() => toggleLavaRopa(false)}>
+                  No voy a lavar
+                </button>
+              </div>
+            )}
           </div>
 
           <div>
