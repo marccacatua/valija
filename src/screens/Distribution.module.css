@@ -139,3 +139,44 @@
   color: var(--muted);
   padding: 12px 0;
 }
+
+/* Carga de cada valija en litros (ver data/volume.ts). */
+.load {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+}
+
+.loadTrack {
+  flex: 1;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+
+.loadFill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--teal);
+}
+
+.loadFillTight {
+  background: var(--mustard);
+}
+
+.loadFillOver {
+  background: var(--coral);
+}
+
+.loadLabel {
+  flex: none;
+  font: 800 12px/1 'Nunito', sans-serif;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.loadLabelOver {
+  color: var(--coral-dark);
+}

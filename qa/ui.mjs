@@ -1602,14 +1602,14 @@ try {
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
-    const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
+    const hasWarning = await page.locator('text=No te entra todo').count();
     assert(hasWarning === 1, 'Aviso de espacio aparece en la Checklist incluso con 1 sola valija', `count=${hasWarning}`);
     await ctx.close();
   }
   {
     const { ctx, page } = await freshPage(browser); // viaje liviano por defecto
     await generateTrip(page, { maletas: ['Bodega'] });
-    const hasWarning = await page.locator('text=Tenés bastantes ítems que ocupan lugar').count();
+    const hasWarning = await page.locator('text=No te entra todo').count();
     assert(hasWarning === 0, 'Sin bulto real, no aparece el aviso de espacio en la Checklist', `count=${hasWarning}`);
     await ctx.close();
   }
@@ -2226,9 +2226,13 @@ try {
   {
     const { ctx, page } = await freshPage(browser);
     await goToNewTripForm(page);
-    await page.click('button:has-text("Montaña")');
+    // Trabajo en la ciudad con frío, solo con mochila: ~33 L en 20 L.
+    await page.click('button:has-text("Ciudad")');
+    await page.click('button:has-text("Playa")');
+    await page.click('button:has-text("Trabajo")');
     await page.click('button:has-text("Frío")');
-    // Carry-on solo (default) alcanza para disparar el aviso con montaña+frío.
+    await page.click('button:has-text("Mochila")');
+    await page.click('button:has-text("Carry-on")');
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
@@ -2241,7 +2245,6 @@ try {
     await page.click('text=Cambiar valijas');
     await page.waitForSelector('text=Guardar');
     await page.click('button:has-text("Bodega")');
-    await page.click('button:has-text("Mochila")');
     await page.click('text=Guardar');
     await page.waitForTimeout(200);
 
@@ -2424,6 +2427,42 @@ try {
     await page.click('button:has-text("Largo · 14")');
     const pressed = await page.locator('button', { hasText: 'Pienso lavar ropa en el viaje' }).getAttribute('aria-pressed');
     assert(pressed === 'false', 'Si ya lo tocó a mano antes, 14 días no lo marca solo', `aria-pressed=${pressed}`);
+    await ctx.close();
+  }
+
+  // --- 61. Espacio en litros ---
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page); // carry-on solo (default): playa 5 días
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const meter = await page.locator('text=Espacio en tu carry-on').count();
+    assert(meter === 1, 'La checklist muestra "Espacio en tu carry-on"', `count=${meter}`);
+    const pctText = (await page.locator('text=/^\\d+ %$/').first().textContent()) ?? '';
+    const pct = parseInt(pctText, 10);
+    assert(pct > 30 && pct < 85, 'Playa 5 días en carry-on queda holgado (entre 30 % y 85 %)', `pct=${pctText}`);
+    assert((await page.locator('text=/de 38 L/').count()) === 1, 'Muestra los litros usados sobre 38 L');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Niño chico")');
+    await page.click('button:has-text("Auto")');
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    assert((await page.locator('text=Espacio en tus valijas').count()) === 1, 'Con dos valijas dice "Espacio en tus valijas"');
+    await page.click('text=Ver cómo repartir en tus valijas');
+    await page.waitForSelector('text=Cómo repartir tu equipaje');
+    const loads = await page.locator('text=/de (38|75) L · \\d+ %/').count();
+    assert(loads === 2, 'El reparto muestra la carga en litros de cada valija', `count=${loads}`);
+    const aparte = await page.locator('text=Va aparte').count();
+    assert(aparte === 1, 'El cochecito y la butaca van en "Va aparte"', `count=${aparte}`);
+    const cochecitoAparte = await page.locator('text=No entra en ninguna valija').locator('xpath=..').locator('text=Cochecito o mochila portabebé').count();
+    assert(cochecitoAparte === 1, 'El cochecito figura en "Va aparte", no dentro de una valija', `count=${cochecitoAparte}`);
     await ctx.close();
   }
 

@@ -1,4 +1,5 @@
 import type { MaletaKey, PackingItem } from '../types';
+import { BAG_CAPACITY_L, isSeparateItem, itemLiters, wornItemIds } from './volume';
 
 export interface DistributedItem {
   item: PackingItem;
@@ -11,10 +12,10 @@ export interface DistributedItem {
  * Recomendación de en qué valija va cada ítem, cuando el viaje usa más de
  * una. No modifica los ítems reales de la checklist (que siguen siendo un
  * único renglón con una sola cantidad) — es una vista derivada, de solo
- * lectura, pensada para el momento de armar las valijas. Los ítems de la
- * categoría "camping" quedan afuera de este reparto por completo: son su
- * propia lista, no tiene sentido meterlos "dentro" de una valija (ver
- * `campingItems` más abajo y la pantalla de Distribución).
+ * lectura, pensada para el momento de armar las valijas. Lo que no va
+ * dentro de ninguna valija (camping, cochecito, butaca, transportadora,
+ * esquís: ver `SEPARATE_ITEMS` en volume.ts) queda afuera del reparto, en
+ * `separateItems`.
  *
  * Reglas:
  * - Documentos, electrónica y algunos ítems puntuales que siempre conviene
@@ -31,6 +32,9 @@ export interface DistributedItem {
  *   "respaldo" en el carry-on (nunca en la mochila) — es la valija
  *   pensada para una muda de repuesto por si se pierde o demora la
  *   bodega.
+ * - Espacio (ver volume.ts): cada valija tiene una capacidad en litros.
+ *   Si una se pasa y otra tiene lugar, se mueven ítems enteros, los más
+ *   grandes primero, hasta que entre.
  */
 // Ítems que van "con vos" sin importar su categoría (no son documentos ni
 // electrónica, pero tampoco tiene sentido facturarlos): se usan en el
@@ -51,14 +55,41 @@ const PREFERRED_BAG: Partial<Record<string, MaletaKey>> = {
   'Candado para el carry-on': 'carry',
 };
 
-export function distributeItems(
-  items: PackingItem[],
-  bags: MaletaKey[],
-): { byBag: Record<MaletaKey, DistributedItem[]>; campingItems: PackingItem[] } {
+export interface Distribution {
+  byBag: Record<MaletaKey, DistributedItem[]>;
+  /** Lo que no va dentro de ninguna valija (camping, cochecito, butaca,
+   * transportadora, esquís) — ver `SEPARATE_ITEMS` en volume.ts. */
+  separateItems: PackingItem[];
+  /** Litros estimados que ocupa cada valija, ya descontando lo que se
+   * lleva puesto. */
+  loads: Record<MaletaKey, number>;
+}
+
+const BAG_ORDER: MaletaKey[] = ['carry', 'bodega', 'mochila'];
+
+function computeLoads(byBag: Record<MaletaKey, DistributedItem[]>, worn: Set<string>): Record<MaletaKey, number> {
+  const loads: Record<MaletaKey, number> = { carry: 0, bodega: 0, mochila: 0 };
+  const deducted = new Set<string>();
+  for (const bag of BAG_ORDER) {
+    for (const d of byBag[bag]) {
+      const unit = itemLiters(d.item);
+      let qty = d.qty;
+      if (worn.has(d.item.id) && !deducted.has(d.item.id) && qty > 0) {
+        qty -= 1;
+        deducted.add(d.item.id);
+      }
+      loads[bag] += unit * qty;
+    }
+  }
+  return loads;
+}
+
+export function distributeItems(items: PackingItem[], bags: MaletaKey[]): Distribution {
   const byBag: Record<MaletaKey, DistributedItem[]> = { carry: [], bodega: [], mochila: [] };
-  const campingItems = items.filter((i) => i.cat === 'camping');
-  const packable = items.filter((i) => i.cat !== 'camping');
-  if (bags.length === 0) return { byBag, campingItems };
+  const separateItems = items.filter(isSeparateItem);
+  const packable = items.filter((i) => !isSeparateItem(i));
+  const worn = wornItemIds(packable);
+  if (bags.length === 0) return { byBag, separateItems, loads: computeLoads(byBag, worn) };
 
   const withYouOrder: MaletaKey[] = (['mochila', 'carry', 'bodega'] as MaletaKey[]).filter((b) => bags.includes(b));
   const primaryOrder: MaletaKey[] = (['bodega', 'carry', 'mochila'] as MaletaKey[]).filter((b) => bags.includes(b));
@@ -66,6 +97,12 @@ export function distributeItems(
   const withYou = withYouOrder[0] ?? bags[0];
   const primary = primaryOrder[0] ?? bags[0];
   const backupBag = backupOrder.find((b) => b !== primary) ?? withYou;
+
+  const isPinned = (item: PackingItem) =>
+    (PREFERRED_BAG[item.name] !== undefined && bags.includes(PREFERRED_BAG[item.name]!)) ||
+    item.cat === 'docs' ||
+    item.cat === 'tech' ||
+    ALWAYS_WITH_YOU.includes(item.name);
 
   for (const item of packable) {
     const preferred = PREFERRED_BAG[item.name];
@@ -92,44 +129,55 @@ export function distributeItems(
     byBag[primary].push({ item, qty: item.qty, isSplit: false });
   }
 
-  return { byBag, campingItems };
+  // Si una valija se pasa de su capacidad y otra tiene lugar, se mueven
+  // ítems enteros (los más grandes primero) hasta que entre. No se mueve
+  // lo que tiene un lugar fijo (documentos, electrónica, lo que va "con
+  // vos", candados) ni lo que ya está repartido entre dos valijas.
+  let loads = computeLoads(byBag, worn);
+  for (const source of bags) {
+    const movable = byBag[source]
+      .filter((d) => !d.isSplit && !isPinned(d.item))
+      .sort((a, b) => itemLiters(b.item) * b.qty - itemLiters(a.item) * a.qty);
+    for (const d of movable) {
+      if (loads[source] <= BAG_CAPACITY_L[source]) break;
+      const size = itemLiters(d.item) * d.qty;
+      const target = BAG_ORDER.find((b) => b !== source && bags.includes(b) && loads[b] + size <= BAG_CAPACITY_L[b]);
+      if (!target) continue;
+      byBag[source] = byBag[source].filter((x) => x !== d);
+      byBag[target].push(d);
+      loads = computeLoads(byBag, worn);
+    }
+  }
+
+  return { byBag, separateItems, loads };
 }
 
-// Algunos ítems ocupan mucho más lugar del que su cantidad sugiere (una
-// campera abrigada o una butaca para auto no son "una unidad más", son un
-// cuarto de valija). No es una cuenta real de volumen — es una heurística
-// orientativa, con el mismo espíritu que el resto de las recomendaciones
-// de esta pantalla.
-const BULK_WEIGHTS: Partial<Record<string, number>> = {
-  'Campera abrigada': 2,
-  'Botas o calzado de abrigo': 2,
-  'Rompeviento impermeable': 1,
-  'Zapatillas de trekking': 1,
-  'Zapatos de vestir': 1,
-  'Cochecito o mochila portabebé': 3,
-  'Butaca para auto': 3,
-  'Mantita o saco de dormir': 1,
-  'Toallón de playa': 1,
-  Transportadora: 3,
-  'Cama o manta': 1,
-  'Campera de nieve': 2,
-  'Pantalón de nieve': 2,
-  'Botas de nieve para caminar': 2,
-  'Segunda capa de polar': 1,
-  'Esquís y bastones (o tabla de snowboard)': 4,
-  'Botas de esquí': 2,
-  Casco: 1,
-  'Chaleco compensador (BCD)': 3,
-  'Traje de neopreno grueso (7mm) o semiseco': 2,
-  'Traje de neopreno intermedio (5mm)': 1,
-  'Aletas de buceo': 1,
-};
+export interface SpaceSummary {
+  usedL: number;
+  capacityL: number;
+  /** Porcentaje total (puede pasar de 100). */
+  pct: number;
+  perBag: { bag: MaletaKey; usedL: number; capacityL: number; pct: number }[];
+  /** true si alguna valija no alcanza, aun después de repartir. */
+  overflow: boolean;
+}
 
-/** true si el "bulto" total pesa bastante para la cantidad de valijas
- * elegidas — señal de que puede convenir sumar lugar (otra valija o una
- * más grande), no una certeza matemática. */
-export function isPackingTight(items: PackingItem[], bags: MaletaKey[]): boolean {
-  if (bags.length === 0) return false;
-  const bulk = items.reduce((sum, i) => sum + (BULK_WEIGHTS[i.name] ?? 0), 0);
-  return bulk >= bags.length * 4;
+/** Cuánto ocupa el viaje en las valijas elegidas. */
+export function spaceSummary(items: PackingItem[], bags: MaletaKey[]): SpaceSummary {
+  const { loads } = distributeItems(items, bags);
+  const perBag = bags.map((bag) => ({
+    bag,
+    usedL: loads[bag],
+    capacityL: BAG_CAPACITY_L[bag],
+    pct: Math.round((100 * loads[bag]) / BAG_CAPACITY_L[bag]),
+  }));
+  const usedL = perBag.reduce((s, b) => s + b.usedL, 0);
+  const capacityL = perBag.reduce((s, b) => s + b.capacityL, 0);
+  return {
+    usedL,
+    capacityL,
+    pct: capacityL > 0 ? Math.round((100 * usedL) / capacityL) : 0,
+    perBag,
+    overflow: perBag.some((b) => b.usedL > b.capacityL + 0.01),
+  };
 }

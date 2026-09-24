@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
-import { isPackingTight } from '../data/distribute';
+import { spaceSummary } from '../data/distribute';
 import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
 import { packedCount, progressNote, progressPct, shareText, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
@@ -12,6 +12,7 @@ import { ChangeMaletasSheet } from '../components/ChangeMaletasSheet';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { BackArrowIcon, EditIcon, LockIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
+import { SpaceMeter } from '../components/SpaceMeter';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { UndoSnackbar } from '../components/UndoSnackbar';
@@ -443,15 +444,7 @@ export function Checklist() {
         </div>
       </div>
 
-      {isPackingTight(items, trip.form.maletas) && (
-        <div className={styles.spaceNote}>
-          ⚠️ Tenés bastantes ítems que ocupan lugar para las valijas que elegiste — quizás convenga sumar una
-          valija más, o una más grande.
-          <button type="button" className={styles.spaceNoteAction} onClick={() => setShowChangeMaletas(true)}>
-            Cambiar valijas
-          </button>
-        </div>
-      )}
+      <SpaceMeter summary={spaceSummary(items, trip.form.maletas)} onChangeBags={() => setShowChangeMaletas(true)} />
 
       <div className={styles.viewToggle}>
         <button

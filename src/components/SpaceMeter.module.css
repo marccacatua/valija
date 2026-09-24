@@ -1,0 +1,78 @@
+.card {
+  margin: 14px 22px 0;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: 20px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 0 var(--shadow-card);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  font: 900 14px/1.2 'Nunito', sans-serif;
+  color: var(--ink);
+}
+
+.pct {
+  font: 1000 18px/1 'Nunito', sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.track {
+  height: 10px;
+  border-radius: 9999px;
+  background: var(--border-subtle);
+  margin-top: 9px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 9999px;
+  transition: width 0.35s ease;
+}
+
+.detail {
+  margin-top: 8px;
+  font: 700 12px/1.35 'Nunito', sans-serif;
+  color: var(--muted);
+}
+
+.message {
+  margin-top: 10px;
+  font: 800 13px/1.4 'Nunito', sans-serif;
+}
+
+.action {
+  display: block;
+  margin-top: 8px;
+  padding: 0;
+  background: none;
+  border: none;
+  font: 900 13px/1 'Nunito', sans-serif;
+  color: var(--coral-dark);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.ok .pct { color: var(--teal-dark); }
+.ok .fill { background: var(--teal); }
+
+.tight .pct { color: var(--mustard-dark); }
+.tight .fill { background: var(--mustard); }
+.tight .message { color: var(--mustard-dark); }
+
+.over { border-color: var(--coral); background: var(--selected-bg); }
+.over .pct { color: var(--coral-dark); }
+.over .fill { background: var(--coral); }
+.over .message { color: var(--coral-dark); }
+
+@media (prefers-reduced-motion: reduce) {
+  .fill { transition: none; }
+}
