@@ -159,3 +159,18 @@
   background: linear-gradient(180deg, transparent 0%, var(--cream) 34%);
   z-index: 6;
 }
+
+/* Aviso de "lavar ropa" marcado solo (viajes largos), debajo de la duración. */
+.autoNotice {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  font: 800 13px/1.35 'Nunito', sans-serif;
+  color: var(--ink);
+}

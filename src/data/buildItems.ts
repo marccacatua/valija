@@ -92,26 +92,41 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   const isBuceo = leisure && f.turismo === 'buceo';
   add('ropa', 'Remeras', cap(isSki ? Math.min(remerasDias, 4) : remerasDias, 8));
   add('ropa', 'Ropa interior', cap(mudaDias + 1, 10));
-  add('ropa', 'Medias', cap(mudaDias, 8));
+  // Con esquí, los días de pista van con "Medias de ski" (categoría ski):
+  // las comunes solo hacen falta para las noches y los días de viaje.
+  // Sin este tope, 7 días de esquí listaban 7 pares comunes + 6 de ski.
+  add('ropa', 'Medias', cap(isSki ? Math.min(mudaDias, 3) : mudaDias, 8));
   // Lavando ropa los pantalones no necesitan escalar con la duración del
   // viaje: se reusan varios días antes de lavarse, a diferencia de
   // remeras/interior/medias.
-  const pantalonesBase = f.lavaRopa ? 2 : Math.max(1, Math.ceil(d / 4));
+  // Lavar ropa solo puede BAJAR la cantidad (tope 2), nunca subirla: antes
+  // un viaje de 2-3 días pasaba de 1 a 2 pantalones al marcarlo. El tope
+  // general de 4 cubre a quien desmarca "lavar ropa" en un viaje largo.
+  const pantalonesSinLavar = cap(Math.max(1, Math.ceil(d / 4)), 4);
+  const pantalonesBase = f.lavaRopa ? Math.min(pantalonesSinLavar, 2) : pantalonesSinLavar;
   add('ropa', 'Pantalones', isSki ? Math.min(pantalonesBase, 2) : pantalonesBase);
   add('ropa', 'Pijama', d > 5 ? 2 : 1);
   add('ropa', 'Cinturón');
   if (f.clima === 'frio') {
+    // Con esquí se mantiene la ropa de abrigo "de calle" que se usa fuera
+    // de la pista (salir a comer, pasear por el pueblo): campera abrigada
+    // y gorro y guantes. Lo que el equipo de ski ya cubre se saca: el
+    // cuello/buff reemplaza a la bufanda, las botas de nieve a las botas
+    // de abrigo, y el polar de la segunda capa a uno de los buzos.
     add('ropa', 'Campera abrigada');
-    add('ropa', 'Buzos', 2);
+    add('ropa', 'Buzos', isSki ? 1 : 2);
     add('ropa', 'Gorro y guantes');
-    add('ropa', 'Bufanda');
-    add('ropa', 'Botas o calzado de abrigo');
+    if (!isSki) {
+      add('ropa', 'Bufanda');
+      add('ropa', 'Botas o calzado de abrigo');
+    }
   }
   if (f.clima === 'templado') add('ropa', 'Buzo o campera liviana');
   // También para navegar: en el mar hace falta un rompeviento/impermeable
   // igual que en la montaña o con lluvia — mismo ítem, no uno propio de
   // "náutica" (evita duplicar algo que ya existe).
-  if (f.clima === 'lluvia' || f.dest.includes('montana') || isNavegar) add('ropa', 'Rompeviento impermeable');
+  // Con esquí no: la campera de nieve ya es impermeable y cortaviento.
+  if ((f.clima === 'lluvia' || f.dest.includes('montana') || isNavegar) && !isSki) add('ropa', 'Rompeviento impermeable');
   if (f.dest.includes('playa') || f.clima === 'calor') {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
@@ -119,7 +134,9 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   }
   if (f.dest.includes('playa')) add('ropa', 'Ojotas o sandalias');
   if (f.vestidos) add('ropa', 'Vestido o pollera', Math.max(1, Math.ceil(d / 3)));
-  if (f.dest.includes('montana') || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
+  // En un viaje de esquí a la montaña, para caminar ya están las botas de
+  // nieve (categoría ski): las zapatillas de trekking sobran.
+  if ((f.dest.includes('montana') && !isSki) || (leisure && f.turismo === 'aventura')) add('ropa', 'Zapatillas de trekking');
   if (leisure && f.turismo === 'aventura') add('ropa', 'Short o pantalón de trekking');
   // Turismo "aventura" ya asume que hacés actividad física, pero el
   // checkbox de deporte cubre al resto (trabajo con gimnasio en el

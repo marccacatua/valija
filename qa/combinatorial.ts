@@ -445,7 +445,15 @@ for (const dias of DIAS)
     // Lavando ropa, los pantalones no escalan con la duración (se reusan);
     // sin lavar, siguen el tope general de siempre.
     const pantalones = raw.find((r) => r.cat === 'ropa' && r.name === 'Pantalones');
-    const esperadoPantalones = lavaRopa ? 2 : Math.max(1, Math.ceil(dias / 4));
+    // Lavar ropa solo baja (tope 2), nunca sube: en 2-3 días sigue en 1.
+    const sinLavar = Math.min(Math.max(1, Math.ceil(dias / 4)), 4);
+    const esperadoPantalones = lavaRopa ? Math.min(sinLavar, 2) : sinLavar;
+    if (lavaRopa) {
+      const sinLavarQty = buildRawItems({ ...form, lavaRopa: false }).find((r) => r.name === 'Pantalones')?.qty ?? 0;
+      if (pantalones && pantalones.qty > sinLavarQty) {
+        fail(form, `Marcar "lavar ropa" SUBE los pantalones (${sinLavarQty} → ${pantalones.qty})`);
+      }
+    }
     if (pantalones && pantalones.qty !== esperadoPantalones) {
       fail(form, `lavaRopa=${lavaRopa}: "Pantalones" qty=${pantalones.qty}, esperado ${esperadoPantalones}`);
     }
@@ -531,7 +539,7 @@ const SKI_DIAS = [1, 2, 3, 4, 5, 6, 8, 10, 14];
 for (const motivo of MOTIVO)
   for (const turismo of ['relax', 'ski'] as TurismoKey[])
     for (const lavaRopa of LAVA_ROPA)
-      for (const clima of ['frio', 'calor'] as ClimaKey[])
+      for (const clima of ['frio', 'calor', 'lluvia'] as ClimaKey[])
         for (const dias of SKI_DIAS)
           for (const equipoPropio of [false, true]) {
           const form: TripFormState = {
@@ -581,6 +589,25 @@ for (const motivo of MOTIVO)
             const pantalones = raw.find((it) => it.cat === 'ropa' && it.name === 'Pantalones');
             if (remeras && remeras.qty > 4) fail(form, `Con ski, "Remeras" no debería superar 4 (qty=${remeras.qty})`);
             if (pantalones && pantalones.qty > 2) fail(form, `Con ski, "Pantalones" no debería superar 2 (qty=${pantalones.qty})`);
+
+            // Con esquí, las medias comunes quedan en 3 como máximo (las de
+            // pista son "Medias de ski").
+            const mediasComunes = raw.find((it) => it.cat === 'ropa' && it.name === 'Medias');
+            if (mediasComunes && mediasComunes.qty > 3) fail(form, `Con ski, "Medias" comunes no debería superar 3 (qty=${mediasComunes.qty})`);
+
+            // Sin duplicados de abrigo: lo que el equipo de ski ya cubre no
+            // se repite en la ropa de calle. Lo que se usa fuera de la pista
+            // (campera abrigada, gorro y guantes) sí se mantiene con frío.
+            for (const dup of ['Bufanda', 'Botas o calzado de abrigo', 'Rompeviento impermeable', 'Zapatillas de trekking']) {
+              if (raw.some((it) => it.name === dup)) fail(form, `Con ski no debería aparecer "${dup}" (lo cubre el equipo de ski)`);
+            }
+            if (clima === 'frio') {
+              for (const keep of ['Campera abrigada', 'Gorro y guantes']) {
+                if (!raw.some((it) => it.name === keep)) fail(form, `Con ski y frío se esperaba "${keep}" para fuera de la pista`);
+              }
+              const buzos = raw.find((it) => it.name === 'Buzos');
+              if (buzos?.qty !== 1) fail(form, `Con ski y frío, "Buzos" debería ser 1 (qty=${buzos?.qty})`);
+            }
 
             // El protector solar suma pase lo que pase el clima elegido.
             const hasSolar = raw.some((it) => it.cat === 'higiene' && it.name === 'Protector solar');

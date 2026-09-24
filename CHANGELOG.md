@@ -31,6 +31,30 @@ junto con el número de versión en `package.json` (visible en el pie de
     se salga del ancho: 160/160.
   - Español sin cambios: 180/180.
 
+## v1.9.0
+
+**Cantidades más certeras** (salió de la revisión de la lógica).
+
+- **"Lavar ropa" se marca solo en viajes de 10 días o más**, con un aviso
+  debajo de la duración y un botón "No voy a lavar" para desmarcarlo. Si
+  el viaje se vuelve a acortar, se desmarca solo. Si la persona lo toca a
+  mano, su elección manda y no se vuelve a cambiar solo.
+- **Fix: "lavar ropa" ya no sube los pantalones.** En 2 o 3 días pasaba de
+  1 a 2; ahora solo puede bajar la cantidad (tope 2). Sin lavar, el tope
+  es de 4 pantalones (antes 30 días daban 8).
+- **Esquí sin duplicados de abrigo.** Se mantiene lo que se usa fuera de
+  la pista (campera abrigada, gorro y guantes para salir a comer o
+  pasear). Se saca lo que el equipo de esquí ya cubre:
+  - "Bufanda": la reemplaza el cuello/buff.
+  - "Botas o calzado de abrigo" y "Zapatillas de trekking": las
+    reemplazan las botas de nieve.
+  - "Rompeviento impermeable": la campera de nieve ya lo es.
+  - Buzos: pasan de 2 a 1, porque el polar cumple esa función.
+  - Medias comunes: tope de 3, porque en la pista se usan las de esquí.
+    En 7 días de esquí eran 13 pares y ahora son 9.
+- QA: combinatorio sin errores (con reglas nuevas para esquí y
+  pantalones), Playwright 188/188.
+
 ## v1.8.0
 
 **Los viajes y la compra de Pro, más seguros en la app nativa.** Hay

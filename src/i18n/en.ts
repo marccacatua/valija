@@ -226,4 +226,6 @@ export const EN: Record<string, string> = {
   "A partir de ahora": "From now on",
   "no te olvidás más nada": "you'll never forget a thing",
   "Armá la valija perfecta en 30 segundos. Vos elegís el viaje, nosotros la lista.": "Pack the perfect bag in 30 seconds. You pick the trip, we make the list.",
+  "Como son {n} días o más, marcamos \"Pienso lavar ropa en el viaje\": la lista calcula la ropa para lavar en el camino.": "Since it's {n} days or more, we ticked \"I'll do laundry on the trip\": the list plans clothes for washing along the way.",
+  "No voy a lavar": "I won't do laundry",
 };

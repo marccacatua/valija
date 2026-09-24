@@ -140,6 +140,9 @@ try {
     await checkScreen(page, 'Formulario - buceo equipo propio');
     await click(page, "I'm bringing my own gear");
     await checkScreen(page, 'Formulario - buceo alquilado');
+    await click(page, 'Long · 14');
+    await page.waitForSelector("text=I won't do laundry");
+    await checkScreen(page, 'Formulario - lavar ropa automático (14 días)');
     await click(page, 'Work');
     assert((await page.locator('text=Type of trip').count()) === 0, 'Con "Work" no aparece "Type of trip"');
     await ctx.close();
