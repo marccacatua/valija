@@ -4,6 +4,34 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## Sin publicar — rama `multi-turismo-clima` (a prueba)
+
+- **Clima y tipo de turismo se pueden elegir de a varios**, igual que el
+  destino ("elegí uno o varios", siempre queda al menos uno). Pensado
+  para viajes largos: por ejemplo, calor + frío, o relax + cultural +
+  esquí.
+- **La lista suma lo de cada opción**, salvo tres reemplazos a propósito:
+  - Con frío, el buzo liviano de "templado" sobra, porque ya van los
+    buzos y la campera.
+  - Con esquí, sigue sin bufanda, botas de abrigo ni rompeviento, porque
+    los cubre el equipo de esquí. El rompeviento vuelve si además se
+    navega.
+  - En buceo va un solo traje: el del clima más frío.
+- **La ropa de calle baja solo si el viaje es únicamente de esquí.** Con
+  esquí + otra actividad, esos otros días se usa ropa normal.
+- Esquí con calor sin frío: el aviso ahora ofrece **"Sumar Frío"** en vez
+  de reemplazar el clima. "Llevo mi propio equipo" con esquí y buceo a la
+  vez explica los dos equipos.
+- **Viajes ya guardados:** se migran solos al abrirlos (un clima y un
+  turismo pasan a ser una lista de uno), sin perder nada. Hay un test con
+  un viaje viejo de navegar.
+- QA: combinatorio sin errores, con 840 combinaciones múltiples nuevas
+  que verifican que la lista incluya todo lo de cada opción suelta.
+  Playwright 203/203.
+- Pendiente al hacer el merge: resolver con las ramas `i18n-en` y
+  `espacio-litros`, que tocan los mismos archivos, y traducir "Sumar Frío"
+  y el texto del equipo doble.
+
 ## v1.9.0
 
 **Cantidades más certeras** (salió de la revisión de la lógica).

@@ -2387,14 +2387,78 @@ try {
     assert((await warning.count()) === 0, 'Buceo con calor no muestra el aviso de clima', '');
     await page.click('button:has-text("Esquí")');
     assert((await warning.count()) === 1, 'Esquí con calor muestra el aviso de clima', '');
-    await page.click('button:has-text("Cambiar a Frío")');
-    assert((await warning.count()) === 0, '"Cambiar a Frío" cambia el clima y el aviso desaparece', '');
+    await page.click('button:has-text("Sumar Frío")');
+    assert((await warning.count()) === 0, '"Sumar Frío" suma el frío y el aviso desaparece', '');
+    const calorPressed = await page.locator('button', { hasText: /^Calor$/ }).getAttribute('aria-pressed');
+    assert(calorPressed === 'true', '"Sumar Frío" no saca el calor ya elegido (clima múltiple)', `aria-pressed=${calorPressed}`);
+    await page.click('button:has-text("Frío")'); // lo vuelve a sacar
+    assert((await warning.count()) === 1, 'Sin frío, con esquí y calor, el aviso vuelve', '');
     await page.click('button:has-text("Templado")');
+    await page.click('button:has-text("Calor")'); // queda solo templado
     assert((await warning.count()) === 0, 'Esquí con templado no muestra el aviso (esquí de primavera)', '');
-    await page.click('button:has-text("Calor")');
-    assert((await warning.count()) === 1, 'Volver a Calor con esquí muestra el aviso otra vez', '');
     await ctx.close();
   }
+
+  // --- 62. Clima y turismo múltiples ---
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")'); // calor + frío
+    await page.click('button:has-text("Cultural")'); // relax + cultural
+    await page.click('button:has-text("Esquí")'); // + esquí
+    const pressed = async (name) => page.locator('button', { hasText: new RegExp(`^${name}$`) }).first().getAttribute('aria-pressed');
+    assert((await pressed('Calor')) === 'true' && (await pressed('Frío')) === 'true', 'Se pueden elegir dos climas a la vez');
+    assert(
+      (await pressed('Relax')) === 'true' && (await pressed('Cultural')) === 'true' && (await pressed('Esquí')) === 'true',
+      'Se pueden elegir varios tipos de turismo a la vez',
+    );
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chips.includes('Calor + Frío'), 'Los chips muestran los dos climas', `chips=${chips}`);
+    assert(chips.includes('Relax + Cultural + Esquí'), 'Los chips muestran los tres turismos', `chips=${chips}`);
+    const need = ['Traje de baño', 'Campera abrigada', 'Campera de nieve', 'Cámara y memoria', 'Libro o e-reader'];
+    for (const n of need) {
+      const c = await page.locator('button', { hasText: n }).count();
+      assert(c >= 1, `Calor + frío + relax + cultural + esquí incluye "${n}"`, `count=${c}`);
+    }
+    await ctx.close();
+  }
+  {
+    // Siempre queda al menos un clima y un turismo elegido.
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Calor")');
+    const calor = await page.locator('button', { hasText: /^Calor$/ }).getAttribute('aria-pressed');
+    assert(calor === 'true', 'No se puede dejar el clima vacío', `aria-pressed=${calor}`);
+    await page.click('button:has-text("Relax")');
+    const relax = await page.locator('button', { hasText: /^Relax$/ }).getAttribute('aria-pressed');
+    assert(relax === 'true', 'No se puede dejar el turismo vacío', `aria-pressed=${relax}`);
+    await ctx.close();
+  }
+  {
+    // Viajes guardados antes de v1.10.0: clima y turismo como un solo valor.
+    const { ctx, page } = await freshPage(browser);
+    const old = {
+      id: 'viejo1', createdAt: '2026-09-01T00:00:00.000Z',
+      form: { name: '', dest: ['playa'], clima: 'frio', motivo: 'placer', turismo: 'navegar', aloj: 'hotel', transporte: 'avion', maletas: ['carry'], dias: 5, vestidos: false, lavaRopa: false, bebe: false, mascota: false, deporte: false, equipoPropio: false },
+      items: [{ id: 'i1', cat: 'docs', name: 'DNI y pasaporte', qty: 1, done: true }],
+      homeChecklist: [], boatChecklist: [{ id: 'boat-0', label: 'Botiquín', done: false }],
+    };
+    await page.evaluate((t) => localStorage.setItem('valija:trips', JSON.stringify([t])), old);
+    await page.goto(`${BASE}/viaje/viejo1`);
+    await page.waitForSelector('text=Tu valija para');
+    const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chips.includes('Frío') && chips.includes('Navegar'), 'Un viaje viejo (clima y turismo de un solo valor) se abre y muestra sus chips', `chips=${chips}`);
+    assert((await page.locator('text=¿Está todo listo para zarpar?').count()) === 1, 'El viaje viejo de navegar conserva su lista del barco');
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    assert((await page.locator('text=/Frío|Playa/').count()) >= 1, 'El viaje viejo aparece bien en "Mis viajes"');
+    await ctx.close();
+  }
+
   // --- 60. "Lavar ropa" automático en viajes de 10 días o más ---
   {
     const { ctx, page } = await freshPage(browser);

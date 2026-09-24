@@ -54,21 +54,31 @@ function createChecklistActions(
  * en vez de `form.maletas` (array); antes de la v0.12.0 pasa lo mismo
  * con `form.dest` (un solo valor en vez de array, ver combinar destinos
  * en BACKLOG.md); antes de la v0.13.0 no existía `homeChecklist`; antes
- * de sumar "navegar" no existía `boatChecklist`. Se migra en lectura,
+ * de sumar "navegar" no existía `boatChecklist`; antes de la v1.10.0
+ * `form.clima` y `form.turismo` eran un solo valor. Se migra en lectura,
  * sin tocar lo que ya está en localStorage — así no hace falta un paso
  * de migración explícito ni arriesgarse a corromper datos viejos.
  */
 function migrateTrip(t: Trip): Trip {
-  const form = t.form as TripFormState & { maleta?: string; dest: TripFormState['dest'] | TripFormState['dest'][number] };
+  const form = t.form as TripFormState & {
+    maleta?: string;
+    dest: TripFormState['dest'] | TripFormState['dest'][number];
+    clima: TripFormState['clima'] | TripFormState['clima'][number];
+    turismo: TripFormState['turismo'] | TripFormState['turismo'][number];
+  };
   const needsMaletas = !Array.isArray(form.maletas);
   const needsDest = !Array.isArray(form.dest);
   const needsHomeChecklist = !Array.isArray(t.homeChecklist);
   const needsBoatChecklist = !Array.isArray(t.boatChecklist);
-  if (!needsMaletas && !needsDest && !needsHomeChecklist && !needsBoatChecklist) return t;
+  const needsClima = !Array.isArray(form.clima);
+  const needsTurismo = !Array.isArray(form.turismo);
+  if (!needsMaletas && !needsDest && !needsHomeChecklist && !needsBoatChecklist && !needsClima && !needsTurismo) return t;
   const migratedForm: TripFormState = {
     ...form,
     maletas: needsMaletas ? (form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry']) : form.maletas,
     dest: needsDest ? [form.dest as TripFormState['dest'][number]] : form.dest,
+    clima: needsClima ? [form.clima as TripFormState['clima'][number]] : form.clima,
+    turismo: needsTurismo ? [form.turismo as TripFormState['turismo'][number]] : form.turismo,
   };
   return {
     ...t,

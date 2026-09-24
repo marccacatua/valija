@@ -16,9 +16,9 @@ import type { CategoryKey, PackingItem, Trip, TripFormState } from '../types';
 export const DEFAULT_FORM: TripFormState = {
   name: '',
   dest: ['playa'],
-  clima: 'calor',
+  clima: ['calor'],
   motivo: 'placer',
-  turismo: 'relax',
+  turismo: ['relax'],
   aloj: 'depto',
   transporte: 'avion',
   maletas: ['carry'],
@@ -55,13 +55,13 @@ export function tripMetaLine(form: TripFormState): string {
 export function tripMetaChips(form: TripFormState): string[] {
   return [
     labelForMany(DEST_OPTIONS, form.dest),
-    labelFor(CLIMA_OPTIONS, form.clima),
+    labelForMany(CLIMA_OPTIONS, form.clima),
     labelFor(MOTIVO_OPTIONS, form.motivo),
     // No se pregunta con motivo "trabajo" (ver TripForm.tsx) — mostrarlo
     // igual sería el valor por defecto sin que el usuario lo haya
     // elegido nunca. Importante que aparezca acá: con esquí/navegar
     // cambia toda la categoría de ítems, no es un detalle cosmético.
-    ...(form.motivo !== 'trabajo' ? [labelFor(TURISMO_OPTIONS, form.turismo)] : []),
+    ...(form.motivo !== 'trabajo' ? [labelForMany(TURISMO_OPTIONS, form.turismo)] : []),
     diasLabel(form.dias),
     labelFor(TRANSPORTE_OPTIONS, form.transporte),
     labelForMany(MALETA_OPTIONS, form.maletas),
@@ -71,7 +71,7 @@ export function tripMetaChips(form: TripFormState): string[] {
 // Se usan en el resumen de "Nuevo viaje" para mostrar el resto de las
 // elecciones sin repetir lo que ya aparece en los chips principales.
 export function tripExtraSummary(form: TripFormState): string {
-  return [labelFor(TURISMO_OPTIONS, form.turismo), labelFor(ALOJ_OPTIONS, form.aloj), labelFor(TRANSPORTE_OPTIONS, form.transporte)].join(
+  return [labelForMany(TURISMO_OPTIONS, form.turismo), labelFor(ALOJ_OPTIONS, form.aloj), labelFor(TRANSPORTE_OPTIONS, form.transporte)].join(
     ' · ',
   );
 }
@@ -132,7 +132,7 @@ export function templatePlaceholder(form: TripFormState): string {
   if (form.dest.includes('playa')) return 'Kit snorkel';
   if (form.dest.includes('montana')) return 'Kit escalada';
   // ciudad
-  if (form.turismo === 'fiesta') return 'Kit noche de salida';
+  if (form.turismo.includes('fiesta')) return 'Kit noche de salida';
   if (form.motivo === 'trabajo') return 'Kit oficina';
   return 'Kit museos';
 }

@@ -92,12 +92,25 @@ export function TripForm() {
     set('aloj', key);
   };
 
-  const selectTurismo = (key: TripFormState['turismo']) => {
+  // Mismo patrón que el destino: se pueden combinar varios y siempre queda
+  // al menos uno.
+  const toggleClima = (key: TripFormState['clima'][number]) =>
+    setForm((prev) => {
+      const has = prev.clima.includes(key);
+      if (has && prev.clima.length === 1) return prev;
+      return { ...prev, clima: has ? prev.clima.filter((c) => c !== key) : [...prev.clima, key] };
+    });
+
+  const selectTurismo = (key: TripFormState['turismo'][number]) => {
     if ((key === 'ski' || key === 'navegar' || key === 'buceo') && !canExtraCategories) {
       setShowPaywall(true);
       return;
     }
-    set('turismo', key);
+    setForm((prev) => {
+      const has = prev.turismo.includes(key);
+      if (has && prev.turismo.length === 1) return prev;
+      return { ...prev, turismo: has ? prev.turismo.filter((x) => x !== key) : [...prev.turismo, key] };
+    });
   };
 
   const setDias = (next: number) => {
@@ -127,6 +140,8 @@ export function TripForm() {
   };
 
   const itemsPreview = countItems(form);
+  const hasSki = form.turismo.includes('ski');
+  const hasBuceo = form.turismo.includes('buceo');
 
   return (
     <div className={styles.screen}>
@@ -199,7 +214,7 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Clima</SectionLabel>
+            <SectionLabel hint="elegí uno o varios">Clima</SectionLabel>
             <div className={styles.grid4}>
               {CLIMA_OPTIONS.map((opt) => (
                 <OptionCard
@@ -207,8 +222,8 @@ export function TripForm() {
                   compact
                   label={opt.label}
                   icon={ClimaIcons[opt.key]}
-                  selected={form.clima === opt.key}
-                  onSelect={() => set('clima', opt.key)}
+                  selected={form.clima.includes(opt.key)}
+                  onSelect={() => toggleClima(opt.key)}
                 />
               ))}
             </div>
@@ -216,19 +231,19 @@ export function TripForm() {
 
           {form.motivo !== 'trabajo' && (
             <div>
-              <SectionLabel>Tipo de turismo</SectionLabel>
+              <SectionLabel hint="elegí uno o varios">Tipo de turismo</SectionLabel>
               <div className={styles.wrap}>
                 {TURISMO_OPTIONS.map((opt) => (
                   <OptionChip
                     key={opt.key}
                     label={opt.label}
-                    selected={form.turismo === opt.key}
+                    selected={form.turismo.includes(opt.key)}
                     locked={(opt.key === 'ski' || opt.key === 'navegar' || opt.key === 'buceo') && !canExtraCategories}
                     onSelect={() => selectTurismo(opt.key)}
                   />
                 ))}
               </div>
-              {(form.turismo === 'ski' || form.turismo === 'buceo') && (
+              {(hasSki || hasBuceo) && (
                 <>
                   <div className={styles.wrap} style={{ marginTop: 8 }}>
                     <OptionChip
@@ -238,21 +253,27 @@ export function TripForm() {
                     />
                   </div>
                   <div className={styles.equipoHint}>
-                    {form.turismo === 'ski'
+                    {hasSki && hasBuceo
                       ? form.equipoPropio
-                        ? 'Sumamos esquís, botas y casco a tu lista.'
-                        : 'Asumimos que alquilás esquís, botas y casco allá.'
-                      : form.equipoPropio
-                        ? 'Sumamos traje, chaleco, regulador y aletas. El tubo y el lastre se alquilan siempre.'
-                        : 'Asumimos que alquilás traje, chaleco, regulador, aletas, tubo y lastre allá.'}
+                        ? 'Sumamos esquís, botas y casco, y traje, chaleco, regulador y aletas. El tubo y el lastre se alquilan siempre.'
+                        : 'Asumimos que alquilás allá el equipo de esquí y el de buceo.'
+                      : hasSki
+                        ? form.equipoPropio
+                          ? 'Sumamos esquís, botas y casco a tu lista.'
+                          : 'Asumimos que alquilás esquís, botas y casco allá.'
+                        : form.equipoPropio
+                          ? 'Sumamos traje, chaleco, regulador y aletas. El tubo y el lastre se alquilan siempre.'
+                          : 'Asumimos que alquilás traje, chaleco, regulador, aletas, tubo y lastre allá.'}
                   </div>
                 </>
               )}
-              {form.turismo === 'ski' && form.clima === 'calor' && (
+              {/* Con varios climas se sugiere SUMAR frío (la playa del mismo
+                  viaje puede tener calor), no reemplazar lo elegido. */}
+              {hasSki && form.clima.includes('calor') && !form.clima.includes('frio') && (
                 <div className={styles.climaWarning}>
                   <span>¿Esquí con calor? En la nieve suele hacer frío.</span>
-                  <button type="button" className={styles.climaFix} onClick={() => set('clima', 'frio')}>
-                    Cambiar a Frío
+                  <button type="button" className={styles.climaFix} onClick={() => toggleClima('frio')}>
+                    Sumar Frío
                   </button>
                 </div>
               )}

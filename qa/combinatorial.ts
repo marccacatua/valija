@@ -80,9 +80,9 @@ for (const dest of DEST_SUBSETS)
                   const form: TripFormState = {
                     name: 'QA',
                     dest,
-                    clima,
+                    clima: [clima],
                     motivo,
-                    turismo,
+                    turismo: [turismo],
                     aloj,
                     transporte,
                     maletas,
@@ -311,9 +311,9 @@ for (const dest of DEST_SUBSETS)
           const form: TripFormState = {
             name: 'QA-bebe',
             dest,
-            clima,
+            clima: [clima],
             motivo: 'placer',
-            turismo: 'relax',
+            turismo: ['relax'],
             aloj: 'depto',
             transporte,
             maletas: ['carry'],
@@ -363,9 +363,9 @@ for (const dest of DEST_SUBSETS)
         const form: TripFormState = {
           name: 'QA-mascota',
           dest,
-          clima: 'templado',
+          clima: ['templado'],
           motivo: 'placer',
-          turismo: 'relax',
+          turismo: ['relax'],
           aloj: 'depto',
           transporte,
           maletas: ['carry'],
@@ -405,9 +405,9 @@ for (const dias of DIAS)
     const form: TripFormState = {
       name: 'QA-lavaRopa',
       dest: ['ciudad'],
-      clima: 'templado',
+      clima: ['templado'],
       motivo: 'placer',
-      turismo: 'relax',
+      turismo: ['relax'],
       aloj: 'depto',
       transporte: 'avion',
       maletas: ['carry'],
@@ -473,9 +473,9 @@ for (const motivo of MOTIVO)
           const form: TripFormState = {
             name: 'QA-deporte',
             dest: ['ciudad'],
-            clima,
+            clima: [clima],
             motivo,
-            turismo,
+            turismo: [turismo],
             aloj: 'depto',
             transporte: 'avion',
             maletas: ['carry'],
@@ -545,9 +545,9 @@ for (const motivo of MOTIVO)
           const form: TripFormState = {
             name: 'QA-ski',
             dest: ['montana'],
-            clima,
+            clima: [clima],
             motivo,
-            turismo,
+            turismo: [turismo],
             aloj: 'depto',
             transporte: 'avion',
             maletas: ['carry'],
@@ -631,9 +631,9 @@ for (const motivo of MOTIVO)
         const form: TripFormState = {
           name: 'QA-navegar',
           dest: ['playa'],
-          clima,
+          clima: [clima],
           motivo,
-          turismo,
+          turismo: [turismo],
           aloj: 'depto',
           transporte: 'avion',
           maletas: ['carry'],
@@ -695,9 +695,9 @@ for (const motivo of MOTIVO)
         const form: TripFormState = {
           name: 'QA-buceo',
           dest: ['playa'],
-          clima,
+          clima: [clima],
           motivo,
-          turismo,
+          turismo: [turismo],
           aloj: 'depto',
           transporte: 'avion',
           maletas: ['carry'],
@@ -750,6 +750,76 @@ for (const motivo of MOTIVO)
           if (hasVaselina) fail(form, 'Sin buceo, no debería aparecer "Vaselina"');
         }
       }
+
+// ============================================================
+// Bloque dedicado: clima y turismo múltiples. Propiedad central: un viaje
+// con varias opciones incluye todo lo que tendría cada opción por
+// separado (la lista SUMA), salvo los reemplazos documentados:
+// - con frío, el buzo liviano de "templado" sobra (ya hay buzos);
+// - con esquí, lo que cubre su equipo (bufanda, botas de abrigo, trekking
+//   por montaña, rompeviento salvo navegando);
+// - en buceo va un solo traje: el del clima más frío.
+// ============================================================
+{
+  const subsets = <T,>(xs: T[], maxSize: number): T[][] => {
+    const out: T[][] = [];
+    const rec = (start: number, acc: T[]) => {
+      if (acc.length > 0) out.push([...acc]);
+      if (acc.length === maxSize) return;
+      for (let i = start; i < xs.length; i++) rec(i + 1, [...acc, xs[i]]);
+    };
+    rec(0, []);
+    return out;
+  };
+  const TURISMOS: TurismoKey[] = ['relax', 'aventura', 'cultura', 'fiesta', 'ski', 'navegar', 'buceo'];
+  const WETSUITS = ['Traje de neopreno grueso (7mm) o semiseco', 'Traje de neopreno intermedio (5mm)', 'Traje de neopreno fino (3mm) o shorty'];
+  for (const climas of subsets(CLIMA, 4))
+    for (const turismos of subsets(TURISMOS, 2))
+      for (const equipoPropio of [false, true]) {
+        const base: TripFormState = {
+          name: 'QA-multi', dest: ['playa', 'montana'], clima: climas, motivo: 'placer', turismo: turismos, aloj: 'hotel',
+          transporte: 'avion', maletas: ['carry'], dias: 7, vestidos: false, lavaRopa: false, bebe: false, mascota: false,
+          deporte: false, equipoPropio,
+        };
+        combos++;
+        const multi = new Set(buildRawItems(base).map((r) => r.name));
+        const isSki = turismos.includes('ski');
+        const excluded = new Set<string>(WETSUITS);
+        if (climas.includes('frio')) excluded.add('Buzo o campera liviana');
+        if (isSki) {
+          for (const n of ['Bufanda', 'Botas o calzado de abrigo', 'Zapatillas de trekking']) excluded.add(n);
+          if (!turismos.includes('navegar')) excluded.add('Rompeviento impermeable');
+        }
+        if (turismos.includes('aventura')) excluded.delete('Zapatillas de trekking');
+        for (const c of climas)
+          for (const t of turismos) {
+            const single = buildRawItems({ ...base, clima: [c], turismo: [t] });
+            for (const r of single) {
+              if (!multi.has(r.name) && !excluded.has(r.name)) {
+                fail(base, `Con clima=[${climas}] turismo=[${turismos}] falta "${r.name}" (aparece con clima=${c}, turismo=${t})`);
+              }
+            }
+          }
+        // Buceo con equipo propio: un solo traje, el del clima más frío.
+        const suits = WETSUITS.filter((w) => multi.has(w));
+        if (turismos.includes('buceo') && equipoPropio) {
+          const expected = climas.includes('frio') ? WETSUITS[0] : climas.includes('templado') || climas.includes('lluvia') ? WETSUITS[1] : WETSUITS[2];
+          if (suits.length !== 1 || suits[0] !== expected) fail(base, `Buceo con clima=[${climas}]: trajes=${suits}, esperado ${expected}`);
+        } else if (suits.length > 0) {
+          fail(base, `Sin buceo con equipo propio no debería haber traje de neopreno (${suits})`);
+        }
+        // Esquí + otra actividad: la ropa de calle NO baja (los otros días se usa).
+        if (isSki && turismos.length > 1) {
+          const other = turismos.find((t) => t !== 'ski')!;
+          const remerasMulti = buildRawItems(base).find((r) => r.name === 'Remeras')?.qty;
+          const remerasOther = buildRawItems({ ...base, turismo: [other] }).find((r) => r.name === 'Remeras')?.qty;
+          if (remerasMulti !== remerasOther) fail(base, `Esquí + ${other}: Remeras=${remerasMulti}, esperado ${remerasOther} (sin el tope de solo-esquí)`);
+        }
+        // La lista del barco aparece si y solo si navegar está entre los elegidos.
+        const boat = buildBoatChecklist(base);
+        if ((boat.length > 0) !== turismos.includes('navegar')) fail(base, `boatChecklist=${boat.length} con turismo=[${turismos}]`);
+      }
+}
 
 console.log(`Combinaciones de formulario probadas: ${combos}`);
 console.log(`Chequeos de distribución (combo x subconjunto de valijas): ${distributionChecks}`);

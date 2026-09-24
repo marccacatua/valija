@@ -56,6 +56,6 @@ const BOAT_TASKS = [
 ];
 
 export function buildBoatChecklist(form: TripFormState): HomeTask[] {
-  if (form.motivo === 'trabajo' || form.turismo !== 'navegar') return [];
+  if (form.motivo === 'trabajo' || !form.turismo.includes('navegar')) return [];
   return BOAT_TASKS.map((label, i) => ({ id: `boat-${i}`, label, done: false }));
 }
