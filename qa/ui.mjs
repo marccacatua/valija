@@ -2462,6 +2462,45 @@ try {
     await ctx.close();
   }
 
+  // --- 63. "Ajustar cantidades para que entre" ---
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")'); // calor + frío
+    await page.click('button:has-text("Cultural")'); // relax + cultural
+    await page.click('button:has-text("Semana · 7")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    assert((await page.locator('text=No te entra todo').count()) === 1, 'Calor + frío, 7 días, en carry-on: no entra');
+    const fitBtn = page.locator('button', { hasText: 'Ajustar cantidades para que entre' });
+    assert((await fitBtn.count()) === 1, 'Se ofrece "Ajustar cantidades para que entre"');
+    await fitBtn.click();
+    await page.waitForTimeout(150);
+    assert((await page.locator('text=No te entra todo').count()) === 0, 'Después de ajustar, el aviso de que no entra desaparece');
+    assert((await page.locator('text=/prendas? menos: vas a lavar en el viaje/').count()) === 1, 'Aparece el aviso con "Deshacer" diciendo cuántas prendas se bajaron');
+    await page.click('button:has-text("Deshacer")');
+    await page.waitForTimeout(150);
+    assert((await page.locator('text=No te entra todo').count()) === 1, '"Deshacer" vuelve las cantidades como estaban');
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Frío")');
+    await page.click('button:has-text("Cultural")');
+    await page.click('button:has-text("Esquí")');
+    await page.click('button:has-text("Semana · 7")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    assert((await page.locator('text=Ni bajando cantidades entra').count()) === 1, 'Si ni bajando cantidades entra, lo dice');
+    assert((await page.locator('button', { hasText: 'Ajustar cantidades para que entre' }).count()) === 0, 'Y no ofrece un ajuste que no alcanza');
+    await ctx.close();
+  }
+
   // --- 60. "Lavar ropa" automático en viajes de 10 días o más ---
   {
     const { ctx, page } = await freshPage(browser);

@@ -142,7 +142,11 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (f.dest.includes('playa') || hasClima('calor')) {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
-    add('ropa', 'Shorts o bermudas', cap(Math.ceil(d / 2), 4));
+    // Si además hay otro clima (un tramo con frío o templado), no todos los
+    // días son de short: la mitad de lo que se llevaría a un viaje solo de
+    // calor.
+    const soloCalor = f.clima.every((c) => c === 'calor');
+    add('ropa', 'Shorts o bermudas', soloCalor ? cap(Math.ceil(d / 2), 4) : cap(Math.ceil(d / 4), 2));
   }
   if (f.dest.includes('playa')) add('ropa', 'Ojotas o sandalias');
   if (f.vestidos) add('ropa', 'Vestido o pollera', Math.max(1, Math.ceil(d / 3)));

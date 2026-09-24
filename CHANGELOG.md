@@ -4,7 +4,28 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
-## Sin publicar — rama `multi-turismo-clima` (a prueba)
+## v1.10.0
+
+**Clima y turismo múltiples, espacio en litros y ajuste para que entre.**
+Une las ramas `multi-turismo-clima` y `espacio-litros`, que el usuario
+aprobó, y suma:
+
+- **"Ajustar cantidades para que entre":** cuando las valijas no alcanzan,
+  la tarjeta de espacio dice cuántas prendas menos harían falta y ofrece
+  bajarlas con un toque. Baja de a una la prenda reducible más grande
+  (remeras, ropa interior, medias, pantalones, buzos, primera piel...),
+  sin pasar de un mínimo razonable y sin tocar lo ya tildado. Aparece un
+  aviso con "Deshacer". Si ni bajando todo al mínimo entra, lo dice y
+  sugiere sumar una valija. Por ejemplo, 7 días con calor + frío en
+  carry-on pasa de 115 % a 99 % con 5 prendas menos.
+- **Shorts con varios climas:** si además del calor hay otro clima, se
+  lleva la mitad de shorts (tope 2) en vez de lo de un viaje solo de
+  calor.
+- QA: combinatorio sin errores, con reglas nuevas para el ajuste (nunca
+  baja de 1, no toca lo tildado, si dice que entra entra, no baja nada si
+  ya entraba). Playwright 217/217.
+
+### Selección múltiple (ex rama `multi-turismo-clima`)
 
 - **Clima y tipo de turismo se pueden elegir de a varios**, igual que el
   destino ("elegí uno o varios", siempre queda al menos uno). Pensado
@@ -28,11 +49,8 @@ junto con el número de versión en `package.json` (visible en el pie de
 - QA: combinatorio sin errores, con 840 combinaciones múltiples nuevas
   que verifican que la lista incluya todo lo de cada opción suelta.
   Playwright 203/203.
-- Pendiente al hacer el merge: resolver con las ramas `i18n-en` y
-  `espacio-litros`, que tocan los mismos archivos, y traducir "Sumar Frío"
-  y el texto del equipo doble.
 
-## Sin publicar — rama `espacio-litros` (espacio en litros, a prueba)
+### Espacio en litros (ex rama `espacio-litros`)
 
 - **Cada ítem tiene un tamaño estándar en litros** (`src/data/volume.ts`):
   remera 0,8 L, pantalón 1,5 L, campera abrigada 6 L, zapatillas 4,5 L,
@@ -57,7 +75,6 @@ junto con el número de versión en `package.json` (visible en el pie de
 - QA: combinatorio sin errores. Se agregaron chequeos de que los litros
   cuadren en 5,2 millones de repartos y de que cada ítem posible tenga su
   tamaño. Playwright 195/195.
-- Queda pendiente traducirlo al inglés cuando se mezcle con `i18n-en`.
 
 ## v1.9.0
 

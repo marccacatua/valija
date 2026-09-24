@@ -68,6 +68,21 @@
 .tight .fill { background: var(--mustard); }
 .tight .message { color: var(--mustard-dark); }
 
+
+.fitBtn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: none;
+  background: var(--coral);
+  color: var(--paper);
+  font: 900 14px/1.2 'Nunito', sans-serif;
+  box-shadow: 0 3px 0 var(--coral-dark);
+  cursor: pointer;
+}
+
 .over { border-color: var(--coral); background: var(--selected-bg); }
 .over .pct { color: var(--coral-dark); }
 .over .fill { background: var(--coral); }

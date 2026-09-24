@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
-import { spaceSummary } from '../data/distribute';
+import { fitToBags, spaceSummary } from '../data/distribute';
 import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
 import { packedCount, progressNote, progressPct, shareText, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
@@ -34,6 +34,7 @@ export function Checklist() {
     toggleItem,
     bumpItem,
     setItemsDone,
+    setItemQtys,
     renameTrip,
     updateMaletas,
     toggleHomeTask,
@@ -72,6 +73,7 @@ export function Checklist() {
     | { kind: 'item'; data: PackingItem; index: number }
     | { kind: 'homeTask'; data: HomeTask; index: number }
     | { kind: 'boatTask'; data: HomeTask; index: number }
+    | { kind: 'qty'; data: Record<string, number>; removed: number }
     | null
   >(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -218,6 +220,7 @@ export function Checklist() {
     if (pendingUndo?.kind === 'item') restoreItem(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'boatTask') restoreBoatTask(trip.id, pendingUndo.data, pendingUndo.index);
+    else if (pendingUndo?.kind === 'qty') setItemQtys(trip.id, pendingUndo.data);
     setPendingUndo(null);
   };
 
@@ -247,6 +250,18 @@ export function Checklist() {
   // que usa tripTitle(), útil como placeholder para no mostrar un campo
   // en blanco sin ninguna pista de qué va a pasar
   const autoTitle = tripTitle({ ...trip.form, name: '' });
+
+  // Espacio en las valijas (ver data/volume.ts) y, si no entra, el plan
+  // para bajar cantidades de prendas que se pueden lavar y repetir.
+  const space = spaceSummary(items, trip.form.maletas);
+  const fitPlan = space.overflow ? fitToBags(items, trip.form.maletas) : null;
+  const handleFit = () => {
+    if (!fitPlan?.fits) return;
+    const previous: Record<string, number> = {};
+    for (const id of Object.keys(fitPlan.qtys)) previous[id] = items.find((i) => i.id === id)!.qty;
+    setItemQtys(trip.id, fitPlan.qtys);
+    armUndo({ kind: 'qty', data: previous, removed: fitPlan.removed });
+  };
 
   const packed = packedCount(items);
   const pct = progressPct(items);
@@ -444,7 +459,12 @@ export function Checklist() {
         </div>
       </div>
 
-      <SpaceMeter summary={spaceSummary(items, trip.form.maletas)} onChangeBags={() => setShowChangeMaletas(true)} />
+      <SpaceMeter
+        summary={space}
+        fitPlan={fitPlan}
+        onFit={handleFit}
+        onChangeBags={() => setShowChangeMaletas(true)}
+      />
 
       <div className={styles.viewToggle}>
         <button
@@ -571,7 +591,13 @@ export function Checklist() {
 
       {pendingUndo && (
         <UndoSnackbar
-          message={pendingUndo.kind === 'item' ? `"${pendingUndo.data.name}" borrado` : `"${pendingUndo.data.label}" borrada`}
+          message={
+            pendingUndo.kind === 'qty'
+              ? `Llevás ${pendingUndo.removed} ${pendingUndo.removed === 1 ? 'prenda menos' : 'prendas menos'}: vas a lavar en el viaje`
+              : pendingUndo.kind === 'item'
+                ? `"${pendingUndo.data.name}" borrado`
+                : `"${pendingUndo.data.label}" borrada`
+          }
           onUndo={handleUndo}
         />
       )}

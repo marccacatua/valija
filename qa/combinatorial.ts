@@ -1,5 +1,5 @@
 import { buildRawItems, ROPA_ORDER } from '../src/data/buildItems';
-import { distributeItems, spaceSummary } from '../src/data/distribute';
+import { distributeItems, fitToBags, spaceSummary } from '../src/data/distribute';
 import { ITEM_LITERS, isSeparateItem, itemLiters, wornItemIds } from '../src/data/volume';
 import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
 import { QUICK_GROUP_META, quickGroupFor } from '../src/data/quickGroups';
@@ -840,6 +840,24 @@ for (const motivo of MOTIVO)
           const remerasMulti = buildRawItems(base).find((r) => r.name === 'Remeras')?.qty;
           const remerasOther = buildRawItems({ ...base, turismo: [other] }).find((r) => r.name === 'Remeras')?.qty;
           if (remerasMulti !== remerasOther) fail(base, `Esquí + ${other}: Remeras=${remerasMulti}, esperado ${remerasOther} (sin el tope de solo-esquí)`);
+        }
+        // "Ajustar cantidades para que entre", en carry-on solo y en mochila
+        // sola (donde más se pasa): nunca baja de 1, solo toca prendas
+        // reducibles no tildadas, y si dice que entra, entra.
+        for (const bags of [['carry'], ['mochila']] as MaletaKey[][]) {
+          const items = buildRawItems(base).map((r, i) => ({ ...r, id: String(i), done: i % 5 === 0 }));
+          const plan = fitToBags(items, bags);
+          let removed = 0;
+          for (const [id, qty] of Object.entries(plan.qtys)) {
+            const it = items.find((i) => i.id === id)!;
+            if (it.done) fail(base, `fitToBags tocó "${it.name}", que ya estaba tildado`);
+            if (qty < 1 || qty >= it.qty) fail(base, `fitToBags dejó "${it.name}" en ${qty} (antes ${it.qty})`);
+            removed += it.qty - qty;
+          }
+          if (removed !== plan.removed) fail(base, `fitToBags: removed=${plan.removed} pero la suma de cambios es ${removed}`);
+          const applied = items.map((i) => (i.id in plan.qtys ? { ...i, qty: plan.qtys[i.id] } : i));
+          if (plan.fits && spaceSummary(applied, bags).overflow) fail(base, `fitToBags dice que entra pero no entra (bags=${bags})`);
+          if (!spaceSummary(items, bags).overflow && plan.removed > 0) fail(base, `fitToBags bajó cantidades sin que hiciera falta (bags=${bags})`);
         }
         // La lista del barco aparece si y solo si navegar está entre los elegidos.
         const boat = buildBoatChecklist(base);

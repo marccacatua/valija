@@ -147,6 +147,18 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Cambia la cantidad de varios ítems en una sola actualización — usado
+   * por "Ajustar cantidades para que entre" (y su deshacer). */
+  const setItemQtys = useCallback(
+    (tripId: string, qtys: Record<string, number>) => {
+      updateTrip(tripId, (t) => ({
+        ...t,
+        items: t.items.map((i) => (i.id in qtys ? { ...i, qty: Math.max(1, qtys[i.id]) } : i)),
+      }));
+    },
+    [updateTrip],
+  );
+
   /** Marca/desmarca varios ítems de una — usado por la vista rápida para
    * tildar un grupo temático entero con un solo toque, en una sola
    * actualización (no una por ítem, para no perder cambios si el usuario
@@ -311,6 +323,7 @@ export function useTrips() {
     updateTrip,
     toggleItem,
     bumpItem,
+    setItemQtys,
     setItemsDone,
     renameTrip,
     updateMaletas,

@@ -1,9 +1,12 @@
 import { MALETA_OPTIONS, labelFor } from '../data/catalog';
-import type { SpaceSummary } from '../data/distribute';
+import type { FitPlan, SpaceSummary } from '../data/distribute';
 import styles from './SpaceMeter.module.css';
 
 interface SpaceMeterProps {
   summary: SpaceSummary;
+  /** Plan para bajar cantidades si no entra (ver fitToBags). */
+  fitPlan: FitPlan | null;
+  onFit: () => void;
   onChangeBags: () => void;
 }
 
@@ -15,7 +18,7 @@ const fmtL = (l: number) => (l < 10 ? l.toFixed(1).replace('.', ',') : String(Ma
  * Verde hasta 85 %, mostaza hasta 100 % ("va justo"), coral si no entra
  * — y en ese caso ofrece cambiar las valijas ahí mismo.
  */
-export function SpaceMeter({ summary, onChangeBags }: SpaceMeterProps) {
+export function SpaceMeter({ summary, fitPlan, onFit, onChangeBags }: SpaceMeterProps) {
   const { perBag, usedL, capacityL, pct, overflow } = summary;
   const single = perBag.length === 1;
   const title = single ? `Espacio en tu ${labelFor(MALETA_OPTIONS, perBag[0].bag).toLowerCase()}` : 'Espacio en tus valijas';
@@ -36,7 +39,15 @@ export function SpaceMeter({ summary, onChangeBags }: SpaceMeterProps) {
       {level === 'tight' && !overflow && <div className={styles.message}>Va justo: si sumás algo más, quizás no entre.</div>}
       {level === 'over' && (
         <div className={styles.message}>
-          ⚠️ No te entra todo: quizás convenga sumar una valija más, o una más grande.
+          ⚠️ No te entra todo.{' '}
+          {fitPlan?.fits && fitPlan.removed > 0
+            ? `Podemos llevar ${fitPlan.removed} ${fitPlan.removed === 1 ? 'prenda menos' : 'prendas menos'} (y lavar en el viaje), o sumar una valija.`
+            : 'Ni bajando cantidades entra: conviene sumar una valija más, o una más grande.'}
+          {fitPlan?.fits && fitPlan.removed > 0 && (
+            <button type="button" className={styles.fitBtn} onClick={onFit}>
+              Ajustar cantidades para que entre
+            </button>
+          )}
           <button type="button" className={styles.action} onClick={onChangeBags}>
             Cambiar valijas
           </button>

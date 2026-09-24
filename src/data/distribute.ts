@@ -181,3 +181,68 @@ export function spaceSummary(items: PackingItem[], bags: MaletaKey[]): SpaceSumm
     overflow: perBag.some((b) => b.usedL > b.capacityL + 0.01),
   };
 }
+
+/**
+ * Prendas que se pueden llevar en menos cantidad si no entra todo (se lavan
+ * y se repiten), con el mínimo razonable de cada una. Lo que no está acá
+ * (documentos, abrigo, calzado, equipo) no se toca: bajarlo no tiene
+ * sentido o no se puede.
+ */
+const REDUCIBLE_MIN: Record<string, number> = {
+  Remeras: 3,
+  'Ropa interior': 4,
+  Medias: 3,
+  Pantalones: 1,
+  'Shorts o bermudas': 1,
+  'Remeras deportivas': 2,
+  'Short deportivo': 1,
+  Buzos: 1,
+  Camisas: 1,
+  'Outfit para salir': 1,
+  'Vestido o pollera': 1,
+  Pijama: 1,
+  'Traje de baño': 1,
+  'Mudas de ropa de bebé': 4,
+  'Pijamas de bebé': 1,
+  'Traje de baño de bebé': 1,
+  'Medias de ski': 3,
+  'Primera piel térmica (parte de arriba)': 2,
+  'Primera piel térmica (parte de abajo)': 2,
+  'Segunda capa de polar': 1,
+};
+
+export interface FitPlan {
+  /** Cantidad nueva por id de ítem (solo los que cambian). */
+  qtys: Record<string, number>;
+  /** Cuántas prendas en total se sacan. */
+  removed: number;
+  /** true si con esos cambios todo entra en las valijas elegidas. */
+  fits: boolean;
+}
+
+/**
+ * "Ajustar cantidades para que entre": baja de a una unidad la prenda
+ * reducible más voluminosa (así se sacan las menos piezas posibles) hasta
+ * que todo entra o todas llegan a su mínimo. Nunca toca lo que ya está
+ * tildado (ya está en la valija). Función pura: no cambia nada, devuelve
+ * el plan para aplicarlo (y poder deshacerlo).
+ */
+export function fitToBags(items: PackingItem[], bags: MaletaKey[]): FitPlan {
+  const working = items.map((i) => ({ ...i }));
+  let removed = 0;
+  let summary = spaceSummary(working, bags);
+  while (summary.overflow) {
+    const candidates = working.filter((i) => !i.done && i.name in REDUCIBLE_MIN && i.qty > REDUCIBLE_MIN[i.name]);
+    if (candidates.length === 0) break;
+    candidates.sort((a, b) => itemLiters(b) - itemLiters(a));
+    candidates[0].qty -= 1;
+    removed += 1;
+    summary = spaceSummary(working, bags);
+  }
+  const qtys: Record<string, number> = {};
+  for (const w of working) {
+    const orig = items.find((i) => i.id === w.id)!;
+    if (orig.qty !== w.qty) qtys[w.id] = w.qty;
+  }
+  return { qtys, removed, fits: !summary.overflow };
+}
