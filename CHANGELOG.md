@@ -32,6 +32,33 @@ junto con el número de versión en `package.json` (visible en el pie de
   `espacio-litros`, que tocan los mismos archivos, y traducir "Sumar Frío"
   y el texto del equipo doble.
 
+## Sin publicar — rama `espacio-litros` (espacio en litros, a prueba)
+
+- **Cada ítem tiene un tamaño estándar en litros** (`src/data/volume.ts`):
+  remera 0,8 L, pantalón 1,5 L, campera abrigada 6 L, zapatillas 4,5 L,
+  BCD 10 L, etc. Los ítems que agrega el usuario usan un valor por
+  categoría. Las valijas tienen una capacidad útil: mochila 20 L,
+  carry-on 38 L y bodega 75 L.
+- **Lo que llevás puesto no cuenta:** el abrigo más grande, el calzado más
+  grande, un pantalón y una remera.
+- **Checklist:** en lugar del aviso viejo aparece "Espacio en tu carry-on ·
+  70 %" con una barra. Hasta 85 % se ve verde, hasta 100 % mostaza ("va
+  justo") y coral cuando no entra, con el link "Cambiar valijas".
+- **Reparto:** cada valija muestra sus litros ("9,6 de 38 L · 25 %"). Si una
+  se pasa y otra tiene lugar, se mueven ítems enteros, los más grandes
+  primero. La sección "Camping" pasa a ser "Va aparte" y suma el
+  cochecito, la butaca, la transportadora y los esquís, que no van dentro
+  de ninguna valija.
+- Reemplaza al aviso anterior por "puntos de bulto", que no contaba
+  cantidades (30 remeras no pesaban nada) y trataba igual a una mochila y
+  a una bodega. Ejemplos: 7 días de playa en carry-on queda al 70 %; esquí
+  con frío en carry-on, al 113 % (no entra); esquí en bodega + mochila ya
+  no da un falso aviso.
+- QA: combinatorio sin errores. Se agregaron chequeos de que los litros
+  cuadren en 5,2 millones de repartos y de que cada ítem posible tenga su
+  tamaño. Playwright 195/195.
+- Queda pendiente traducirlo al inglés cuando se mezcle con `i18n-en`.
+
 ## v1.9.0
 
 **Cantidades más certeras** (salió de la revisión de la lógica).
