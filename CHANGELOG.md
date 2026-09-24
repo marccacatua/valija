@@ -4,6 +4,24 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.7.1
+
+Primera tanda de la revisión general de código (seguridad, performance,
+arquitectura).
+
+- **La tipografía Nunito ahora viene dentro de la app** (antes se pedía
+  a Google Fonts). La app nativa se ve bien desde el primer arranque
+  aunque no haya internet, y ya no hay tráfico hacia Google. Entra en el
+  precache del service worker.
+- **Política de privacidad actualizada:** ya no menciona Google Fonts y
+  ahora sí menciona RevenueCat, que antes no figuraba y confirma la
+  compra de Pro.
+- **Fix de plurales:** "Playa en 1 días", "Te faltan 1 ítems" y
+  "¿Borrar los 1 viajes guardados?" ahora dicen "1 día", "Te falta 1
+  ítem" y "¿Borrar el viaje guardado?".
+- QA: nueva prueba que falla si la app hace cualquier request fuera de
+  su propio origen. Playwright 180/180 y combinatorio sin errores.
+
 ## v1.7.0
 
 - **Aviso de esquí con calor:** si elegís Esquí con clima Calor, abajo

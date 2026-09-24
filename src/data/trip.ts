@@ -31,15 +31,18 @@ export const DEFAULT_FORM: TripFormState = {
   equipoPropio: false,
 };
 
+/** "1 día" / "5 días": la duración mínima del stepper es 1. */
+export const diasLabel = (n: number) => (n === 1 ? '1 día' : `${n} días`);
+
 export function tripTitle(form: TripFormState): string {
-  return form.name.trim() || `${labelForMany(DEST_OPTIONS, form.dest)} en ${form.dias} días`;
+  return form.name.trim() || `${labelForMany(DEST_OPTIONS, form.dest)} en ${diasLabel(form.dias)}`;
 }
 
 export function tripMetaLine(form: TripFormState): string {
   return [
     labelForMany(DEST_OPTIONS, form.dest),
     labelFor(MOTIVO_OPTIONS, form.motivo),
-    `${form.dias} días`,
+    diasLabel(form.dias),
     labelForMany(MALETA_OPTIONS, form.maletas),
   ].join(' · ');
 }
@@ -54,7 +57,7 @@ export function tripMetaChips(form: TripFormState): string[] {
     // elegido nunca. Importante que aparezca acá: con esquí/navegar
     // cambia toda la categoría de ítems, no es un detalle cosmético.
     ...(form.motivo !== 'trabajo' ? [labelFor(TURISMO_OPTIONS, form.turismo)] : []),
-    `${form.dias} días`,
+    diasLabel(form.dias),
     labelFor(TRANSPORTE_OPTIONS, form.transporte),
     labelForMany(MALETA_OPTIONS, form.maletas),
   ];
@@ -114,7 +117,8 @@ export function progressNote(items: PackingItem[]): string {
     }
   }
 
-  return `Te faltan ${items.length - packed} ítems`;
+  const left = items.length - packed;
+  return left === 1 ? 'Te falta 1 ítem' : `Te faltan ${left} ítems`;
 }
 
 /** Ejemplo de nombre de plantilla, sugerido según el viaje actual — para

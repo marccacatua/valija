@@ -114,7 +114,7 @@ export function Trips() {
 
   const deleteAllTrips = () => {
     setConfirm({
-      title: `¿Borrar los ${trips.length} viajes guardados?`,
+      title: trips.length === 1 ? '¿Borrar el viaje guardado?' : `¿Borrar los ${trips.length} viajes guardados?`,
       message: 'Vas a perder todo el progreso de empacado. Esto no se puede deshacer.',
       onConfirm: () => {
         // segunda confirmación, encadenada — centrada, para que se note

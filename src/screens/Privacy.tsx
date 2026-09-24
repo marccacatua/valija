@@ -30,17 +30,18 @@ export function Privacy() {
         <li>No accedemos a tu cámara, contactos, ubicación ni ningún otro permiso del celular.</li>
       </ul>
 
-      <h2>La única conexión a internet que hace la app</h2>
+      <h2>Conexiones a internet</h2>
       <p>
-        Al abrir Valija, se carga una tipografía desde Google Fonts para que se vea bien. Esa carga la hace tu
-        navegador directamente contra Google, sin pasar por nosotros — es el único tráfico de red que genera la app
-        en su uso normal.
+        Para armar y guardar tus viajes, Valija no se conecta a internet: todo (incluida la tipografía) viene dentro
+        de la app.
       </p>
 
       <h2>Compra dentro de la app</h2>
       <p>
         Si desbloqueás Valija Pro, esa compra la procesa Apple a través de App Store — nosotros no vemos ni guardamos
-        tu información de pago en ningún momento.
+        tu información de pago en ningún momento. Para confirmar la compra y poder restaurarla, la app usa
+        RevenueCat, un servicio que recibe de Apple el comprobante de compra asociado a un identificador anónimo
+        (no tu nombre, tu email ni tus viajes).
       </p>
 
       <h2>Borrar tus datos</h2>

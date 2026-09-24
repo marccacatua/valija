@@ -1,5 +1,34 @@
 # Backlog
 
+## 🔎 Revisión general de código (2026-09-24): pendientes
+
+Lo rápido se resolvió en v1.7.1 (tipografía empaquetada, política de
+privacidad, plurales). Queda pendiente, por prioridad:
+
+1. **Verificar Pro contra RevenueCat al abrir la app nativa**
+   (`Purchases.getCustomerInfo()` al arrancar). Hoy Pro vive solo en
+   localStorage: si iOS borra el storage, el usuario tiene que tocar
+   "Restaurar compras", y un reembolso nunca apaga Pro. Hay que probarlo
+   en un dispositivo, por eso no se hizo en la revisión.
+2. **Guardar los viajes con @capacitor/preferences en la app nativa**
+   en vez de localStorage. La documentación de Capacitor advierte que iOS
+   puede liberar el localStorage de un WKWebView cuando falta espacio.
+   Migración: al arrancar, si Preferences está vacío y localStorage no,
+   copiar. También necesita prueba en un dispositivo.
+3. **Validar el backup importado** (solo web): hoy se confía en la forma
+   del JSON pegado. Un texto con la forma mal armada puede romper la
+   pantalla. Además, importar puede prender `isPro`. En la web no importa
+   (Pro es gratis ahí) y en la app nativa el botón no existe, pero si
+   algún día aparece en nativo, hay que sacarlo.
+4. **Sincronizar `useTrips` entre instancias** (mismo patrón que `isPro`,
+   con `useSyncExternalStore`). Hoy cada pantalla tiene su propia copia en
+   memoria. No causa bugs visibles porque las pantallas no conviven, pero
+   es frágil si un sheet llega a usar `useTrips` junto con la pantalla
+   de atrás.
+
+Nada urgente en performance: 107 KB gzip de JS, 6,5 KB de CSS, sin
+librerías pesadas, y las listas son chicas (menos de 100 ítems).
+
 ## ✅ Aviso de clima incoherente: esquí con calor (en `main`, v1.7.0, 2026-09-23)
 
 Sale del nuevo orden del formulario (v1.6.1): como el clima ahora se

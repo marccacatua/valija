@@ -43,14 +43,18 @@ function assert(cond, label, detail) {
 // describe el comentario de features/flags.ts para probar por web sin
 // compra real) — hace falta para ejercitar ítems propios, plantillas y
 // repetir viaje, que desde v0.16.0 están detrás del paywall.
+const externalRequests = new Set();
+
 async function freshPage(browser, { pro = false } = {}) {
   const ctx = await browser.newContext({ viewport: { width: 420, height: 900 } });
-  // La app carga la tipografía desde Google Fonts en cada página (ver
-  // index.html) — en un entorno sin salida a esa red (o con la red lenta)
-  // esa request puede colgar el render entero. El QA no depende de tener
-  // la fuente real, así que la cortamos para que la suite sea determinística
-  // sin importar la red del entorno donde corra.
-  await ctx.route(/fonts\.(googleapis|gstatic)\.com/, (route) => route.abort());
+  // La app no debería hacer NINGUNA request fuera de su propio origen
+  // (desde v1.7.1 la tipografía viene empaquetada, ya no de Google
+  // Fonts). Cualquier request externa se corta y queda anotada: al final
+  // de la suite se chequea que no haya habido ninguna.
+  await ctx.route((url) => !url.href.startsWith(BASE), (route) => {
+    externalRequests.add(route.request().url());
+    return route.abort();
+  });
   const page = await ctx.newPage();
   await page.goto(`${BASE}/`);
   await page.evaluate((isPro) => {
@@ -2391,6 +2395,8 @@ try {
     assert((await warning.count()) === 1, 'Volver a Calor con esquí muestra el aviso otra vez', '');
     await ctx.close();
   }
+  // --- 59. Sin requests externas (privacidad + funciona offline) ---
+  assert(externalRequests.size === 0, 'La app no hace ninguna request fuera de su propio origen', [...externalRequests].slice(0, 3).join(', '));
 } catch (err) {
   fail('EXCEPCION NO MANEJADA', err.stack || String(err));
 } finally {
