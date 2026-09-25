@@ -85,7 +85,7 @@ for (const dest of DEST_SUBSETS)
                     motivo,
                     turismo: [turismo],
                     aloj,
-                    transporte,
+                    transporte: [transporte],
                     maletas,
                     dias,
                     vestidos,
@@ -97,6 +97,11 @@ for (const dest of DEST_SUBSETS)
                   };
 
                   const raw = buildRawItems(form);
+                  // Bodega + avión: recordar confirmar que el pasaje la incluye.
+                  const hasBodegaCheck = raw.some((r) => r.name === 'Confirmar que el pasaje incluye la valija de bodega');
+                  if (hasBodegaCheck !== (transporte === 'avion' && maletas.includes('bodega'))) {
+                    fail(form, `"Confirmar que el pasaje incluye la valija de bodega" presente=${hasBodegaCheck} con transporte=${transporte}, maletas=${maletas}`);
+                  }
 
                   // Invariante: la categoría "camping" aparece si y solo si el
                   // alojamiento es camping.
@@ -341,7 +346,7 @@ for (const dest of DEST_SUBSETS)
             motivo: 'placer',
             turismo: ['relax'],
             aloj: 'depto',
-            transporte,
+            transporte: [transporte],
             maletas: ['carry'],
             dias,
             vestidos: false,
@@ -393,7 +398,7 @@ for (const dest of DEST_SUBSETS)
           motivo: 'placer',
           turismo: ['relax'],
           aloj: 'depto',
-          transporte,
+          transporte: [transporte],
           maletas: ['carry'],
           dias,
           vestidos: false,
@@ -435,7 +440,7 @@ for (const dias of DIAS)
       motivo: 'placer',
       turismo: ['relax'],
       aloj: 'depto',
-      transporte: 'avion',
+      transporte: ['avion'],
       maletas: ['carry'],
       dias,
       vestidos: false,
@@ -503,7 +508,7 @@ for (const motivo of MOTIVO)
             motivo,
             turismo: [turismo],
             aloj: 'depto',
-            transporte: 'avion',
+            transporte: ['avion'],
             maletas: ['carry'],
             dias,
             vestidos: false,
@@ -575,7 +580,7 @@ for (const motivo of MOTIVO)
             motivo,
             turismo: [turismo],
             aloj: 'depto',
-            transporte: 'avion',
+            transporte: ['avion'],
             maletas: ['carry'],
             dias,
             vestidos: false,
@@ -661,7 +666,7 @@ for (const motivo of MOTIVO)
           motivo,
           turismo: [turismo],
           aloj: 'depto',
-          transporte: 'avion',
+          transporte: ['avion'],
           maletas: ['carry'],
           dias,
           vestidos: false,
@@ -725,7 +730,7 @@ for (const motivo of MOTIVO)
           motivo,
           turismo: [turismo],
           aloj: 'depto',
-          transporte: 'avion',
+          transporte: ['avion'],
           maletas: ['carry'],
           dias,
           vestidos: false,
@@ -804,7 +809,7 @@ for (const motivo of MOTIVO)
       for (const equipoPropio of [false, true]) {
         const base: TripFormState = {
           name: 'QA-multi', dest: ['playa', 'montana'], clima: climas, motivo: 'placer', turismo: turismos, aloj: 'hotel',
-          transporte: 'avion', maletas: ['carry'], dias: 7, vestidos: false, lavaRopa: false, bebe: false, mascota: false,
+          transporte: ['avion'], maletas: ['carry'], dias: 7, vestidos: false, lavaRopa: false, bebe: false, mascota: false,
           deporte: false, equipoPropio,
         };
         combos++;
@@ -866,6 +871,38 @@ for (const motivo of MOTIVO)
 }
 
 // ============================================================
+// Bloque dedicado: transporte múltiple. Cada medio suma lo suyo: un viaje
+// con varios incluye todo lo que tendría cada uno por separado, sin
+// duplicados, y el recordatorio de la bodega aparece si hay avión.
+// ============================================================
+{
+  const TRANSPORTE_SETS: TransporteKey[][] = [];
+  const all: TransporteKey[] = ['avion', 'auto', 'bus', 'tren'];
+  for (let mask = 1; mask < 16; mask++) TRANSPORTE_SETS.push(all.filter((_, i) => mask & (1 << i)));
+  for (const transportes of TRANSPORTE_SETS)
+    for (const maletas of [['carry'], ['bodega', 'mochila']] as MaletaKey[][])
+      for (const flag of [false, true]) {
+        const base: TripFormState = {
+          name: 'QA-transporte', dest: ['playa'], clima: ['calor'], motivo: 'placer', turismo: ['relax'], aloj: 'hotel',
+          transporte: transportes, maletas, dias: 5, vestidos: false, lavaRopa: false, bebe: flag, mascota: flag,
+          deporte: false, equipoPropio: false,
+        };
+        combos++;
+        const multi = buildRawItems(base).map((r) => r.name);
+        if (new Set(multi).size !== multi.length) fail(base, `Transporte múltiple generó ítems duplicados: ${multi.filter((n, i) => multi.indexOf(n) !== i)}`);
+        for (const t of transportes) {
+          for (const r of buildRawItems({ ...base, transporte: [t] })) {
+            if (!multi.includes(r.name)) fail(base, `Con transporte=[${transportes}] falta "${r.name}" (aparece con ${t})`);
+          }
+        }
+        const bodegaCheck = multi.includes('Confirmar que el pasaje incluye la valija de bodega');
+        if (bodegaCheck !== (transportes.includes('avion') && maletas.includes('bodega'))) {
+          fail(base, `Recordatorio de bodega=${bodegaCheck} con transporte=[${transportes}] maletas=[${maletas}]`);
+        }
+      }
+}
+
+// ============================================================
 // Bloque dedicado: litros de TODOS los ítems posibles, incluidos los de
 // los bloques de arriba que no están en el cruce grande (esquí, buceo,
 // navegar, bebé, mascota, equipo propio).
@@ -878,7 +915,7 @@ for (const motivo of MOTIVO)
         for (const transporte of ['avion', 'auto', 'bus'] as TransporteKey[])
           for (const aloj of ['hotel', 'hostel', 'camping'] as AlojKey[]) {
             const form: TripFormState = {
-              name: 'QA-litros', dest: ['playa', 'montana', 'ciudad'], clima: [clima], motivo: 'placer', turismo: [turismo], aloj, transporte,
+              name: 'QA-litros', dest: ['playa', 'montana', 'ciudad'], clima: [clima], motivo: 'placer', turismo: [turismo], aloj, transporte: [transporte],
               maletas: ['carry', 'bodega', 'mochila'], dias: 10, vestidos: flag, lavaRopa: flag, bebe: flag, mascota: flag,
               deporte: flag, equipoPropio: flag,
             };

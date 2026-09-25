@@ -78,6 +78,7 @@ export const ITEM_LITERS: Record<string, number> = {
   Billetera: 0.2,
   'Tarjetas y efectivo': 0.02,
   'Seguro de viaje': 0.02,
+  'Confirmar que el pasaje incluye la valija de bodega': 0,
   'Seguro del auto y VTV': 0.02,
   'Credencial y tarjeta corporativa': 0.02,
   'Certificación de buceo (tarjeta PADI/SSI) y bitácora': 0.2,

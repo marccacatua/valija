@@ -470,8 +470,8 @@ try {
     const docsRow = page.locator('button', { hasText: 'Documentos' });
     const docsCountText = await docsRow.locator('text=/^\\d+ ítems$/').textContent();
     assert(
-      docsCountText.startsWith('8'),
-      'Ítem personalizado en Documentos se cuenta en el grupo rápido "Documentos" (7 base + 1)',
+      docsCountText.startsWith('9'),
+      'Ítem personalizado en Documentos se cuenta en el grupo rápido "Documentos" (8 base con bodega + avión, + 1)',
       `texto=${docsCountText}`,
     );
     await ctx.close();
@@ -641,7 +641,7 @@ try {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
     assert((await page.locator('text=Arrancá por los documentos').count()) === 1, 'Nota inicial invita a arrancar por documentos');
-    for (const name of ['DNI y pasaporte', 'Pasajes / boarding pass', 'Reserva de alojamiento', 'Billetera', 'Tarjetas y efectivo', 'Libreta de conducir', 'Seguro de viaje']) {
+    for (const name of ['DNI y pasaporte', 'Pasajes / boarding pass', 'Confirmar que el pasaje incluye la valija de bodega', 'Reserva de alojamiento', 'Billetera', 'Tarjetas y efectivo', 'Libreta de conducir', 'Seguro de viaje']) {
       await page.click(`button:has-text("${name}")`);
       await page.waitForTimeout(50);
     }
@@ -1409,11 +1409,11 @@ try {
     await page.waitForSelector('text=Tu valija para');
     await page.click('text=Ver cómo repartir en tus valijas');
     await page.waitForURL(/distribucion/);
-    const hasCampingSection = await page.locator('text=Camping').count();
+    const hasCampingSection = await page.locator('text=Va aparte').count();
     const hasCarpa = await page.locator('text=Carpa').count();
     assert(
       hasCampingSection > 0 && hasCarpa > 0,
-      'Distribución muestra una sección aparte de Camping',
+      'Distribución muestra la sección "Va aparte" con lo de camping',
       `seccion=${hasCampingSection} carpa=${hasCarpa}`,
     );
     await ctx.close();
@@ -2498,6 +2498,42 @@ try {
     await page.waitForSelector('text=Tu valija para');
     assert((await page.locator('text=Ni bajando cantidades entra').count()) === 1, 'Si ni bajando cantidades entra, lo dice');
     assert((await page.locator('button', { hasText: 'Ajustar cantidades para que entre' }).count()) === 0, 'Y no ofrece un ajuste que no alcanza');
+    await ctx.close();
+  }
+
+  // --- 64. Transporte múltiple y recordatorio de la bodega ---
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Auto")'); // avión + auto
+    await page.click('button:has-text("Tren")'); // + tren
+    const pressed = async (name) => page.locator('button', { hasText: new RegExp(`^${name}$`) }).first().getAttribute('aria-pressed');
+    assert(
+      (await pressed('Avión')) === 'true' && (await pressed('Auto')) === 'true' && (await pressed('Tren')) === 'true',
+      'Se pueden elegir varios medios de transporte',
+    );
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chips.includes('Avión + Auto + Tren'), 'Los chips registran todos los transportes', `chips=${chips}`);
+    for (const n of ['Seguro de viaje', 'Seguro del auto y VTV', 'Confirmar que el pasaje incluye la valija de bodega']) {
+      assert((await page.locator('button', { hasText: n }).count()) === 1, `Avión + auto con bodega incluye "${n}"`);
+    }
+    await ctx.close();
+  }
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Auto")');
+    await page.click('button:has-text("Avión")'); // queda solo auto
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const c = await page.locator('text=Confirmar que el pasaje incluye la valija de bodega').count();
+    assert(c === 0, 'Bodega sin avión (solo auto) no pide confirmar el pasaje', `count=${c}`);
     await ctx.close();
   }
 

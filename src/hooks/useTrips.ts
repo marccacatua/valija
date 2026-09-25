@@ -55,7 +55,8 @@ function createChecklistActions(
  * con `form.dest` (un solo valor en vez de array, ver combinar destinos
  * en BACKLOG.md); antes de la v0.13.0 no existía `homeChecklist`; antes
  * de sumar "navegar" no existía `boatChecklist`; antes de la v1.10.0
- * `form.clima` y `form.turismo` eran un solo valor. Se migra en lectura,
+ * `form.clima` y `form.turismo` eran un solo valor, y antes de la v1.10.1
+ * también `form.transporte`. Se migra en lectura,
  * sin tocar lo que ya está en localStorage — así no hace falta un paso
  * de migración explícito ni arriesgarse a corromper datos viejos.
  */
@@ -65,6 +66,7 @@ function migrateTrip(t: Trip): Trip {
     dest: TripFormState['dest'] | TripFormState['dest'][number];
     clima: TripFormState['clima'] | TripFormState['clima'][number];
     turismo: TripFormState['turismo'] | TripFormState['turismo'][number];
+    transporte: TripFormState['transporte'] | TripFormState['transporte'][number];
   };
   const needsMaletas = !Array.isArray(form.maletas);
   const needsDest = !Array.isArray(form.dest);
@@ -72,13 +74,15 @@ function migrateTrip(t: Trip): Trip {
   const needsBoatChecklist = !Array.isArray(t.boatChecklist);
   const needsClima = !Array.isArray(form.clima);
   const needsTurismo = !Array.isArray(form.turismo);
-  if (!needsMaletas && !needsDest && !needsHomeChecklist && !needsBoatChecklist && !needsClima && !needsTurismo) return t;
+  const needsTransporte = !Array.isArray(form.transporte);
+  if (!needsMaletas && !needsDest && !needsHomeChecklist && !needsBoatChecklist && !needsClima && !needsTurismo && !needsTransporte) return t;
   const migratedForm: TripFormState = {
     ...form,
     maletas: needsMaletas ? (form.maleta ? [form.maleta as TripFormState['maletas'][number]] : ['carry']) : form.maletas,
     dest: needsDest ? [form.dest as TripFormState['dest'][number]] : form.dest,
     clima: needsClima ? [form.clima as TripFormState['clima'][number]] : form.clima,
     turismo: needsTurismo ? [form.turismo as TripFormState['turismo'][number]] : form.turismo,
+    transporte: needsTransporte ? [form.transporte as TripFormState['transporte'][number]] : form.transporte,
   };
   return {
     ...t,

@@ -31,6 +31,23 @@ junto con el número de versión en `package.json` (visible en el pie de
     se salga del ancho: 160/160.
   - Español sin cambios: 180/180.
 
+## v1.10.1
+
+- **Transporte con selección múltiple** ("elegí uno o varios"): queda
+  registrado todo lo que usaste en el viaje (por ejemplo avión + auto +
+  tren) y se ve en los chips. Cada medio suma sus ítems: avión + auto
+  lleva el seguro de viaje y también el del auto. Los viajes ya guardados
+  se migran solos (un transporte pasa a ser una lista de uno).
+- **Nuevo ítem con bodega + avión:** "Confirmar que el pasaje incluye la
+  valija de bodega", en Documentos, justo debajo de los pasajes. Las
+  tarifas light o low cost muchas veces no la incluyen. Se puede tildar,
+  cuenta en el progreso y aparece en el texto para compartir.
+- QA: combinatorio sin errores. Verifica el recordatorio de la bodega en
+  todo el cruce principal y suma un bloque de 60 combinaciones de
+  transporte múltiple (la lista incluye lo de cada medio, sin
+  duplicados). Playwright 223/223. Además se corrigió un test viejo que
+  buscaba la sección "Camping" del reparto, que ahora es "Va aparte".
+
 ## v1.10.0
 
 **Clima y turismo múltiples, espacio en litros y ajuste para que entre.**

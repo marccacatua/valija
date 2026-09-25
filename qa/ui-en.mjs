@@ -234,7 +234,7 @@ try {
     await createTrip(page, ['Checked bag']);
     const note = async () => (await page.locator('text=/Start with your documents|Next up|items? left|All packed/').first().textContent()) ?? '';
     assert((await note()) === 'Start with your documents', 'Progreso inicial: "Start with your documents"', await note());
-    const docItems = ['ID and passport', "Driver's license", 'Tickets / boarding pass', 'Accommodation booking', 'Wallet', 'Cards and cash', 'Travel insurance'];
+    const docItems = ['ID and passport', "Driver's license", 'Tickets / boarding pass', 'Check that your ticket includes a checked bag', 'Accommodation booking', 'Wallet', 'Cards and cash', 'Travel insurance'];
     for (const it of docItems) await page.locator('button', { hasText: it }).first().click();
     assert((await note()) === 'Next up: toiletries', 'Al completar documentos: "Next up: toiletries"', await note());
     await checkScreen(page, 'Checklist con documentos completos');

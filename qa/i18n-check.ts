@@ -70,7 +70,7 @@ for (const dest of opts.dest)
               for (const dias of opts.dias)
                 for (const flags of [false, true]) {
                   const f = {
-                    ...DEFAULT_FORM, dest: [...dest], clima: [clima], motivo, turismo: [turismo], aloj, transporte, maletas: [...maletas], dias,
+                    ...DEFAULT_FORM, dest: [...dest], clima: [clima], motivo, turismo: [turismo], aloj, transporte: [transporte], maletas: [...maletas], dias,
                     vestidos: flags, lavaRopa: flags, bebe: flags, mascota: flags, deporte: flags, equipoPropio: flags,
                   } as TripFormState;
                   for (const it of buildRawItems(f)) itemKeys.add(it.name);

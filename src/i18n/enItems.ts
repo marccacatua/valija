@@ -175,4 +175,5 @@ export const EN_ITEMS: Record<string, string> = {
   "Campera liviana para correr": "Light running jacket",
   "Traje de neopreno grueso (7mm) o semiseco": "Thick wetsuit (7 mm) or semi-dry",
   "Paraguas plegable": "Compact umbrella",
+  "Confirmar que el pasaje incluye la valija de bodega": "Check that your ticket includes a checked bag",
 };
