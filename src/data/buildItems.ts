@@ -1,4 +1,4 @@
-import type { CategoryKey, ClimaKey, PackingItem, TripFormState, TurismoKey } from '../types';
+import type { CategoryKey, ClimaKey, PackingItem, TransporteKey, TripFormState, TurismoKey } from '../types';
 
 interface RawItem {
   cat: CategoryKey;
@@ -91,6 +91,9 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // playa con calor y una escapada a la nieve): cada regla pregunta si esa
   // opción está entre las elegidas, y la lista suma lo de todas.
   const hasClima = (c: ClimaKey) => f.clima.includes(c);
+  // El transporte también admite varios (avión + auto + tren en el mismo
+  // viaje): cada medio suma lo suyo.
+  const hasTransporte = (t: TransporteKey) => f.transporte.includes(t);
   const turismos = leisure ? f.turismo : [];
   const hasTurismo = (t: TurismoKey) => turismos.includes(t);
   const isSki = hasTurismo('ski');
@@ -234,11 +237,14 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // un auto en destino, por ejemplo) — no depende de f.transporte.
   add('docs', 'Libreta de conducir');
   add('docs', 'Pasajes / boarding pass');
+  // Las tarifas "light" o low cost muchas veces no incluyen la valija de
+  // bodega: mejor confirmarlo antes que enterarse en el mostrador.
+  if (hasTransporte('avion') && f.maletas.includes('bodega')) addSingle('docs', 'Confirmar que el pasaje incluye la valija de bodega');
   add('docs', 'Reserva de alojamiento');
   add('docs', 'Billetera');
   add('docs', 'Tarjetas y efectivo');
-  if (f.transporte === 'avion') add('docs', 'Seguro de viaje');
-  if (f.transporte === 'auto') add('docs', 'Seguro del auto y VTV');
+  if (hasTransporte('avion')) add('docs', 'Seguro de viaje');
+  if (hasTransporte('auto')) add('docs', 'Seguro del auto y VTV');
   if (f.motivo === 'trabajo') add('docs', 'Credencial y tarjeta corporativa');
   // Sin la tarjeta de certificación (PADI/SSI) no te dejan alquilar el
   // tubo de oxígeno ni sumarte a una salida — es tan de identificación
@@ -249,7 +255,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   addSingle('tech', 'Power bank');
   addSingle('tech', 'Auriculares');
   addSingle('tech', 'Cable de carga extra');
-  if (f.transporte === 'avion') addSingle('tech', 'Adaptador de enchufe');
+  if (hasTransporte('avion')) addSingle('tech', 'Adaptador de enchufe');
   if (f.motivo === 'trabajo') addSingle('tech', 'Notebook y cargador');
   if (hasTurismo('cultura') || hasTurismo('aventura')) addSingle('tech', 'Cámara y memoria');
 
@@ -272,11 +278,11 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   addSingle('extras', 'Bolsa para ropa sucia');
   add('extras', 'Bolsas ziploc');
   addSingle('extras', 'Botella reutilizable');
-  if (f.transporte === 'avion' || f.transporte === 'bus') {
+  if (hasTransporte('avion') || hasTransporte('bus')) {
     addSingle('extras', 'Antifaz y tapones');
     addSingle('extras', 'Almohada de viaje');
   }
-  if (f.transporte === 'auto' || f.transporte === 'bus') {
+  if (hasTransporte('auto') || hasTransporte('bus')) {
     addSingle('extras', 'Mate y termo');
     add('extras', 'Snacks para el camino');
   }
@@ -307,7 +313,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
       addSingle('bebe', 'Gorro y protector solar de bebé');
     }
     if (f.dest.includes('playa')) addSingle('bebe', 'Chaleco salvavidas de bebé');
-    if (f.transporte === 'auto') addSingle('bebe', 'Butaca para auto');
+    if (hasTransporte('auto')) addSingle('bebe', 'Butaca para auto');
     addSingle('bebe', 'Cochecito o mochila portabebé');
     addSingle('bebe', 'Entretenimiento para el viaje');
   }
@@ -323,7 +329,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     add('mascota', 'Bolsas para las heces');
     addSingle('mascota', 'Libreta sanitaria y vacunas');
     addSingle('mascota', 'Medicación habitual (si toma)');
-    if (f.transporte === 'avion') addSingle('mascota', 'Transportadora');
+    if (hasTransporte('avion')) addSingle('mascota', 'Transportadora');
     if (f.dest.includes('playa')) addSingle('mascota', 'Chaleco salvavidas para mascota');
   }
 

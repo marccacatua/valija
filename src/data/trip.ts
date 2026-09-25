@@ -20,7 +20,7 @@ export const DEFAULT_FORM: TripFormState = {
   motivo: 'placer',
   turismo: ['relax'],
   aloj: 'depto',
-  transporte: 'avion',
+  transporte: ['avion'],
   maletas: ['carry'],
   dias: 5,
   vestidos: false,
@@ -63,7 +63,7 @@ export function tripMetaChips(form: TripFormState): string[] {
     // cambia toda la categoría de ítems, no es un detalle cosmético.
     ...(form.motivo !== 'trabajo' ? [labelForMany(TURISMO_OPTIONS, form.turismo)] : []),
     diasLabel(form.dias),
-    labelFor(TRANSPORTE_OPTIONS, form.transporte),
+    labelForMany(TRANSPORTE_OPTIONS, form.transporte),
     labelForMany(MALETA_OPTIONS, form.maletas),
   ];
 }
@@ -71,7 +71,7 @@ export function tripMetaChips(form: TripFormState): string[] {
 // Se usan en el resumen de "Nuevo viaje" para mostrar el resto de las
 // elecciones sin repetir lo que ya aparece en los chips principales.
 export function tripExtraSummary(form: TripFormState): string {
-  return [labelForMany(TURISMO_OPTIONS, form.turismo), labelFor(ALOJ_OPTIONS, form.aloj), labelFor(TRANSPORTE_OPTIONS, form.transporte)].join(
+  return [labelForMany(TURISMO_OPTIONS, form.turismo), labelFor(ALOJ_OPTIONS, form.aloj), labelForMany(TRANSPORTE_OPTIONS, form.transporte)].join(
     ' · ',
   );
 }

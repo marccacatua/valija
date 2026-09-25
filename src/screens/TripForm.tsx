@@ -101,6 +101,13 @@ export function TripForm() {
       return { ...prev, clima: has ? prev.clima.filter((c) => c !== key) : [...prev.clima, key] };
     });
 
+  const toggleTransporte = (key: TripFormState['transporte'][number]) =>
+    setForm((prev) => {
+      const has = prev.transporte.includes(key);
+      if (has && prev.transporte.length === 1) return prev;
+      return { ...prev, transporte: has ? prev.transporte.filter((x) => x !== key) : [...prev.transporte, key] };
+    });
+
   const selectTurismo = (key: TripFormState['turismo'][number]) => {
     if ((key === 'ski' || key === 'navegar' || key === 'buceo') && !canExtraCategories) {
       setShowPaywall(true);
@@ -327,14 +334,14 @@ export function TripForm() {
           </div>
 
           <div>
-            <SectionLabel>Transporte</SectionLabel>
+            <SectionLabel hint="elegí uno o varios">Transporte</SectionLabel>
             <div className={styles.wrap}>
               {TRANSPORTE_OPTIONS.map((opt) => (
                 <OptionChip
                   key={opt.key}
                   label={opt.label}
-                  selected={form.transporte === opt.key}
-                  onSelect={() => set('transporte', opt.key)}
+                  selected={form.transporte.includes(opt.key)}
+                  onSelect={() => toggleTransporte(opt.key)}
                 />
               ))}
             </div>

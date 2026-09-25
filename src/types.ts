@@ -26,7 +26,9 @@ export interface TripFormState {
    * esquí, cultural y salidas...). Se ignora con motivo "trabajo". */
   turismo: TurismoKey[];
   aloj: AlojKey;
-  transporte: TransporteKey;
+  /** Array: un mismo viaje puede combinar avión, auto, micro y tren. Sirve
+   * de registro del viaje y cada medio suma sus ítems. */
+  transporte: TransporteKey[];
   /** Array porque se puede viajar con más de una: carry-on + mochila, bodega + mochila, etc. */
   maletas: MaletaKey[];
   dias: number;
