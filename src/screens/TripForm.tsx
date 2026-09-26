@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ALOJ_OPTIONS,
   CLIMA_OPTIONS,
@@ -11,6 +11,7 @@ import {
 } from '../data/catalog';
 import { countItems } from '../data/buildItems';
 import { DEFAULT_FORM, LAVA_ROPA_AUTO_DIAS } from '../data/trip';
+import { mergeTripForm } from '../data/mergeTrip';
 import { Button } from '../components/Button';
 import { Mascot } from '../components/Mascot';
 import { OptionCard } from '../components/OptionCard';
@@ -27,23 +28,29 @@ import styles from './TripForm.module.css';
 
 export function TripForm() {
   const navigate = useNavigate();
-  const { trips, addTrip } = useTrips();
+  const { trips, addTrip, getTrip, editTrip } = useTrips();
   const [, setLastTripId] = useLastTripId();
   const [isPro] = useIsPro();
   const canExtraCategories = useFeatureFlag('extraCategories');
-  const [form, setForm] = useState<TripFormState>(DEFAULT_FORM);
+  // Con /viaje/:tripId/editar, el mismo formulario edita un viaje ya
+  // creado: arranca con sus opciones y guarda con mergeTripForm (sin
+  // perder tildes, cantidades ni ítems propios).
+  const { tripId } = useParams<{ tripId: string }>();
+  const editing = tripId ? getTrip(tripId) : undefined;
+  const [form, setForm] = useState<TripFormState>(() => editing?.form ?? DEFAULT_FORM);
   const [showPaywall, setShowPaywall] = useState(false);
   // "Lavar ropa" automático en viajes largos: se marca solo al llegar a
   // LAVA_ROPA_AUTO_DIAS, y se desmarca solo si se vuelve a acortar el
   // viaje — mientras la persona no lo haya tocado a mano. Si lo toca, su
   // elección manda y no se vuelve a cambiar solo.
-  const [lavaRopaTouched, setLavaRopaTouched] = useState(false);
+  // Al editar, lo que ya estaba elegido se respeta: no se marca solo.
+  const [lavaRopaTouched, setLavaRopaTouched] = useState(Boolean(editing));
   const [lavaRopaAuto, setLavaRopaAuto] = useState(false);
 
   // Tope de la versión gratis: se chequea acá (antes de mostrar el
   // formulario) y no recién al tocar "Armar mi valija", para no hacer
   // llenar todo el form a alguien que ya está en el límite.
-  const atFreeLimit = !isPro && trips.length >= FREE_TRIP_LIMIT;
+  const atFreeLimit = !editing && !isPro && trips.length >= FREE_TRIP_LIMIT;
 
   const set = <K extends keyof TripFormState>(key: K, value: TripFormState[K]) =>
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -146,7 +153,18 @@ export function TripForm() {
     navigate(`/viaje/${trip.id}`);
   };
 
+  const handleSaveEdit = () => {
+    if (!editing) return;
+    const res = editTrip(editing.id, form);
+    if (!res) return;
+    navigate(`/viaje/${editing.id}`, {
+      state: { edited: { previous: res.previous, added: res.result.added, removed: res.result.removed } },
+    });
+  };
+
   const itemsPreview = countItems(form);
+  // Vista previa de lo que va a cambiar si se guarda la edición.
+  const editPreview = useMemo(() => (editing ? mergeTripForm(editing, form) : null), [editing, form]);
   const hasSki = form.turismo.includes('ski');
   const hasBuceo = form.turismo.includes('buceo');
 
@@ -154,12 +172,19 @@ export function TripForm() {
     <div className={styles.screen}>
       <div className={styles.header}>
         <div className={styles.headerRow}>
-          <button type="button" className={styles.backBtn} onClick={() => navigate('/viajes')} aria-label="Volver">
+          <button
+            type="button"
+            className={styles.backBtn}
+            onClick={() => navigate(editing ? `/viaje/${editing.id}` : '/viajes')}
+            aria-label="Volver"
+          >
             {BackArrowIcon}
           </button>
           <div>
-            <div className={styles.headerTitle}>Nuevo viaje</div>
-            <div className={styles.headerSubtitle}>Todo con un toque · sin escribir nada</div>
+            <div className={styles.headerTitle}>{editing ? 'Editar viaje' : 'Nuevo viaje'}</div>
+            <div className={styles.headerSubtitle}>
+              {editing ? 'Lo que ya tildaste y tus ítems propios se mantienen' : 'Todo con un toque · sin escribir nada'}
+            </div>
           </div>
         </div>
       </div>
@@ -384,7 +409,26 @@ export function TripForm() {
 
       {!atFreeLimit && (
         <div className={styles.footer}>
-          <Button onClick={handleGenerate}>Armar mi valija · {itemsPreview} ítems</Button>
+          {editing && editPreview ? (
+            <>
+              <div className={styles.editSummary}>
+                {editPreview.added === 0 && editPreview.removed === 0 && editPreview.requantified === 0
+                  ? 'Con estos cambios la lista queda igual.'
+                  : [
+                      editPreview.added > 0 && `Se ${editPreview.added === 1 ? 'suma 1 ítem' : `suman ${editPreview.added} ítems`}`,
+                      editPreview.removed > 0 && `se ${editPreview.removed === 1 ? 'saca 1' : `sacan ${editPreview.removed}`}`,
+                      editPreview.requantified > 0 &&
+                        `${editPreview.requantified === 1 ? 'cambia 1 cantidad' : `cambian ${editPreview.requantified} cantidades`}`,
+                    ]
+                      .filter(Boolean)
+                      .join(', ')
+                      .replace(/^./, (c) => c.toUpperCase()) + '.'}
+              </div>
+              <Button onClick={handleSaveEdit}>Guardar cambios</Button>
+            </>
+          ) : (
+            <Button onClick={handleGenerate}>Armar mi valija · {itemsPreview} ítems</Button>
+          )}
         </div>
       )}
 

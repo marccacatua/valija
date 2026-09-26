@@ -2,6 +2,8 @@ import { buildRawItems, ROPA_ORDER } from '../src/data/buildItems';
 import { distributeItems, fitToBags, spaceSummary } from '../src/data/distribute';
 import { ITEM_LITERS, isSeparateItem, itemLiters, wornItemIds } from '../src/data/volume';
 import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
+import { mergeTripForm } from '../src/data/mergeTrip';
+import { buildItems } from '../src/data/buildItems';
 import { QUICK_GROUP_META, quickGroupFor } from '../src/data/quickGroups';
 import type { AlojKey, ClimaKey, DestKey, MaletaKey, MotivoKey, TransporteKey, TripFormState, TurismoKey } from '../src/types';
 
@@ -900,6 +902,101 @@ for (const motivo of MOTIVO)
           fail(base, `Recordatorio de bodega=${bodegaCheck} con transporte=[${transportes}] maletas=[${maletas}]`);
         }
       }
+}
+
+// ============================================================
+// Bloque dedicado: editar un viaje ya creado (mergeTripForm). Para miles
+// de pares (opciones viejas → opciones nuevas), sobre un viaje con
+// progreso simulado (tildes, cantidades cambiadas a mano, ítems propios):
+// - lo tildado y lo propio nunca se pierde ni cambia;
+// - todo lo que generan las opciones nuevas está, una sola vez;
+// - lo que ya no corresponde y no estaba tildado se saca;
+// - la cantidad cambiada a mano se respeta; la que no se tocó se actualiza;
+// - editar sin cambiar nada no cambia nada.
+// ============================================================
+{
+  let seed = 42;
+  const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+  const pick = <T,>(xs: T[]): T => xs[Math.floor(rnd() * xs.length)];
+  const some = <T,>(xs: T[]): T[] => {
+    const out = xs.filter(() => rnd() < 0.35);
+    return out.length ? out : [pick(xs)];
+  };
+  const randomForm = (): TripFormState => ({
+    name: '', dest: some(['playa', 'montana', 'ciudad'] as DestKey[]), clima: some(CLIMA), motivo: pick(MOTIVO),
+    turismo: some(TURISMO), aloj: pick(ALOJ), transporte: some(TRANSPORTE), maletas: some(['carry', 'bodega', 'mochila'] as MaletaKey[]),
+    dias: pick([1, 3, 5, 7, 10, 14, 21]), vestidos: rnd() < 0.3, lavaRopa: rnd() < 0.3, bebe: rnd() < 0.3, mascota: rnd() < 0.3,
+    deporte: rnd() < 0.3, equipoPropio: rnd() < 0.5,
+  });
+  const forms = Array.from({ length: 70 }, randomForm);
+  for (const oldForm of forms)
+    for (const newForm of forms) {
+      combos++;
+      const newGen = buildItems(newForm);
+      // Viaje con progreso: 1 de cada 3 tildado, 1 de cada 5 con cantidad cambiada a mano,
+      // un ítem propio único y otro con el mismo nombre que uno que generan las opciones nuevas.
+      const items = buildItems(oldForm).map((it, i) => ({
+        ...it,
+        done: i % 3 === 0,
+        qty: i % 5 === 1 && !it.noQty ? it.qty + 2 : it.qty,
+      }));
+      items.push({ id: 'custom-1', cat: 'docs', name: 'Visa impresa', qty: 1, done: false, isCustom: true });
+      const shadow = newGen.find((g) => g.cat === 'extras');
+      if (shadow) items.push({ id: 'custom-2', cat: 'extras', name: shadow.name, qty: 1, done: false, isCustom: true });
+      const home = buildHomeChecklist(oldForm).map((t, i) => ({ ...t, done: i === 0 }));
+      home.push({ id: 'custom-home', label: 'Llevar al perro al cuidador', done: false, isCustom: true });
+      const trip = { id: 't', createdAt: '', form: oldForm, items, homeChecklist: home, boatChecklist: buildBoatChecklist(oldForm) };
+
+      const { trip: merged, added, removed } = mergeTripForm(trip, newForm);
+      const label = { ...newForm, name: 'QA-editar' } as TripFormState;
+      const ids = merged.items.map((i) => i.id);
+      if (new Set(ids).size !== ids.length) fail(label, 'Editar: ids de ítems duplicados');
+      const genNames = merged.items.filter((i) => !i.isCustom).map((i) => i.name);
+      if (new Set(genNames).size !== genNames.length) fail(label, 'Editar: ítems generados duplicados');
+
+      for (const old of items) {
+        const now = merged.items.find((i) => i.id === old.id);
+        if (old.isCustom || old.done) {
+          if (!now) fail(label, `Editar: se perdió "${old.name}" (${old.isCustom ? 'propio' : 'tildado'})`);
+          else if (now.done !== old.done || now.qty !== old.qty)
+            fail(label, `Editar: "${old.name}" cambió su tilde o cantidad`);
+        }
+      }
+      const customNames = new Set(items.filter((i) => i.isCustom).map((i) => i.name));
+      for (const g of newGen) {
+        if (customNames.has(g.name)) continue;
+        if (!merged.items.some((i) => i.name === g.name)) fail(label, `Editar: falta "${g.name}", que corresponde a las opciones nuevas`);
+      }
+      const newNames = new Set(newGen.map((g) => g.name));
+      for (const i of merged.items) {
+        if (!i.isCustom && !i.done && !newNames.has(i.name)) fail(label, `Editar: quedó "${i.name}", que ya no corresponde y no estaba tildado`);
+      }
+      const oldGenQty = new Map(buildItems(oldForm).map((g) => [g.name, g.qty]));
+      for (const i of merged.items) {
+        const before = items.find((x) => x.id === i.id);
+        if (!before || before.isCustom) continue;
+        const g = newGen.find((x) => x.name === i.name);
+        if (!g) continue;
+        const touched = oldGenQty.get(i.name) !== before.qty;
+        const expected = touched || before.noQty || before.done ? before.qty : g.qty;
+        if (i.qty !== expected) fail(label, `Editar: "${i.name}" qty=${i.qty}, esperado ${expected} (${touched ? 'cambiada a mano' : 'sin tocar'})`);
+      }
+      const addedIds = merged.items.filter((i) => !items.some((x) => x.id === i.id)).length;
+      const homeAdded = merged.homeChecklist.filter((t) => !home.some((x) => x.id === t.id)).length;
+      const boatAdded = merged.boatChecklist.filter((t) => !trip.boatChecklist.some((x) => x.id === t.id)).length;
+      if (added !== addedIds + homeAdded + boatAdded) fail(label, `Editar: added=${added} no coincide con lo agregado (${addedIds + homeAdded + boatAdded})`);
+      if (removed < 0) fail(label, 'Editar: removed negativo');
+      if (!merged.homeChecklist.some((t) => t.id === 'custom-home')) fail(label, 'Editar: se perdió una tarea de casa propia');
+      if (home[0] && !merged.homeChecklist.some((t) => t.id === home[0].id && t.done)) fail(label, 'Editar: se perdió una tarea de casa tildada');
+      if ((merged.boatChecklist.length > 0) !== (buildBoatChecklist(newForm).length > 0)) fail(label, 'Editar: lista del barco no coincide con navegar');
+
+      // Editar sin cambiar nada no cambia nada.
+      if (oldForm === newForm) {
+        const same = mergeTripForm(trip, oldForm);
+        if (same.added || same.removed || same.requantified || JSON.stringify(same.trip.items) !== JSON.stringify(trip.items))
+          fail(label, `Editar sin cambios modificó la lista (+${same.added} −${same.removed} ~${same.requantified})`);
+      }
+    }
 }
 
 // ============================================================

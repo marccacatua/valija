@@ -1409,6 +1409,7 @@ try {
     await page.waitForSelector('text=Tu valija para');
     await page.click('text=Ver cómo repartir en tus valijas');
     await page.waitForURL(/distribucion/);
+    await page.waitForSelector('text=Cómo repartir tu equipaje');
     const hasCampingSection = await page.locator('text=Va aparte').count();
     const hasCarpa = await page.locator('text=Carpa').count();
     assert(
@@ -2534,6 +2535,66 @@ try {
     await page.waitForSelector('text=Tu valija para');
     const c = await page.locator('text=Confirmar que el pasaje incluye la valija de bodega').count();
     assert(c === 0, 'Bodega sin avión (solo auto) no pide confirmar el pasaje', `count=${c}`);
+    await ctx.close();
+  }
+
+  // --- 65. Editar las opciones de un viaje ya creado ---
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await goToNewTripForm(page);
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const tripUrl = page.url();
+    await page.click('button:has-text("DNI y pasaporte")'); // tildado
+    await page.click('button:has-text("Ojotas o sandalias")'); // tildado, de playa
+    const input = page.locator('input[placeholder="Agregar ítem…"]').first();
+    await input.fill('Visa impresa');
+    await input.press('Enter');
+    await page.waitForTimeout(100);
+
+    await page.click('button:has-text("Editar opciones")');
+    await page.waitForSelector('text=Editar viaje');
+    const playa = await page.locator('button', { hasText: /^Playa$/ }).getAttribute('aria-pressed');
+    assert(playa === 'true', 'Editar abre el formulario con las opciones del viaje');
+    await page.click('button:has-text("Montaña")');
+    await page.click('button:has-text("Playa")'); // queda solo montaña
+    const summary = (await page.locator('[class*="editSummary"]').textContent()) ?? '';
+    assert(/suma/.test(summary) && /saca/.test(summary), 'Antes de guardar, dice cuántos ítems se suman y se sacan', `resumen=${summary}`);
+    await page.click('button:has-text("Guardar cambios")');
+    await page.waitForURL(tripUrl);
+    await page.waitForSelector('text=Tu valija para');
+
+    const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chips.includes('Montaña') && !chips.includes('Playa'), 'Los chips muestran las opciones nuevas', `chips=${chips}`);
+    assert((await page.locator('button', { hasText: 'Zapatillas de trekking' }).count()) === 1, 'Se suma lo que corresponde (zapatillas de trekking)');
+    assert((await page.locator('button', { hasText: 'Toallón de playa' }).count()) === 0, 'Se saca lo de playa que no estaba tildado (toallón de playa)');
+    const ojotasDone = await page.locator('button', { hasText: 'Ojotas o sandalias' }).locator('[class*="checkboxDone"]').count();
+    assert(ojotasDone === 1, 'Lo de playa que ya estaba tildado se queda, tildado (ojotas)');
+    const dniDone = await page.locator('button', { hasText: 'DNI y pasaporte' }).locator('[class*="checkboxDone"]').count();
+    assert(dniDone === 1, 'Lo tildado que sigue correspondiendo sigue tildado (DNI)');
+    assert((await page.locator('text=Visa impresa').count()) === 1, 'El ítem propio se mantiene');
+    assert((await page.locator('text=/Viaje actualizado/').count()) === 1, 'Aparece "Viaje actualizado" con Deshacer');
+
+    await page.click('button:has-text("Deshacer")');
+    await page.waitForTimeout(150);
+    const chipsBack = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
+    assert(chipsBack.includes('Playa') && !chipsBack.includes('Montaña'), 'Deshacer vuelve el viaje a como estaba', `chips=${chipsBack}`);
+    assert((await page.locator('button', { hasText: 'Toallón de playa' }).count()) === 1, 'Deshacer devuelve lo que se había sacado');
+    await ctx.close();
+  }
+  {
+    // Editar no choca con el límite de viajes gratis (no es un viaje nuevo).
+    const { ctx, page } = await freshPage(browser);
+    for (let i = 0; i < 3; i++) await generateTrip(page, { maletas: ['Carry-on'] });
+    await page.goto(`${BASE}/nuevo`);
+    await page.waitForSelector('text=Llegaste al límite');
+    await page.goto(`${BASE}/viajes`);
+    await page.locator('[class*="tripCard"]').first().click();
+    await page.waitForSelector('text=Tu valija para');
+    await page.click('button:has-text("Editar opciones")');
+    await page.waitForSelector('text=Editar viaje');
+    assert((await page.locator('text=Llegaste al límite').count()) === 0, 'Sin Pro y con 3 viajes, igual se puede editar uno');
     await ctx.close();
   }
 

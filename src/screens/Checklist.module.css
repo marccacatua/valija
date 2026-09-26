@@ -114,6 +114,16 @@
   font: 800 12px/1 'Nunito', sans-serif;
 }
 
+.editTripBtn {
+  padding: 7px 13px;
+  border-radius: 9999px;
+  border: 1.5px solid color-mix(in srgb, var(--paper) 70%, transparent);
+  background: transparent;
+  color: var(--paper);
+  font: 900 12px/1 'Nunito', sans-serif;
+  cursor: pointer;
+}
+
 .progressWrap {
   padding: 0 22px;
   margin-top: -24px;

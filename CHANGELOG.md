@@ -4,6 +4,33 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## Sin publicar — rama `editar-viaje` (a prueba)
+
+- **"Editar opciones" en un viaje ya creado.** Es un botón junto a los
+  chips del viaje que abre el mismo formulario con las opciones cargadas.
+  Antes de guardar muestra qué cambia ("Se suman 7 ítems, se sacan 2,
+  cambia 1 cantidad"), y después de guardar aparece "Viaje actualizado"
+  con **Deshacer**.
+- **No se pierde el progreso** (`src/data/mergeTrip.ts`): en lugar de
+  regenerar la lista, compara la de las opciones nuevas con la del viaje.
+  - Lo que está en las dos se queda como está.
+  - Lo nuevo se suma.
+  - Lo que ya no corresponde se saca, salvo que esté tildado o que sea
+    un ítem propio.
+  - Una cantidad cambia solo si nadie la tocó y el ítem no está tildado.
+  - Lo mismo vale para las listas de casa y del barco.
+- **"Cambiar valijas" usa el mismo mecanismo**, así que ahora también
+  actualiza los candados y los líquidos mini, que antes quedaban
+  desactualizados.
+- Editar no cuenta para el límite de viajes gratis.
+- QA: bloque nuevo en el combinatorio con 4.900 pares de viajes (opciones
+  viejas → nuevas) con progreso simulado. Verifica que nunca se pierda lo
+  tildado ni lo propio, que esté todo lo nuevo sin duplicados, que se
+  saque lo que no corresponde, que se respeten las cantidades cambiadas a
+  mano y que editar sin cambios no toque nada. Así apareció y se corrigió
+  un caso raro (un ítem propio con el mismo nombre que uno generado).
+  Playwright 235/235.
+
 ## v1.10.1
 
 - **Transporte con selección múltiple** ("elegí uno o varios"): queda

@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { buildItems } from '../data/buildItems';
 import { buildBoatChecklist, buildHomeChecklist } from '../data/homeTasks';
+import { mergeTripForm, type MergeResult } from '../data/mergeTrip';
 import { hapticTap, hapticMedium } from '../features/haptics';
 import type { CategoryKey, HomeTask, PackingItem, Trip, TripFormState } from '../types';
 import { useLocalStorage } from './useLocalStorage';
@@ -194,9 +195,33 @@ export function useTrips() {
    * para arreglar apenas un par de ítems que dependen de las valijas
    * (candados, líquidos mini). El aviso de espacio y la pantalla de
    * Distribución ya leen `trip.form.maletas` en vivo. */
+  /** Cambia las opciones de un viaje ya creado sin perder el progreso
+   * (ver data/mergeTrip.ts). Devuelve el resumen (+N / −N) y el viaje como
+   * estaba antes, para poder deshacer. */
+  const editTrip = useCallback(
+    (tripId: string, form: TripFormState): { result: MergeResult; previous: Trip } | null => {
+      const current = trips.find((t) => t.id === tripId);
+      if (!current) return null;
+      const result = mergeTripForm(current, form);
+      updateTrip(tripId, () => result.trip);
+      return { result, previous: current };
+    },
+    [trips, updateTrip],
+  );
+
+  /** Vuelve un viaje entero a un estado anterior (deshacer una edición). */
+  const replaceTrip = useCallback(
+    (trip: Trip) => {
+      updateTrip(trip.id, () => trip);
+    },
+    [updateTrip],
+  );
+
+  // "Cambiar valijas" usa el mismo mecanismo que editar el viaje: así
+  // también se actualizan los candados y los líquidos mini.
   const updateMaletas = useCallback(
     (tripId: string, maletas: TripFormState['maletas']) => {
-      updateTrip(tripId, (t) => ({ ...t, form: { ...t.form, maletas } }));
+      updateTrip(tripId, (t) => mergeTripForm(t, { ...t.form, maletas }).trip);
     },
     [updateTrip],
   );
@@ -331,6 +356,8 @@ export function useTrips() {
     setItemsDone,
     renameTrip,
     updateMaletas,
+    editTrip,
+    replaceTrip,
     toggleHomeTask,
     addHomeTask,
     removeHomeTask,
