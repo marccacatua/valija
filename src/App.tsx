@@ -19,6 +19,7 @@ export default function App() {
           <Route path="/intro" element={<Intro />} />
           <Route path="/nuevo" element={<TripForm />} />
           <Route path="/viaje/:tripId" element={<Checklist />} />
+          <Route path="/viaje/:tripId/editar" element={<TripForm key="editar" />} />
           <Route path="/viaje/:tripId/distribucion" element={<Distribution />} />
           <Route path="/viajes" element={<Trips />} />
           <Route path="/privacidad" element={<Privacy />} />

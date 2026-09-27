@@ -295,6 +295,22 @@ try {
     await ctx.close();
   }
 
+  // --- 4c. Editar opciones de un viaje
+  {
+    const { ctx, page } = await freshPage(browser);
+    await createTrip(page, []);
+    await click(page, 'Edit options');
+    await page.waitForSelector('text=Edit trip');
+    await checkScreen(page, 'Editar viaje');
+    await click(page, 'Mountains');
+    await page.waitForSelector('text=/items? added/');
+    await checkScreen(page, 'Editar viaje - resumen de cambios');
+    await click(page, 'Save changes');
+    await page.waitForSelector('text=/Trip updated/');
+    await checkScreen(page, 'Viaje actualizado (con Undo)');
+    await ctx.close();
+  }
+
   // --- 5. "Mis viajes": finalizados, borrar, backup, pie
   {
     const { ctx, page } = await freshPage(browser);

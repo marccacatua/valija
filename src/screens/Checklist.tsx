@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
 import { fitToBags, spaceSummary } from '../data/distribute';
 import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
@@ -23,7 +23,7 @@ import { useLastTripId } from '../hooks/useLastTripId';
 import { useMascotMorphTarget } from '../hooks/useMascotMorphTarget';
 import { useTemplates } from '../hooks/useTemplates';
 import { useTrips } from '../hooks/useTrips';
-import type { CategoryKey, HomeTask, ItemTemplate, PackingItem } from '../types';
+import type { CategoryKey, HomeTask, ItemTemplate, PackingItem, Trip } from '../types';
 import { itemLabel, t, tn } from '../i18n';
 import styles from './Checklist.module.css';
 
@@ -50,7 +50,9 @@ export function Checklist() {
     restoreHomeTask,
     restoreBoatTask,
     cloneTrip,
+    replaceTrip,
   } = useTrips();
+  const location = useLocation();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
@@ -75,6 +77,7 @@ export function Checklist() {
     | { kind: 'homeTask'; data: HomeTask; index: number }
     | { kind: 'boatTask'; data: HomeTask; index: number }
     | { kind: 'qty'; data: Record<string, number>; removed: number }
+    | { kind: 'trip'; data: Trip; added: number; removed: number }
     | null
   >(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -92,6 +95,19 @@ export function Checklist() {
     return () => {
       if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
     };
+  }, []);
+
+  // Al volver de "Editar viaje" llega el viaje como estaba antes: se
+  // ofrece deshacer la edición entera. Se limpia el state del historial
+  // para que recargar la página no vuelva a mostrar el aviso.
+  useEffect(() => {
+    const edited = (location.state as { edited?: { previous: Trip; added: number; removed: number } } | null)?.edited;
+    if (!edited) return;
+    navigate(location.pathname, { replace: true, state: null });
+    if (undoTimeoutRef.current) clearTimeout(undoTimeoutRef.current);
+    setPendingUndo({ kind: 'trip', data: edited.previous, added: edited.added, removed: edited.removed });
+    undoTimeoutRef.current = setTimeout(() => setPendingUndo(null), 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Búsqueda + "solo sin empacar": solo afectan qué se muestra en la vista
@@ -222,6 +238,7 @@ export function Checklist() {
     else if (pendingUndo?.kind === 'homeTask') restoreHomeTask(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'boatTask') restoreBoatTask(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'qty') setItemQtys(trip.id, pendingUndo.data);
+    else if (pendingUndo?.kind === 'trip') replaceTrip(pendingUndo.data);
     setPendingUndo(null);
   };
 
@@ -439,6 +456,9 @@ export function Checklist() {
               {label}
             </span>
           ))}
+          <button type="button" className={styles.editTripBtn} onClick={() => navigate(`/viaje/${trip.id}/editar`)}>
+            {t('Editar opciones')}
+          </button>
         </div>
       </div>
 
@@ -593,7 +613,9 @@ export function Checklist() {
       {pendingUndo && (
         <UndoSnackbar
           message={
-            pendingUndo.kind === 'qty'
+            pendingUndo.kind === 'trip'
+              ? t('Viaje actualizado: +{added} / −{removed} ítems', { added: pendingUndo.added, removed: pendingUndo.removed })
+              : pendingUndo.kind === 'qty'
               ? tn(pendingUndo.removed, 'Llevás {n} prenda menos: vas a lavar en el viaje', 'Llevás {n} prendas menos: vas a lavar en el viaje')
               : pendingUndo.kind === 'item'
                 ? t('"{item}" borrado', { item: itemLabel(pendingUndo.data.name) })
