@@ -31,6 +31,40 @@ junto con el número de versión en `package.json` (visible en el pie de
     se salga del ancho: 160/160.
   - Español sin cambios: 180/180.
 
+## v1.12.0
+
+**Lista en árbol** (probada y aprobada por el usuario, ex rama
+`vista-arbol`).
+
+
+- **La lista en árbol reemplaza a las vistas "Detallada" y "Rápida".**
+  - Cada categoría (y la lista de casa o del barco) se pliega y despliega
+    con **−/+** sin afectar a las demás.
+  - A la izquierda del título hay un **tilde para marcar o desmarcar la
+    categoría entera**. Es lo que antes hacía la vista rápida. Muestra
+    una rayita (–) cuando la categoría está a medias.
+  - **Al completar una categoría, se pliega sola**, así queda a la vista
+    lo que falta.
+  - "Plegar todo" / "Desplegar todo" arriba de la lista.
+  - Al buscar se despliega todo, para no esconder resultados.
+  - Lo plegado se recuerda por viaje en ese dispositivo.
+- **Fix de la primera prueba en el celular:** al desplegar una categoría y
+  tildar su primer ítem, sus ítems aparecían con un fundido raro (solo esa
+  primera vez). La animación de reordenar guarda una "foto" de dónde está
+  cada ítem, y al desplegar no se sacaba una nueva, así que los ítems
+  recién mostrados parecían nuevos. Ahora, al plegar o desplegar, la foto
+  se vuelve a sacar sin animar. Hay un test que lo reproduce: sin el
+  arreglo da 5 fundidos, con el arreglo da 0.
+- Ya no están los grupos de la vista rápida que partían la ropa en
+  "trabajo", "salir", "abrigo" y "calzado": el árbol usa las mismas
+  categorías que la lista. Se borró `quickGroups.ts` y su verificación en
+  el combinatorio.
+- QA: los 4 tests de la vista rápida se reemplazaron por tests del
+  árbol (tilde de categoría, estado "a medias", plegar sin afectar al
+  resto, recordar al recargar, búsqueda, plegar/desplegar todo, plegado
+  automático al completar). Playwright 242/242. No se tocaron reglas de
+  la lista, así que el combinatorio no cambia.
+
 ## v1.11.0
 
 **Editar las opciones de un viaje ya creado** (probado y aprobado por el

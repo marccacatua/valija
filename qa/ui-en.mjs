@@ -201,9 +201,9 @@ try {
     const { ctx, page } = await freshPage(browser);
     await createTrip(page, cfg.picks, { name: 'Lisbon' });
     await checkScreen(page, `Checklist detallada - ${cfg.label}`);
-    await click(page, 'Quick');
-    await checkScreen(page, `Checklist rápida - ${cfg.label}`);
-    await click(page, 'Detailed');
+    await click(page, 'Collapse all');
+    await checkScreen(page, `Checklist plegada - ${cfg.label}`);
+    await click(page, 'Expand all');
     await page.getByRole('button', { name: 'Share checklist', exact: true }).click();
     const shared = await page.evaluate(() => window.__shared?.text ?? '');
     const spanishShared = shared
@@ -270,14 +270,16 @@ try {
     await checkScreen(page, 'Renombrar viaje');
     await page.keyboard.press('Escape');
 
-    // Tildar todo desde la vista rápida
-    await click(page, 'Quick');
-    const groups = page.locator('button', { hasText: /\d+ items?$/ });
-    const n = await groups.count();
-    for (let i = 0; i < n; i++) await groups.nth(i).click();
-    await click(page, 'Detailed');
+    // Tildar todo con el tilde de cada categoría (está en el encabezado,
+    // aunque la categoría esté plegada)
+    const ticks = page.locator('button[aria-label^="Tick all "]');
+    while ((await ticks.count()) > 0) {
+      await ticks.first().click();
+      await page.waitForTimeout(40);
+    }
+    await checkScreen(page, 'Checklist con todo tildado (árbol plegado)');
     const left = await note();
-    assert(/items? left|All packed/.test(left), 'Progreso en inglés después de tildar todo en la vista rápida', left);
+    assert(/items? left|All packed/.test(left), 'Progreso en inglés después de tildar todo con los tildes de categoría', left);
     await ctx.close();
   }
 

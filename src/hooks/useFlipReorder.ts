@@ -49,11 +49,19 @@ function measurePageRect(node: HTMLElement): PageRect {
   return { top: rect.top + window.scrollY, left: rect.left + window.scrollX };
 }
 
-export function useFlipReorder(orderedIds: string[]) {
+/**
+ * `layoutKey`: cualquier cambio de layout que NO es un reorden (ej. plegar
+ * o desplegar una categoría en la vista en árbol). Cuando cambia, se
+ * vuelven a medir todas las posiciones sin animar nada: si no, los ítems
+ * recién desplegados no tendrían "foto" previa y el próximo tilde los
+ * trataría como nuevos (aparecían con un fundido raro, solo la primera vez).
+ */
+export function useFlipReorder(orderedIds: string[], layoutKey = '') {
   const rectsRef = useRef<Map<string, PageRect>>(new Map());
   const nodesRef = useRef<Map<string, HTMLElement>>(new Map());
   // Animación en curso por id, si la hay — ver el cancel() de abajo.
   const animsRef = useRef<Map<string, Animation>>(new Map());
+  const layoutKeyRef = useRef(layoutKey);
 
   const registerNode = (id: string) => (el: HTMLElement | null) => {
     if (el) nodesRef.current.set(id, el);
@@ -64,7 +72,10 @@ export function useFlipReorder(orderedIds: string[]) {
   useLayoutEffect(() => {
     const prevRects = rectsRef.current;
     const nextRects = new Map<string, PageRect>();
-    const reduceMotion = prefersReducedMotion();
+    // Cambió el layout sin reordenar (plegar/desplegar): solo medir.
+    const layoutChanged = layoutKeyRef.current !== layoutKey;
+    layoutKeyRef.current = layoutKey;
+    const reduceMotion = prefersReducedMotion() || layoutChanged;
 
     for (const id of orderedIds) {
       const node = nodesRef.current.get(id);
@@ -120,7 +131,7 @@ export function useFlipReorder(orderedIds: string[]) {
     }
 
     rectsRef.current = nextRects;
-  }, [orderedIds.join('|')]);
+  }, [orderedIds.join('|'), layoutKey]);
 
   return registerNode;
 }
