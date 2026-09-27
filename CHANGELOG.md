@@ -4,6 +4,29 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## Sin publicar — rama `vista-arbol` (a prueba)
+
+- **La lista en árbol reemplaza a las vistas "Detallada" y "Rápida".**
+  - Cada categoría (y la lista de casa o del barco) se pliega y despliega
+    con **−/+** sin afectar a las demás.
+  - A la izquierda del título hay un **tilde para marcar o desmarcar la
+    categoría entera**. Es lo que antes hacía la vista rápida. Muestra
+    un cuadradito cuando la categoría está a medias.
+  - **Al completar una categoría, se pliega sola**, así queda a la vista
+    lo que falta.
+  - "Plegar todo" / "Desplegar todo" arriba de la lista.
+  - Al buscar se despliega todo, para no esconder resultados.
+  - Lo plegado se recuerda por viaje en ese dispositivo.
+- Se pierden los grupos de la vista rápida que partían la ropa en
+  "trabajo", "salir", "abrigo" y "calzado". El árbol usa las mismas
+  categorías que la lista. Si se aprueba, se borra `quickGroups.ts`, que
+  quedaría sin uso.
+- QA: los 4 tests de la vista rápida se reemplazaron por tests del
+  árbol (tilde de categoría, estado "a medias", plegar sin afectar al
+  resto, recordar al recargar, búsqueda, plegar/desplegar todo, plegado
+  automático al completar). Playwright 241/241. No se tocaron reglas de
+  la lista, así que el combinatorio no cambia.
+
 ## v1.11.0
 
 **Editar las opciones de un viaje ya creado** (probado y aprobado por el

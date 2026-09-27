@@ -400,64 +400,27 @@ try {
   }
 
   // ============================================================
-  // 12) Vista rápida: cubre todos los ítems, marca/desmarca por grupo,
-  // y queda consistente con la vista detallada (mismo dato de fondo)
+  // 12-15) Lista en árbol: cada categoría se pliega/despliega con −/+ y
+  // tiene un tilde para marcarla entera (reemplaza a la vista rápida).
   // ============================================================
+  const headerCount = async (page, title) =>
+    (await page.locator(`button[aria-label$="${title}"][aria-expanded]`).locator('text=/^\\d+\\/\\d+$/').textContent()) ?? '';
   {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
-    // el total real de ítems de la valija (no de la lista de casa, que
-    // reusa el mismo patrón de aria-label "Borrar X") sale del propio
-    // texto de la barra de progreso: "de N empacado"
-    const progressLabel = await page.locator('span', { hasText: /^de \d+ empacado$/ }).textContent();
-    const totalItems = parseInt(progressLabel.match(/\d+/)[0], 10);
-
-    await page.click('text=Rápida');
+    const [, higieneTotal] = (await headerCount(page, 'Higiene')).split('/').map(Number);
+    await page.click('button[aria-label="Tildar todo Higiene"]');
     await page.waitForTimeout(100);
-    const groupCountTexts = await page.locator('text=/^\\d+ ítems$/').allTextContents();
-    const sumGroupItems = groupCountTexts.reduce((acc, t) => acc + parseInt(t, 10), 0);
-    assert(
-      sumGroupItems === totalItems,
-      'Vista rápida cubre el 100% de los ítems (suma de grupos == total)',
-      `suma=${sumGroupItems} total=${totalItems}`,
-    );
-
-    // marcar el grupo "Higiene" entero
-    const higieneRow = page.locator('button', { hasText: 'Higiene' });
-    const higieneCountText = await higieneRow.locator('text=/^\\d+ ítems$/').textContent();
-    const higieneSize = parseInt(higieneCountText, 10);
-    await higieneRow.click();
+    const packed = await progressNumLocator(page).textContent();
+    assert(packed.trim() === String(higieneTotal), 'El tilde de "Higiene" empaca todos sus ítems', `packed=${packed} esperado=${higieneTotal}`);
+    assert((await page.locator('button[aria-label="Desplegar Higiene"]').count()) === 1, 'Al completarse con el tilde, "Higiene" se pliega sola');
+    assert((await page.locator('button', { hasText: 'Cinturón' }).count()) === 1, 'Las otras categorías (Ropa) siguen desplegadas');
+    await page.click('button[aria-label="Destildar todo Higiene"]');
     await page.waitForTimeout(100);
-    const packedAfterOn = await progressNumLocator(page).textContent();
-    assert(
-      packedAfterOn.trim() === String(higieneSize),
-      'Marcar un grupo de la vista rápida empaca todos sus ítems reales',
-      `packed=${packedAfterOn} esperado=${higieneSize}`,
-    );
-
-    // volver a detallada: los N ítems de higiene deben figurar tildados
-    await page.click('text=Detallada');
-    await page.waitForTimeout(100);
-    const doneCheckboxes = await page.locator('[class*="checkboxDone"]').count();
-    assert(
-      doneCheckboxes === higieneSize,
-      'Vista detallada refleja el bulk-check hecho desde la vista rápida',
-      `checkboxDone=${doneCheckboxes} esperado=${higieneSize}`,
-    );
-
-    // volver a rápida y destildar el mismo grupo (toggle inverso)
-    await page.click('text=Rápida');
-    await page.waitForTimeout(100);
-    await page.locator('button', { hasText: 'Higiene' }).click();
-    await page.waitForTimeout(100);
-    const packedAfterOff = await progressNumLocator(page).textContent();
-    assert(packedAfterOff.trim() === '0', 'Volver a tocar un grupo ya completo lo desmarca entero', `packed=${packedAfterOff}`);
+    const packedOff = await progressNumLocator(page).textContent();
+    assert(packedOff.trim() === '0', 'Volver a tocar el tilde de una categoría completa la destilda entera', `packed=${packedOff}`);
     await ctx.close();
   }
-
-  // ============================================================
-  // 13) Vista rápida: un ítem personalizado cae en el grupo de su categoría
-  // ============================================================
   {
     const { ctx, page } = await freshPage(browser, { pro: true });
     await generateTrip(page, { maletas: ['Bodega'] });
@@ -465,87 +428,51 @@ try {
     await input.fill('Visa impresa');
     await input.press('Enter');
     await page.waitForTimeout(80);
-    await page.click('text=Rápida');
-    await page.waitForTimeout(100);
-    const docsRow = page.locator('button', { hasText: 'Documentos' });
-    const docsCountText = await docsRow.locator('text=/^\\d+ ítems$/').textContent();
-    assert(
-      docsCountText.startsWith('9'),
-      'Ítem personalizado en Documentos se cuenta en el grupo rápido "Documentos" (8 base con bodega + avión, + 1)',
-      `texto=${docsCountText}`,
-    );
+    const docs = await headerCount(page, 'Documentos');
+    assert(docs === '0/9', 'El ítem propio suma en el contador de su categoría (8 base con bodega + avión, + 1)', `contador=${docs}`);
     await ctx.close();
   }
-
-  // ============================================================
-  // 14) Vista rápida: un grupo parcialmente tildado se completa entero
-  // (no se "des-tilda") al tocarlo
-  // ============================================================
   {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
-    // tildar un solo ítem de "Ropa" a mano, en detallada
     await page.click('button:has-text("Cinturón")');
     await page.waitForTimeout(80);
-
-    await page.click('text=Rápida');
+    const [doneBefore, totalRopa] = (await headerCount(page, 'Ropa')).split('/').map(Number);
+    assert(doneBefore === 1 && doneBefore < totalRopa, 'Ropa muestra progreso parcial con 1 ítem tildado', `${doneBefore}/${totalRopa}`);
+    assert((await page.locator('button[aria-label="Tildar todo Ropa"] [class*="catCheckPartial"]').count()) === 1, 'El tilde de Ropa muestra el estado "a medias"');
+    await page.click('button[aria-label="Tildar todo Ropa"]');
     await page.waitForTimeout(100);
-    // el texto acumulado del botón arranca con el "✓" del checkbox
-    // (oculto por color, pero sigue siendo texto), seguido de "Ropa" +
-    // "N ítems" + "X/Y" sin separador — pedimos "Ropa" seguido directo
-    // de un dígito para no matchear "Ropa de trabajo" / "Ropa para salir"
-    const ropaRow = page.locator('button', { hasText: /Ropa\d/ });
-    const ropaCountBefore = await ropaRow.locator('text=/^\\d+\\/\\d+$/').textContent();
-    const [doneBefore, totalRopa] = ropaCountBefore.split('/').map(Number);
-    assert(
-      doneBefore === 1 && doneBefore < totalRopa,
-      'Grupo "Ropa" muestra progreso parcial cuando solo 1 ítem está tildado',
-      `contador=${ropaCountBefore}`,
-    );
-
-    await ropaRow.click();
-    await page.waitForTimeout(100);
-    const ropaCountAfter = await ropaRow.locator('text=/^\\d+\\/\\d+$/').textContent();
-    assert(
-      ropaCountAfter === `${totalRopa}/${totalRopa}`,
-      'Tocar un grupo parcial lo completa entero (no lo des-tilda)',
-      `contador=${ropaCountAfter}`,
-    );
+    assert((await headerCount(page, 'Ropa')) === `${totalRopa}/${totalRopa}`, 'Tocar el tilde de una categoría a medias la completa (no la destilda)');
     await ctx.close();
   }
-
-  // ============================================================
-  // 15) Vista rápida: los grupos sin ítems para este viaje no se muestran
-  // ============================================================
   {
     const { ctx, page } = await freshPage(browser);
-    await goToNewTripForm(page);
-    await page.click('button:has-text("Ciudad")');
-    await page.click('button:has-text("Templado")');
-    await page.click('button:has-text("Placer")');
-    await page.click('button:has-text("Relax")');
-    await page.click('button:has-text("Hotel")');
-    await page.click('button:has-text("Tren")');
-    // dejar solo Carry-on (ya viene seleccionado por default)
-    await page.click('button:has-text("Armar mi valija")');
-    await page.waitForURL(/\/viaje\//);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('button[aria-label="Plegar Ropa"]');
+    await page.waitForTimeout(80);
+    assert((await page.locator('button', { hasText: 'Cinturón' }).count()) === 0, '"−" pliega Ropa y esconde sus ítems');
+    assert((await page.locator('button', { hasText: 'DNI y pasaporte' }).count()) === 1, 'Plegar Ropa no pliega Documentos');
+    await page.reload();
     await page.waitForSelector('text=Tu valija para');
-    await page.click('text=Rápida');
-    await page.waitForTimeout(100);
-    const hasTrabajo = await page.locator('button', { hasText: 'Ropa de trabajo' }).count();
-    const hasSalir = await page.locator('button', { hasText: 'Ropa para salir' }).count();
-    const hasCalzado = await page.locator('button', { hasText: 'Calzado' }).count();
-    const hasAbrigo = await page.locator('button', { hasText: 'Abrigo' }).count();
+    assert((await page.locator('button', { hasText: 'Cinturón' }).count()) === 0, 'Lo plegado se recuerda al volver a abrir el viaje');
+    await page.fill('input[placeholder="Buscar ítem…"]', 'Cinturón');
+    await page.waitForTimeout(80);
+    assert((await page.locator('button', { hasText: 'Cinturón' }).count()) === 1, 'Al buscar, se muestra aunque su categoría esté plegada');
+    await page.fill('input[placeholder="Buscar ítem…"]', '');
+    await page.click('text=Plegar todo');
+    await page.waitForTimeout(80);
+    assert((await page.locator('button', { hasText: 'DNI y pasaporte' }).count()) === 0, '"Plegar todo" pliega todas las categorías');
+    await page.click('text=Desplegar todo');
+    await page.waitForTimeout(80);
     assert(
-      hasTrabajo === 0 && hasSalir === 0,
-      'Grupos sin ítems (trabajo/salir en un viaje placer+relax) no se muestran',
-      `trabajo=${hasTrabajo} salir=${hasSalir}`,
+      (await page.locator('button', { hasText: 'DNI y pasaporte' }).count()) === 1 && (await page.locator('button', { hasText: 'Cinturón' }).count()) === 1,
+      '"Desplegar todo" despliega todo',
     );
-    assert(
-      hasCalzado === 1 && hasAbrigo === 1,
-      'Grupos que sí tienen ítems (calzado por ciudad, abrigo por templado) se muestran',
-      `calzado=${hasCalzado} abrigo=${hasAbrigo}`,
-    );
+    for (const name of ['DNI y pasaporte', 'Pasajes / boarding pass', 'Confirmar que el pasaje incluye la valija de bodega', 'Reserva de alojamiento', 'Billetera', 'Tarjetas y efectivo', 'Libreta de conducir', 'Seguro de viaje']) {
+      await page.click(`button:has-text("${name}")`);
+      await page.waitForTimeout(40);
+    }
+    assert((await page.locator('button[aria-label="Desplegar Documentos"]').count()) === 1, 'Al tildar el último ítem de Documentos, la categoría se pliega sola');
     await ctx.close();
   }
 
@@ -679,7 +606,7 @@ try {
       'Tildar una tarea de casa NO afecta el contador de empacado de la valija',
       `antes=${packedBefore} después=${packedAfter}`,
     );
-    const homeCountAfterCheck = await homeSectionHeader().locator('span').last().textContent();
+    const homeCountAfterCheck = await homeSectionHeader().locator('text=/^\\d+\\/\\d+$/').last().textContent();
     assert(homeCountAfterCheck.startsWith('1/'), 'El contador propio de la sección de casa sí refleja el tilde', `texto=${homeCountAfterCheck}`);
 
     // borrar una tarea (ej. alguien sin plantas)

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { CATEGORY_META, CATEGORY_ORDER } from '../data/catalog';
 import { fitToBags, spaceSummary } from '../data/distribute';
-import { QUICK_GROUP_META, QUICK_GROUP_ORDER, quickGroupFor } from '../data/quickGroups';
 import { packedCount, progressNote, progressPct, shareText, tripMetaChips, tripTitle } from '../data/trip';
 import { AddItemRow } from '../components/AddItemRow';
 import { ApplyTemplateSheet } from '../components/ApplyTemplateSheet';
@@ -60,7 +59,31 @@ export function Checklist() {
   const canClone = useFeatureFlag('cloneTrip');
   const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
-  const [view, setView] = useState<'detallada' | 'rapida'>('detallada');
+  // Vista en árbol: cada categoría (y la lista de casa/barco) se pliega o
+  // despliega con −/+. Se recuerda por viaje (solo en este dispositivo:
+  // es una comodidad, no un dato del viaje).
+  const collapsedKey = `valija:plegadas:${tripId}`;
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(window.localStorage.getItem(collapsedKey) ?? '[]') as string[]);
+    } catch {
+      return new Set();
+    }
+  });
+  const saveCollapsed = (next: Set<string>) => {
+    setCollapsed(next);
+    try {
+      window.localStorage.setItem(collapsedKey, JSON.stringify([...next]));
+    } catch {
+      // sin storage: se pliega igual, pero no se recuerda
+    }
+  };
+  const toggleCollapsed = (key: string) => {
+    const next = new Set(collapsed);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    saveCollapsed(next);
+  };
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [copied, setCopied] = useState(false);
@@ -284,42 +307,96 @@ export function Checklist() {
   const pct = progressPct(items);
   const isFiltering = search.trim() !== '' || onlyPending;
 
-  // Vista rápida: mismos ítems, agrupados en temas más grandes (ver
-  // data/quickGroups.ts) para revisar de un vistazo en vez de ítem por
-  // ítem — pedido de un amigo que probó la app y le pareció demasiado
-  // larga la checklist detallada.
-  const quickGroups = QUICK_GROUP_ORDER.map((key) => {
-    const list = items.filter((i) => quickGroupFor(i) === key);
-    return { key, list };
-  }).filter((g) => g.list.length);
-
-  const toggleQuickGroup = (list: PackingItem[]) => {
+  // El tilde de una categoría marca o desmarca todos sus ítems de una
+  // (lo que antes hacía la "vista rápida"). Si la categoría queda completa,
+  // se pliega sola para dejar a la vista lo que falta.
+  const toggleCategory = (key: string, list: PackingItem[]) => {
     const allDone = list.every((i) => i.done);
     setItemsDone(
       trip.id,
       list.map((i) => i.id),
       !allDone,
     );
+    if (!allDone && !collapsed.has(key)) saveCollapsed(new Set(collapsed).add(key));
+  };
+
+  const handleToggleItem = (item: PackingItem) => {
+    toggleItem(trip.id, item.id);
+    // Si con este tilde se completa la categoría, se pliega sola.
+    const rest = items.filter((i) => i.cat === item.cat && i.id !== item.id);
+    if (!item.done && rest.every((i) => i.done) && !isFiltering) saveCollapsed(new Set(collapsed).add(item.cat));
+  };
+
+  const allSectionKeys = [...groups.map((g) => g.key as string), 'tareas'];
+  const allCollapsed = allSectionKeys.every((k) => collapsed.has(k));
+
+  // Encabezado común a categorías y a la lista de casa/barco: tilde de
+  // toda la sección (opcional), título, contador y −/+.
+  const sectionHeader = (opts: {
+    key: string;
+    title: string;
+    dotColor?: string;
+    done: number;
+    total: number;
+    onToggleAll?: () => void;
+    big?: boolean;
+  }) => {
+    const isCollapsed = collapsed.has(opts.key) && !isFiltering;
+    const all = opts.total > 0 && opts.done === opts.total;
+    const some = opts.done > 0 && !all;
+    return (
+      <div className={styles.groupHeader}>
+        {opts.onToggleAll && (
+          <button
+            type="button"
+            className={`${styles.catCheck} ${all ? styles.catCheckDone : some ? styles.catCheckSome : ''}`}
+            onClick={opts.onToggleAll}
+            aria-label={all ? `Destildar todo ${opts.title}` : `Tildar todo ${opts.title}`}
+          >
+            {all ? '✓' : some ? <span className={styles.catCheckPartial} /> : ''}
+          </button>
+        )}
+        <button
+          type="button"
+          className={styles.groupToggle}
+          onClick={() => toggleCollapsed(opts.key)}
+          aria-expanded={!isCollapsed}
+          aria-label={`${isCollapsed ? 'Desplegar' : 'Plegar'} ${opts.title}`}
+        >
+          {opts.dotColor && <span className={styles.groupDot} style={{ background: opts.dotColor }} />}
+          <span className={opts.big ? styles.homeSectionTitle : styles.groupTitle}>{opts.title}</span>
+          <span className={styles.groupCount}>
+            {opts.done}/{opts.total}
+          </span>
+          <span className={styles.foldIcon} aria-hidden="true">
+            {isCollapsed ? '+' : '−'}
+          </span>
+        </button>
+      </div>
+    );
   };
 
   const grouped = (key: CategoryKey, list: PackingItem[]) => {
     const meta = CATEGORY_META[key];
+    const all = items.filter((i) => i.cat === key);
+    const isCollapsed = collapsed.has(key) && !isFiltering;
     return (
-      <div className={styles.group} key={key}>
-        <div className={styles.groupHeader}>
-          <span className={styles.groupDot} style={{ background: meta.color }} />
-          <span className={styles.groupTitle}>{meta.title}</span>
-          <span className={styles.groupCount}>
-            {list.filter((i) => i.done).length}/{list.length}
-          </span>
-        </div>
-        {list.map((item) => (
+      <div className={`${styles.group} ${isCollapsed ? styles.groupCollapsed : ''}`} key={key}>
+        {sectionHeader({
+          key,
+          title: meta.title,
+          dotColor: meta.color,
+          done: all.filter((i) => i.done).length,
+          total: all.length,
+          onToggleAll: () => toggleCategory(key, all),
+        })}
+        {!isCollapsed && list.map((item) => (
           <button
             key={item.id}
             ref={registerItemNode(item.id)}
             type="button"
             className={styles.item}
-            onClick={() => toggleItem(trip.id, item.id)}
+            onClick={() => handleToggleItem(item)}
           >
             <span className={`${styles.checkbox} ${item.done ? styles.checkboxDone : ''}`}>✓</span>
             <span className={`${styles.itemName} ${item.done ? styles.itemNameDone : ''}`}>{item.name}</span>
@@ -356,7 +433,7 @@ export function Checklist() {
             </span>
           </button>
         ))}
-        {canAddCustomItems && <AddItemRow onAdd={(name) => addCustomItem(trip.id, key, name)} />}
+        {!isCollapsed && canAddCustomItems && <AddItemRow onAdd={(name) => addCustomItem(trip.id, key, name)} />}
       </div>
     );
   };
@@ -374,12 +451,15 @@ export function Checklist() {
     onAdd: (label: string) => void;
   }) => (
     <div className={styles.homeSection}>
-      <div className={styles.homeSectionHeader}>
-        <span className={styles.homeSectionTitle}>{opts.title}</span>
-        <span className={styles.groupCount}>
-          {opts.tasks.filter((t) => t.done).length}/{opts.tasks.length}
-        </span>
-      </div>
+      {sectionHeader({
+        key: 'tareas',
+        title: opts.title,
+        done: opts.tasks.filter((t) => t.done).length,
+        total: opts.tasks.length,
+        big: true,
+      })}
+      {!(collapsed.has('tareas') && !isFiltering) && (
+        <>
       <div className={styles.homeSectionHint}>{opts.hint}</div>
       {opts.sorted.map((task) => (
         <button key={task.id} ref={registerItemNode(task.id)} type="button" className={styles.item} onClick={() => opts.onToggle(task.id)}>
@@ -393,30 +473,10 @@ export function Checklist() {
         </button>
       ))}
       {canAddCustomItems && <AddItemRow onAdd={opts.onAdd} />}
+        </>
+      )}
     </div>
   );
-
-  const groupedQuick = (key: string, list: PackingItem[]) => {
-    const meta = QUICK_GROUP_META[key as keyof typeof QUICK_GROUP_META];
-    const allDone = list.every((i) => i.done);
-    return (
-      <button
-        type="button"
-        key={key}
-        className={`${styles.quickGroup} ${allDone ? styles.quickGroupDone : ''}`}
-        onClick={() => toggleQuickGroup(list)}
-      >
-        <span className={`${styles.checkbox} ${allDone ? styles.checkboxDone : ''}`}>✓</span>
-        <span className={styles.quickGroupInfo}>
-          <span className={`${styles.groupTitle} ${allDone ? styles.itemNameDone : ''}`}>{meta.title}</span>
-          <span className={styles.quickGroupHint}>{list.length} ítems</span>
-        </span>
-        <span className={styles.groupCount}>
-          {list.filter((i) => i.done).length}/{list.length}
-        </span>
-      </button>
-    );
-  };
 
   return (
     <div className={styles.screen}>
@@ -486,52 +546,36 @@ export function Checklist() {
         onChangeBags={() => setShowChangeMaletas(true)}
       />
 
-      <div className={styles.viewToggle}>
+      <div className={styles.searchBar}>
+        <input
+          className={styles.searchInput}
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar ítem…"
+        />
         <button
           type="button"
-          className={`${styles.viewToggleBtn} ${view === 'detallada' ? styles.viewToggleBtnActive : ''}`}
-          onClick={() => setView('detallada')}
+          className={`${styles.pendingToggle} ${onlyPending ? styles.pendingToggleActive : ''}`}
+          onClick={() => setOnlyPending((v) => !v)}
         >
-          Detallada
-        </button>
-        <button
-          type="button"
-          className={`${styles.viewToggleBtn} ${view === 'rapida' ? styles.viewToggleBtnActive : ''}`}
-          onClick={() => setView('rapida')}
-        >
-          Rápida
+          Sin empacar
         </button>
       </div>
 
-      {view === 'detallada' && (
-        <div className={styles.searchBar}>
-          <input
-            className={styles.searchInput}
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar ítem…"
-          />
+      <div className={styles.groups}>
+        {!isFiltering && (
           <button
             type="button"
-            className={`${styles.pendingToggle} ${onlyPending ? styles.pendingToggleActive : ''}`}
-            onClick={() => setOnlyPending((v) => !v)}
+            className={styles.foldAll}
+            onClick={() => saveCollapsed(allCollapsed ? new Set() : new Set(allSectionKeys))}
           >
-            Sin empacar
+            {allCollapsed ? 'Desplegar todo' : 'Plegar todo'}
           </button>
-        </div>
-      )}
-
-      <div className={styles.groups}>
-        {view === 'detallada' ? (
-          groups.length > 0 ? (
-            groups.map((g) => grouped(g.key, g.list))
-          ) : (
-            isFiltering && <div className={styles.noResults}>No hay ítems que coincidan con la búsqueda.</div>
-          )
-        ) : (
-          quickGroups.map((g) => groupedQuick(g.key, g.list))
         )}
+        {groups.length > 0
+          ? groups.map((g) => grouped(g.key, g.list))
+          : isFiltering && <div className={styles.noResults}>No hay ítems que coincidan con la búsqueda.</div>}
 
         {/* Con turismo === 'navegar' (ver buildBoatChecklist), el barco
             REEMPLAZA a la de casa en vez de sumarse — decidido por el
