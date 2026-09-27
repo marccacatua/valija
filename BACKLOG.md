@@ -1,5 +1,34 @@
 # Backlog
 
+## 📊 Analíticas de uso (propuesta, 2026-09-27)
+
+Pedido del usuario: saber qué es lo que más usan los clientes.
+Recomendación: **TelemetryDeck**.
+- Pensado para apps de Apple y centrado en la privacidad: anónimo (no
+  identifica personas), sin el cartel de "permitir rastreo" (ATT).
+- Gratis hasta 100.000 eventos por mes. Tiene SDK de JavaScript, que
+  anda en la web y en Capacitor.
+- Alternativa: Aptabase (open source, con plugin de Capacitor).
+
+**Falta del usuario:** crear la cuenta y pasar el App ID (es público).
+
+**Qué medir** (eventos, sin datos personales ni nombres de viajes):
+- `viaje_creado`: destino, clima, turismo, transporte, días, valijas,
+  bebé/mascota, lavar ropa (para saber qué opciones se usan).
+- `viaje_editado`, `ajustar_para_que_entre`, `cambiar_valijas`,
+  `plantilla_guardada` / `plantilla_aplicada`, `compartir`,
+  `repetir_viaje`, `item_propio_agregado`, `categoria_tildada_entera`.
+- `viaje_completo` (100 %) y el % empacado al salir del viaje.
+- `paywall_visto` (desde dónde se abrió), `compra_pro`, `restaurar`.
+- `idioma` (es/en), `plataforma` (iOS/web).
+
+**Además hay que:**
+- Cambiar la política de privacidad, que hoy dice que no usamos
+  analítica, y declarar en App Store Connect "Datos de uso → interacción
+  con el producto: no vinculado a la identidad, sin rastreo".
+- Ajustar el test de "sin requests externas" para permitir solo el
+  dominio de TelemetryDeck.
+
 ## 🔎 Revisión general de código (2026-09-24): pendientes
 
 Lo rápido se resolvió en v1.7.1 (tipografía empaquetada, política de

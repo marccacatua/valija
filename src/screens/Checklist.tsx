@@ -17,6 +17,7 @@ import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { UndoSnackbar } from '../components/UndoSnackbar';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
+import { onTripFullyPacked } from '../features/review';
 import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useMascotMorphTarget } from '../hooks/useMascotMorphTarget';
@@ -112,6 +113,16 @@ export function Checklist() {
   useEffect(() => {
     if (trip) setLastTripId(trip.id);
   }, [trip, setLastTripId]);
+
+  // "¡Valija lista!": cuando el viaje PASA a estar completo por un tilde
+  // (no al abrir uno que ya lo estaba), se registra para el pedido de
+  // calificación del App Store (ver features/review.ts).
+  const fullyPacked = items.length > 0 && items.every((i) => i.done);
+  const wasFullyPackedRef = useRef(fullyPacked);
+  useEffect(() => {
+    if (fullyPacked && !wasFullyPackedRef.current && trip) void onTripFullyPacked(trip.id);
+    wasFullyPackedRef.current = fullyPacked;
+  }, [fullyPacked, trip]);
 
   useEffect(() => {
     return () => {

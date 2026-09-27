@@ -4,6 +4,25 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## Sin publicar — rama `calificacion` (a prueba)
+
+- **Pedido de calificación en el App Store** (`src/features/review.ts`),
+  con el cartel oficial de estrellas de Apple (plugin
+  `@capacitor-community/in-app-review`).
+  - Se pide en un momento feliz: cuando alguien completa su **segundo**
+    viaje al 100 % ("¡Valija lista!"). Después, como mucho una vez cada
+    120 días. Apple además lo limita a 3 veces por año y decide si lo
+    muestra.
+  - Sin cartel propio de "¿te gusta?": Apple no permite filtrar quién va a
+    calificar (guideline 5.6.1).
+  - Cada viaje cuenta una sola vez. Abrir un viaje que ya estaba completo
+    no cuenta. En la web no hace nada.
+  - El estado se guarda en `valija:review` (también en Preferences).
+- Proyecto iOS sincronizado con el plugin nuevo (`Package.swift`).
+- QA: reglas de cuándo pedir la calificación en el combinatorio; en
+  Playwright, que se registre al completar y que no cuente dos veces.
+  246/246.
+
 ## v1.12.0
 
 **Lista en árbol** (probada y aprobada por el usuario, ex rama
