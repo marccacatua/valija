@@ -4,7 +4,11 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
-## Sin publicar — rama `editar-viaje` (a prueba)
+## v1.11.0
+
+**Editar las opciones de un viaje ya creado** (probado y aprobado por el
+usuario, ex rama `editar-viaje`).
+
 
 - **"Editar opciones" en un viaje ya creado.** Es un botón junto a los
   chips del viaje que abre el mismo formulario con las opciones cargadas.
