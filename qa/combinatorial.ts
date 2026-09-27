@@ -4,11 +4,10 @@ import { ITEM_LITERS, isSeparateItem, itemLiters, wornItemIds } from '../src/dat
 import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
 import { mergeTripForm } from '../src/data/mergeTrip';
 import { buildItems } from '../src/data/buildItems';
-import { QUICK_GROUP_META, quickGroupFor } from '../src/data/quickGroups';
 import type { AlojKey, ClimaKey, DestKey, MaletaKey, MotivoKey, TransporteKey, TripFormState, TurismoKey } from '../src/types';
 
 /**
- * QA de la lógica pura (buildItems.ts + distribute.ts + quickGroups.ts):
+ * QA de la lógica pura (buildItems.ts + distribute.ts):
  * recorre el producto cartesiano de TODAS las opciones del formulario y
  * verifica un puñado de invariantes que tienen que cumplirse siempre, sin
  * importar la combinación. No reemplaza al QA manual/Playwright — está
@@ -217,25 +216,11 @@ for (const dest of DEST_SUBSETS)
                     noQty: it.noQty,
                   }));
 
-                  // Invariante: quickGroupFor nunca devuelve un grupo inválido y la
-                  // suma de ítems agrupados siempre cierra con el total (vista rápida)
-                  const groupCounts = new Map<string, number>();
-                  for (const it of items) {
-                    const g = quickGroupFor(it);
-                    if (!QUICK_GROUP_META[g]) {
-                      fail(form, `quickGroupFor("${it.name}") devolvió un grupo inválido: ${g}`);
-                    }
-                    groupCounts.set(g, (groupCounts.get(g) ?? 0) + 1);
-                  }
                   // Invariante: todo ítem generado que va en una valija tiene su
                   // tamaño estándar en litros (si falta, se usaría el genérico de
                   // la categoría y el cálculo de espacio sería impreciso).
                   for (const it of items) {
                     if (!isSeparateItem(it) && !(it.name in ITEM_LITERS)) fail(form, `"${it.name}" no tiene litros en ITEM_LITERS`);
-                  }
-                  const sumGrouped = [...groupCounts.values()].reduce((a, b) => a + b, 0);
-                  if (sumGrouped !== items.length) {
-                    fail(form, `Vista rápida: suma de grupos (${sumGrouped}) != total de ítems (${items.length})`);
                   }
 
                   for (const bags of MALETA_SUBSETS) {

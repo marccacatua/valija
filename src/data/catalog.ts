@@ -88,9 +88,8 @@ export const CATEGORY_META: Record<CategoryKey, { title: string; color: string; 
 
 // Documentos primero: coincide con el mensaje de progreso ("Arrancá por
 // los documentos") y es lo más importante de no olvidar. Higiene antes
-// que ropa para que coincida con el orden de QUICK_GROUP_ORDER (vista
-// rápida) — mismo orden en las dos vistas, y con el mensaje de progreso
-// que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
+// que ropa (se arma primero el neceser), mismo orden que el mensaje de
+// progreso que invita a seguir con la próxima categoría. "Bebé" cerca de higiene
 // (misma rutina de cuidado personal, y la misma pregunta del form las
 // junta visualmente). "Mascota", "Esquí", "Náutica", "Buceo" y
 // "Camping", en cambio, no tienen nada que ver con higiene/vestuario —

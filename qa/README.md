@@ -8,7 +8,7 @@ buena una versión.
 
 Recorre el producto cartesiano de **todas** las opciones del formulario
 (cientos de miles de combinaciones) y verifica invariantes de
-`buildRawItems`, `distributeItems` y `quickGroupFor`: sin ítems
+`buildRawItems`, `distributeItems`, el espacio en litros y la edición de viajes (`mergeTripForm`): sin ítems
 duplicados, ninguna cantidad inválida, nada se pierde al repartir entre
 valijas, etc. Es lógica pura — no abre un navegador, tarda entre unos
 segundos y un par de minutos según la máquina.

@@ -4,7 +4,11 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
-## Sin publicar — rama `vista-arbol` (a prueba)
+## v1.12.0
+
+**Lista en árbol** (probada y aprobada por el usuario, ex rama
+`vista-arbol`).
+
 
 - **La lista en árbol reemplaza a las vistas "Detallada" y "Rápida".**
   - Cada categoría (y la lista de casa o del barco) se pliega y despliega
@@ -24,10 +28,10 @@ junto con el número de versión en `package.json` (visible en el pie de
   recién mostrados parecían nuevos. Ahora, al plegar o desplegar, la foto
   se vuelve a sacar sin animar. Hay un test que lo reproduce: sin el
   arreglo da 5 fundidos, con el arreglo da 0.
-- Se pierden los grupos de la vista rápida que partían la ropa en
-  "trabajo", "salir", "abrigo" y "calzado". El árbol usa las mismas
-  categorías que la lista. Si se aprueba, se borra `quickGroups.ts`, que
-  quedaría sin uso.
+- Ya no están los grupos de la vista rápida que partían la ropa en
+  "trabajo", "salir", "abrigo" y "calzado": el árbol usa las mismas
+  categorías que la lista. Se borró `quickGroups.ts` y su verificación en
+  el combinatorio.
 - QA: los 4 tests de la vista rápida se reemplazaron por tests del
   árbol (tilde de categoría, estado "a medias", plegar sin afectar al
   resto, recordar al recargar, búsqueda, plegar/desplegar todo, plegado
