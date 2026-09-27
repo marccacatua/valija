@@ -439,7 +439,7 @@ try {
     await page.waitForTimeout(80);
     const [doneBefore, totalRopa] = (await headerCount(page, 'Ropa')).split('/').map(Number);
     assert(doneBefore === 1 && doneBefore < totalRopa, 'Ropa muestra progreso parcial con 1 ítem tildado', `${doneBefore}/${totalRopa}`);
-    assert((await page.locator('button[aria-label="Tildar todo Ropa"] [class*="catCheckPartial"]').count()) === 1, 'El tilde de Ropa muestra el estado "a medias"');
+    assert(((await page.locator('button[aria-label="Tildar todo Ropa"]').textContent()) ?? '').trim() === '–', 'El tilde de Ropa muestra la rayita de "a medias"');
     await page.click('button[aria-label="Tildar todo Ropa"]');
     await page.waitForTimeout(100);
     assert((await headerCount(page, 'Ropa')) === `${totalRopa}/${totalRopa}`, 'Tocar el tilde de una categoría a medias la completa (no la destilda)');
@@ -473,6 +473,27 @@ try {
       await page.waitForTimeout(40);
     }
     assert((await page.locator('button[aria-label="Desplegar Documentos"]').count()) === 1, 'Al tildar el último ítem de Documentos, la categoría se pliega sola');
+    await ctx.close();
+  }
+  {
+    // Regresión: al desplegar una categoría y tildar su PRIMER ítem, sus
+    // ítems no tienen que "aparecer" con un fundido (antes no tenían
+    // posición medida y la animación los trataba como nuevos).
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('button[aria-label="Plegar Electrónica"]');
+    await page.reload();
+    await page.waitForSelector('text=Tu valija para');
+    await page.click('button[aria-label="Desplegar Electrónica"]');
+    await page.waitForTimeout(100);
+    await page.click('button:has-text("Cargador del celular")');
+    const fades = await page.evaluate(() =>
+      document.getAnimations().filter((a) => {
+        const kf = (a.effect && 'getKeyframes' in a.effect ? a.effect.getKeyframes() : []);
+        return kf.some((k) => 'opacity' in k);
+      }).length,
+    );
+    assert(fades === 0, 'Tildar el primer ítem de una categoría recién desplegada no hace fundidos raros', `fundidos=${fades}`);
     await ctx.close();
   }
 

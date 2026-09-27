@@ -166,7 +166,7 @@ export function Checklist() {
     ...groups.flatMap((g) => g.list.map((i) => i.id)),
     ...sortedHomeChecklist.map((t) => t.id),
     ...sortedBoatChecklist.map((t) => t.id),
-  ]);
+  ], [...collapsed].sort().join(','));
   const mascotMorphRef = useMascotMorphTarget<HTMLDivElement>();
 
   if (!trip) {
@@ -353,7 +353,7 @@ export function Checklist() {
             onClick={opts.onToggleAll}
             aria-label={all ? `Destildar todo ${opts.title}` : `Tildar todo ${opts.title}`}
           >
-            {all ? '✓' : some ? <span className={styles.catCheckPartial} /> : ''}
+            {all ? '✓' : some ? '–' : ''}
           </button>
         )}
         <button

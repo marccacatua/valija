@@ -368,13 +368,6 @@
   color: var(--coral);
 }
 
-.catCheckPartial {
-  width: 10px;
-  height: 10px;
-  border-radius: 3px;
-  background: var(--coral);
-}
-
 .catCheckDone {
   border-color: var(--coral);
   background: var(--coral);
