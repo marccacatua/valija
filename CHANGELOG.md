@@ -4,6 +4,14 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.12.1
+
+- **Fix: el botón "Armar mi valija" tapaba las opciones con el teclado
+  abierto.** En el iPhone, al escribir el nombre del viaje y scrollear,
+  el botón sticky de abajo quedaba flotando a mitad de pantalla (iOS no
+  achica el WebView cuando aparece el teclado). Ahora se esconde mientras
+  se escribe el nombre, y la tecla del teclado dice "OK" y lo cierra.
+
 ## v1.12.0
 
 **Lista en árbol** (probada y aprobada por el usuario, ex rama
