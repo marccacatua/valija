@@ -4,7 +4,12 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
-## Sin publicar — rama `calificacion` (a prueba)
+## v1.13.0
+
+Probada en el iPhone (build de Xcode) junto con la compra de Pro:
+compra en sandbox, reinstalar + restaurar, migración de viajes desde la
+v1.0, vibración, modo avión y el cartel de calificación (ex rama
+`calificacion`).
 
 - **Pedido de calificación en el App Store** (`src/features/review.ts`),
   con el cartel oficial de estrellas de Apple (plugin
