@@ -4,6 +4,15 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.12.2
+
+- **Fix: al borrar el último viaje, la versión y los links de
+  Privacidad/Soporte pasaban por encima del cartel "Todavía no armaste
+  ninguna valija"** durante medio segundo. El pie animaba desde su
+  posición vieja (debajo de la tarjeta borrada) mientras el cartel ya
+  ocupaba ese lugar. El paso de lista a vacío (y de vuelta) ahora se
+  acomoda sin animar.
+
 ## v1.12.1
 
 - **Fix: el botón "Armar mi valija" tapaba las opciones con el teclado
