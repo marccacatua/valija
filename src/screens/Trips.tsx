@@ -105,7 +105,11 @@ export function Trips() {
   // mientras la última tarjeta todavía está viajando visualmente por
   // ese espacio, y se pisan un instante.
   const flipIds = [...sortedTrips.map((t) => t.id), TRAILING_FLIP_ID];
-  const registerFlipNode = useFlipReorder(flipIds);
+  // Al borrar el último viaje aparece el cartel de "Todavía no armaste
+  // ninguna valija" (que no está en el FLIP): si el footer animara desde
+  // su posición vieja, pasaría por encima del cartel. Ese cambio de
+  // lista ↔ vacío se acomoda sin animar (ver layoutKey en useFlipReorder).
+  const registerFlipNode = useFlipReorder(flipIds, trips.length === 0 ? 'vacio' : 'lista');
   const registerCard = (id: string) => (el: HTMLElement | null) => {
     registerFlipNode(id)(el);
     if (el) cardNodesRef.current.set(id, el);
