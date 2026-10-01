@@ -39,6 +39,10 @@ export function TripForm() {
   const editing = tripId ? getTrip(tripId) : undefined;
   const [form, setForm] = useState<TripFormState>(() => editing?.form ?? DEFAULT_FORM);
   const [showPaywall, setShowPaywall] = useState(false);
+  // Con el teclado abierto, iOS no achica la pantalla del WebView: el botón
+  // sticky de abajo queda flotando a mitad de la lista y tapa las opciones
+  // al scrollear. Mientras se escribe el nombre, se esconde.
+  const [typingName, setTypingName] = useState(false);
   // "Lavar ropa" automático en viajes largos: se marca solo al llegar a
   // LAVA_ROPA_AUTO_DIAS, y se desmarca solo si se vuelve a acortar el
   // viaje — mientras la persona no lo haya tocado a mano. Si lo toca, su
@@ -212,6 +216,12 @@ export function TripForm() {
               className={styles.nameInput}
               value={form.name}
               onChange={(e) => set('name', e.target.value)}
+              onFocus={() => setTypingName(true)}
+              onBlur={() => setTypingName(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.currentTarget.blur();
+              }}
+              enterKeyHint="done"
               placeholder="Ej. Bariloche"
             />
           </div>
@@ -407,7 +417,7 @@ export function TripForm() {
         </div>
       )}
 
-      {!atFreeLimit && (
+      {!atFreeLimit && !typingName && (
         <div className={styles.footer}>
           {editing && editPreview ? (
             <>
