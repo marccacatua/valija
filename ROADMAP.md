@@ -25,7 +25,7 @@ automática al aprobarse.
 - [x] Versión 1.13.0 con el IAP en el mismo envío → enviada a revisión
 - [ ] Aprobación de Apple
 - [ ] Comprar Pro de verdad en la versión publicada (y pedir reembolso si se quiere)
-- [ ] Borrar ramas ya mergeadas en GitHub (desde la web; acá da 403):
+- [x] Borrar ramas ya mergeadas en GitHub (desde la web; acá da 403):
       calificacion, editar-viaje, espacio-litros, multi-turismo-clima,
       post-v1-ux, post-v1.1-fixes, ski-navegar, vista-arbol. **No** i18n-en.
 - [ ] Info.plist: `ITSAppUsesNonExemptEncryption = NO`
