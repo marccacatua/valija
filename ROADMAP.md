@@ -29,7 +29,7 @@ automática al aprobarse.
       calificacion, editar-viaje, espacio-litros, multi-turismo-clima,
       post-v1-ux, post-v1.1-fixes, ski-navegar, vista-arbol. **No** i18n-en.
 - [ ] Info.plist: `ITSAppUsesNonExemptEncryption = NO`
-- [ ] UE: declaración de comerciante (DSA) en Business → cumplimiento normativo
+- [x] UE: declaración de comerciante (DSA) enviada con documentos (2026-10-01)
 
 ## 2. Versión en inglés (rama `i18n-en`)
 
