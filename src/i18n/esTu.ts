@@ -18,7 +18,7 @@ export const ES_TU: Record<string, string> = {
   "Valija": "Maleta",
   "Cambiar valijas": "Cambiar maletas",
   "elegí una o varias": "elige una o varias",
-  "Finde · 3": "Fin de semana · 3",
+  "Finde · 3": "Corto · 3",
   "Valu, la valija mascota": "Valu, la maleta mascota",
   "Categorías extra: bebé/niño chico, mascota, esquí, navegar, buceo y camping": "Categorías extra: bebé/niño pequeño, mascota, esquí, navegar, buceo y camping",
   "No se pudo completar la compra. Probá de nuevo.": "No se pudo completar la compra. Inténtalo de nuevo.",

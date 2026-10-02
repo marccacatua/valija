@@ -6,7 +6,7 @@ junto con el número de versión en `package.json` (visible en el pie de
 
 ## v1.14.0
 
-**Valija en 5 idiomas** (ex rama `i18n-en`). El idioma sale del teléfono:
+**Valija en 6 idiomas** (ex rama `i18n-en`). El idioma sale del teléfono:
 
 | Teléfono en… | La app se ve en… |
 |---|---|
@@ -14,13 +14,14 @@ junto con el número de versión en `package.json` (visible en el pie de
 | Español de España | Español de España ("Haz tu maleta", "móvil", "bañador") |
 | Español de cualquier otro país | Español "con tú" de Latinoamérica ("Arma tu maleta", "celular") |
 | Alemán | Alemán (con "du") |
+| Portugués (Brasil o Portugal) | Portugués de Brasil (con "você") |
 | Cualquier otro idioma | Inglés |
 
 - **Selector de idioma** en el pie de "Mis viajes" (reemplaza al link
   "English / Español"), por si alguien prefiere otro. Queda guardado.
 - **Cómo funciona:** el rioplatense es la clave (`t('Mis viajes')`).
-  Inglés (`en.ts`, `enItems.ts`) y alemán (`de.ts`, `deItems.ts`) son
-  diccionarios completos: 255 frases y 175 ítems cada uno. Los dos
+  Inglés (`en.ts`, `enItems.ts`), alemán (`de.ts`, `deItems.ts`) y
+  portugués (`pt.ts`, `ptItems.ts`) son diccionarios completos: 255 frases y 175 ítems cada uno. Los dos
   españoles con tú son parciales y solo tienen lo que cambia
   (`esTu.ts`, y `esES.ts` encima de ese). Los ítems se siguen guardando
   en rioplatense y se traducen al mostrarse: los viajes ya guardados se
@@ -30,26 +31,26 @@ junto con el número de versión en `package.json` (visible en el pie de
   y el país decide qué español se muestra. La app arranca recién cuando
   el idioma está decidido (`main.tsx` → `bootstrap.tsx`).
 - **Precio de Pro en la moneda de cada país**, tal como lo da el App
-  Store ("0,99 €" en Alemania o España). Sin conexión se muestra el de
+  Store ("0,99 €" en Alemania o España, reales en Brasil). Sin conexión se muestra el de
   referencia en USD.
-- Privacidad y soporte completos en los 5 idiomas.
-- iOS: la app declara inglés, español y alemán (`CFBundleLocalizations`,
-  `en/es/de.lproj`), así la tienda muestra los idiomas. Además
+- Privacidad y soporte completos en los 6 idiomas.
+- iOS: la app declara inglés, español, alemán y portugués
+  (`CFBundleLocalizations`, `en/es/de/pt-BR.lproj`), así la tienda muestra los idiomas. Además
   `ITSAppUsesNonExemptEncryption = NO`: Apple ya no pregunta por el
   cifrado en cada build.
 - Fechas y litros con el formato de cada idioma ("9,6 L" / "9.6 L").
 - **QA nuevo:**
-  - `npm run qa:i18n`: inglés y alemán completos (sin faltantes, sin
+  - `npm run qa:i18n`: inglés, alemán y portugués completos (sin faltantes, sin
     sobrantes, `{parámetros}` iguales), y que los españoles con tú no
     tengan voseo ni palabras rioplatenses ("tenés", "acá", "remera",
     "valija"…) en ninguna frase ni ítem que se pueda mostrar.
-  - `npm run qa:langs`: recorre en alemán, España y Latinoamérica
+  - `npm run qa:langs`: recorre en alemán, portugués, España y Latinoamérica
     bienvenida, formulario, viajes de playa con bebé y mascota, esquí,
     navegar, buceo, camping y trabajo, reparto, editar opciones,
     plantillas, viaje completo, paywall, límite gratis, "Mis viajes",
     privacidad y soporte; prueba la detección (es-UY, es-AR, es-ES,
-    es-MX, es-419, es-CL, de-DE, de-AT, fr-FR, en-US) y el selector.
-    149/149.
+    es-MX, es-419, es-CL, de-DE, de-AT, pt-BR, pt-PT, fr-FR, en-US) y el
+    selector. 209/209.
   - Inglés 182/182 y rioplatense 246/246.
 
 ## v1.13.0

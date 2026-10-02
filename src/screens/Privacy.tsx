@@ -6,6 +6,7 @@ import { lang } from '../i18n';
 export function Privacy() {
   if (lang === 'en') return <PrivacyEn />;
   if (lang === 'de') return <PrivacyDe />;
+  if (lang === 'pt') return <PrivacyPt />;
   if (lang === 'es-ES' || lang === 'es-419') return <PrivacyTu />;
   return (
     <LegalPage title="Política de privacidad">
@@ -261,6 +262,68 @@ function PrivacyDe() {
       </p>
 
       <div className={styles.updated}>Zuletzt aktualisiert: Oktober 2026.</div>
+    </LegalPage>
+  );
+}
+
+function PrivacyPt() {
+  return (
+    <LegalPage title="Política de privacidade">
+      <p>
+        O Valija foi pensado para você montar seu checklist de viagem sem criar uma conta nem fornecer nenhum dado.
+        Esta página explica, em palavras simples, quais informações o app usa e quais não.
+      </p>
+
+      <h2>Quais dados coletamos</h2>
+      <p>Nenhum. O Valija não tem servidor próprio: seus dados não "viajam" para lugar nenhum nem ficam guardados fora do seu celular.</p>
+
+      <h2>Onde ficam suas informações</h2>
+      <p>
+        Tudo o que você cadastra — suas viagens, os itens que adiciona à mão, seus modelos — fica guardado apenas no
+        armazenamento local do seu próprio aparelho (o mesmo mecanismo que qualquer site usa para lembrar suas
+        preferências). Nada sai do seu celular, a não ser que você decida compartilhar de propósito (por exemplo, com
+        o botão "Compartilhar checklist" ou com "Transferir dados entre Safari e Tela de Início").
+      </p>
+
+      <h2>O que NÃO fazemos</h2>
+      <ul>
+        <li>Não pedimos nem guardamos seu nome, e-mail ou qualquer dado de contato.</li>
+        <li>Não usamos análises que identifiquem pessoas ou rastreiem sua atividade.</li>
+        <li>Não mostramos publicidade de terceiros.</li>
+        <li>Não vendemos nem compartilhamos informações com ninguém — não temos informações para compartilhar.</li>
+        <li>Não acessamos sua câmera, contatos, localização nem nenhuma outra permissão do celular.</li>
+      </ul>
+
+      <h2>Conexões com a internet</h2>
+      <p>Para montar e salvar suas viagens, o Valija não se conecta à internet: tudo (inclusive a fonte) já vem dentro do app.</p>
+
+      <h2>Compra no app</h2>
+      <p>
+        Se você desbloquear o Valija Pro, a compra é processada pela Apple através da App Store — nós nunca vemos nem
+        guardamos suas informações de pagamento. Para confirmar a compra e permitir restaurá-la, o app usa o
+        RevenueCat, um serviço que recebe da Apple o comprovante de compra associado a um identificador anônimo (não ao
+        seu nome, e-mail ou viagens).
+      </p>
+
+      <h2>Apagar seus dados</h2>
+      <p>
+        Você pode excluir uma viagem ou todas as suas viagens a qualquer momento em "Minhas viagens", dentro do app. Se
+        quiser apagar também qualquer rastro local, basta limpar os dados do site/app nos ajustes do navegador ou do
+        celular.
+      </p>
+
+      <h2>Mudanças nesta política</h2>
+      <p>
+        Se no futuro adicionarmos algo que colete dados (por exemplo, estatísticas anônimas de uso para melhorar o
+        app), esta página será atualizada antes disso, com a data da mudança.
+      </p>
+
+      <h2>Contato</h2>
+      <p>
+        Dúvidas? Escreva para <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+
+      <div className={styles.updated}>Última atualização: outubro de 2026.</div>
     </LegalPage>
   );
 }

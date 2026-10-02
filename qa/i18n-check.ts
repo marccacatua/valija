@@ -6,7 +6,7 @@
  *    texto literal (no se podría verificar).
  * 2. Junta todos los nombres de ítems y tareas que la app puede generar,
  *    recorriendo todas las combinaciones relevantes del formulario.
- * 3. Inglés y alemán (diccionarios completos): falla si alguna frase o
+ * 3. Inglés, alemán y portugués (diccionarios completos): falla si alguna frase o
  *    ítem no tiene traducción, si hay traducciones que ya no se usan o si
  *    los {parámetros} no coinciden.
  * 4. Español "con tú" (Latinoamérica) y de España (diccionarios parciales):
@@ -26,6 +26,8 @@ import { EN } from '../src/i18n/en';
 import { EN_ITEMS } from '../src/i18n/enItems';
 import { ES_ES, ES_ES_ITEMS } from '../src/i18n/esES';
 import { ES_TU, ES_TU_ITEMS } from '../src/i18n/esTu';
+import { PT } from '../src/i18n/pt';
+import { PT_ITEMS } from '../src/i18n/ptItems';
 import type { TripFormState } from '../src/types';
 
 const errors: string[] = [];
@@ -98,9 +100,14 @@ for (const flags of [false, true]) {
   for (const task of buildBoatChecklist(f)) itemKeys.add(task.label);
 }
 
-// --- 3. Diccionarios completos (inglés y alemán)
+// --- 3. Diccionarios completos (inglés, alemán y portugués)
 const params = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
-for (const [name, ui, items] of [['inglés', EN, EN_ITEMS], ['alemán', DE, DE_ITEMS]] as const) {
+// El portugués también lleva tildes: ahí solo delatan al español ñ, ¿ y ¡.
+for (const [name, ui, items, spanishMark] of [
+  ['inglés', EN, EN_ITEMS, /[áéíóúñ¿¡]/i],
+  ['alemán', DE, DE_ITEMS, /[áéíóúñ¿¡]/i],
+  ['portugués', PT, PT_ITEMS, /[ñ¿¡]/i],
+] as const) {
   for (const k of uiKeys) {
     if (!(k in ui)) errors.push(`Falta traducir al ${name} (interfaz): ${JSON.stringify(k)}`);
     else if (params(k) !== params(ui[k])) errors.push(`Parámetros distintos (${name}): ${JSON.stringify(k)} → ${JSON.stringify(ui[k])}`);
@@ -109,7 +116,7 @@ for (const [name, ui, items] of [['inglés', EN, EN_ITEMS], ['alemán', DE, DE_I
   for (const k of Object.keys(ui)) if (!uiKeys.has(k)) errors.push(`Traducción sin uso (${name}, interfaz): ${JSON.stringify(k)}`);
   for (const k of Object.keys(items)) if (!itemKeys.has(k)) errors.push(`Traducción sin uso (${name}, ítem): ${JSON.stringify(k)}`);
   for (const [k, v] of [...Object.entries(ui), ...Object.entries(items)]) {
-    if (/[áéíóúñ¿¡]/i.test(v)) errors.push(`La traducción al ${name} parece estar en español: ${JSON.stringify(k)} → ${JSON.stringify(v)}`);
+    if (spanishMark.test(v)) errors.push(`La traducción al ${name} parece estar en español: ${JSON.stringify(k)} → ${JSON.stringify(v)}`);
   }
 }
 
@@ -154,5 +161,5 @@ if (errors.length) {
   console.log(`\n${errors.length} problemas:\n` + errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('OK: inglés y alemán completos; los dos españoles "con tú" sin voseo ni palabras rioplatenses.');
+  console.log('OK: inglés, alemán y portugués completos; los dos españoles "con tú" sin voseo ni palabras rioplatenses.');
 }

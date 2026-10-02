@@ -4,11 +4,14 @@ import { EN } from './en';
 import { EN_ITEMS } from './enItems';
 import { ES_ES, ES_ES_ITEMS } from './esES';
 import { ES_TU, ES_TU_ITEMS } from './esTu';
+import { PT } from './pt';
+import { PT_ITEMS } from './ptItems';
 
 /**
  * Traducción estilo "gettext": el texto en español rioplatense ES la
  * clave. El código sigue leyéndose en español (`t('Mis viajes')`) y los
- * otros idiomas viven en diccionarios aparte. Si a inglés o alemán le
+ * otros idiomas viven en diccionarios aparte. Si a inglés, alemán o
+ * portugués le
  * falta una traducción, se muestra el español y queda anotada en
  * `window.__i18nMissing`: el QA falla si esa lista no está vacía.
  *
@@ -25,7 +28,7 @@ import { ES_TU, ES_TU_ITEMS } from './esTu';
  * (`itemLabel`). Los ítems que escribió el usuario no están en el
  * diccionario y se muestran tal cual.
  */
-export type Lang = 'es' | 'es-ES' | 'es-419' | 'en' | 'de';
+export type Lang = 'es' | 'es-ES' | 'es-419' | 'en' | 'de' | 'pt';
 
 /** Para el selector de idioma del pie de "Mis viajes": cada uno en su propio idioma. */
 export const LANGS: { code: Lang; label: string }[] = [
@@ -34,6 +37,7 @@ export const LANGS: { code: Lang; label: string }[] = [
   { code: 'es-419', label: 'Español (Latinoamérica)' },
   { code: 'en', label: 'English' },
   { code: 'de', label: 'Deutsch' },
+  { code: 'pt', label: 'Português' },
 ];
 
 const LANG_KEY = 'valija:lang';
@@ -44,7 +48,8 @@ const isLang = (x: string | null): x is Lang => LANGS.some((l) => l.code === x);
  * - Uruguay y Argentina (o español sin país) → rioplatense, como siempre.
  * - España → español de España.
  * - Cualquier otro país de habla hispana → español "con tú".
- * - Alemán → alemán. Todo lo demás → inglés.
+ * - Alemán → alemán. Portugués (Brasil o Portugal) → portugués de Brasil.
+ * - Todo lo demás → inglés.
  */
 export function langFromDeviceTag(tag: string): Lang {
   const [language, ...rest] = tag.toLowerCase().replace(/_/g, '-').split('-');
@@ -57,6 +62,7 @@ export function langFromDeviceTag(tag: string): Lang {
     return 'es-419';
   }
   if (language === 'de') return 'de';
+  if (language === 'pt') return 'pt';
   return 'en';
 }
 
@@ -89,13 +95,14 @@ export const lang: Lang = typeof window === 'undefined' ? 'es' : detectLang();
 /** Cualquiera de los tres españoles. */
 export const isSpanish = lang === 'es' || lang === 'es-ES' || lang === 'es-419';
 
-const HTML_LANG: Record<Lang, string> = { es: 'es-AR', 'es-ES': 'es-ES', 'es-419': 'es-419', en: 'en', de: 'de' };
+const HTML_LANG: Record<Lang, string> = { es: 'es-AR', 'es-ES': 'es-ES', 'es-419': 'es-419', en: 'en', de: 'de', pt: 'pt-BR' };
 const TITLE: Record<Lang, string> = {
   es: 'Valija · Checklist de viaje',
   'es-ES': 'Valija · Checklist de viaje',
   'es-419': 'Valija · Checklist de viaje',
   en: 'Valija · Packing checklist',
   de: 'Valija · Packliste',
+  pt: 'Valija · Lista de viagem',
 };
 if (typeof document !== 'undefined') {
   document.documentElement.lang = HTML_LANG[lang];
@@ -103,7 +110,7 @@ if (typeof document !== 'undefined') {
 }
 
 /** Locale para fechas (`toLocaleDateString`). */
-export const dateLocale = ({ es: 'es-AR', 'es-ES': 'es-ES', 'es-419': 'es-MX', en: 'en-US', de: 'de-DE' } as const)[lang];
+export const dateLocale = ({ es: 'es-AR', 'es-ES': 'es-ES', 'es-419': 'es-MX', en: 'en-US', de: 'de-DE', pt: 'pt-BR' } as const)[lang];
 
 /** Cambia el idioma a mano (selector del pie de "Mis viajes") y recarga. */
 export function switchLang(next: Lang) {
@@ -141,6 +148,7 @@ const UI: Record<Lang, [Record<string, string> | null, ...Record<string, string>
   'es-ES': [null, ES_ES, ES_TU],
   en: [EN],
   de: [DE],
+  pt: [PT],
 };
 const ITEMS: Record<Lang, [Record<string, string> | null, ...Record<string, string>[]]> = {
   es: [null],
@@ -148,6 +156,7 @@ const ITEMS: Record<Lang, [Record<string, string> | null, ...Record<string, stri
   'es-ES': [null, ES_ES_ITEMS, ES_TU_ITEMS],
   en: [EN_ITEMS],
   de: [DE_ITEMS],
+  pt: [PT_ITEMS],
 };
 
 /** Texto de la interfaz. `params` reemplaza `{nombre}` en la frase. */
@@ -171,7 +180,7 @@ export function itemLabel(name: string): string {
   return lookup(name, ...ITEMS[lang]) ?? name;
 }
 
-/** Litros con un decimal si son pocos: "9,6" en español y alemán, "9.6" en inglés. */
+/** Litros con un decimal si son pocos: "9,6" en español, alemán y portugués; "9.6" en inglés. */
 export function fmtLiters(l: number): string {
   if (l >= 10) return String(Math.round(l));
   const fixed = l.toFixed(1);

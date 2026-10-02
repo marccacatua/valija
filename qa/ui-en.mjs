@@ -50,7 +50,7 @@ const SPANISH_WORDS = /\b(de|del|la|las|el|los|y|con|para|tu|tus|mis|una|que|en|
 // opciones del selector de idioma del pie, que están cada una en su idioma
 // a propósito (es para cambiar de idioma).
 const USER_TEXT = ['Lucky socks', 'Beach kit', 'Lisbon'];
-const ALLOWED_LINES = ['Español (Uruguay y Argentina)', 'Español (España)', 'Español (Latinoamérica)', 'Deutsch'];
+const ALLOWED_LINES = ['Español (Uruguay y Argentina)', 'Español (España)', 'Español (Latinoamérica)', 'Deutsch', 'Português'];
 
 let shotN = 0;
 async function checkScreen(page, label) {

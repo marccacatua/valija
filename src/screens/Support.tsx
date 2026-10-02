@@ -5,6 +5,7 @@ import { lang } from '../i18n';
 export function Support() {
   if (lang === 'en') return <SupportEn />;
   if (lang === 'de') return <SupportDe />;
+  if (lang === 'pt') return <SupportPt />;
   if (lang === 'es-ES' || lang === 'es-419') return <SupportTu />;
   return (
     <LegalPage title="Soporte">
@@ -156,6 +157,45 @@ function SupportDe() {
       <h2>Kontakt</h2>
       <p>
         Wenn deine Frage hier nicht dabei ist, schreib uns an <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+    </LegalPage>
+  );
+}
+
+function SupportPt() {
+  return (
+    <LegalPage title="Suporte">
+      <p>Precisa de ajuda com o Valija? Aqui estão as dúvidas mais comuns.</p>
+
+      <h2>Como começo?</h2>
+      <p>
+        Toque em "Nova viagem", responda algumas perguntas rápidas sobre a viagem (destino, clima, quantos dias) e o
+        checklist se monta sozinho. Você pode marcar os itens enquanto arruma a mala.
+      </p>
+
+      <h2>Abri o app no Safari e pela Tela de Início, e não vejo a mesma coisa</h2>
+      <p>
+        É uma particularidade do iOS: a versão que você abre no Safari e a que instalou na Tela de Início guardam os
+        dados separadamente, como se fossem dois aparelhos diferentes. Para passar seus dados de um para o outro, vá em
+        "Minhas viagens" e toque em "Transferir dados entre Safari e Tela de Início" — você copia os dados de um lado
+        e cola no outro, sem perder nada.
+      </p>
+
+      <h2>Como desbloqueio o Valija Pro?</h2>
+      <p>
+        Em qualquer viagem, se você tocar em uma função Pro (adicionar itens próprios, modelos ou repetir uma viagem),
+        vai aparecer a opção de desbloquear com um pagamento único, sem assinatura.
+      </p>
+
+      <h2>Apaguei uma viagem sem querer. Dá para recuperar?</h2>
+      <p>Por enquanto não — excluir uma viagem é definitivo, por isso o app sempre pede confirmação antes.</p>
+
+      <h2>Posso usar o Valija sem internet?</h2>
+      <p>Sim. Depois de abrir pela primeira vez, você pode continuar usando sem conexão para consultar ou marcar suas viagens.</p>
+
+      <h2>Contato</h2>
+      <p>
+        Se sua dúvida não está aqui, escreva para <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
       </p>
     </LegalPage>
   );

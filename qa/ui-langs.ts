@@ -1,4 +1,4 @@
-// QA de alemán, español de España y español "con tú", pantalla por
+// QA de alemán, portugués, español de España y español "con tú", pantalla por
 // pantalla (npm run qa:langs). Para inglés está qa/ui-en.mjs y para el
 // rioplatense, qa/ui.mjs.
 //
@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { DE } from '../src/i18n/de';
 import { ES_ES } from '../src/i18n/esES';
 import { ES_TU } from '../src/i18n/esTu';
+import { PT } from '../src/i18n/pt';
 import { LANGS, type Lang } from '../src/i18n/index';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -30,9 +31,9 @@ const BASE = `http://localhost:${PORT}`;
 const SHOTS = process.env.QA_SHOTS_DIR;
 if (SHOTS) mkdirSync(SHOTS, { recursive: true });
 
-type TestLang = 'de' | 'es-ES' | 'es-419';
-const DICTS: Record<TestLang, Record<string, string>[]> = { de: [DE], 'es-ES': [ES_ES, ES_TU], 'es-419': [ES_TU] };
-const LOCALE: Record<TestLang, string> = { de: 'de-DE', 'es-ES': 'es-ES', 'es-419': 'es-MX' };
+type TestLang = 'de' | 'pt' | 'es-ES' | 'es-419';
+const DICTS: Record<TestLang, Record<string, string>[]> = { de: [DE], pt: [PT], 'es-ES': [ES_ES, ES_TU], 'es-419': [ES_TU] };
+const LOCALE: Record<TestLang, string> = { de: 'de-DE', pt: 'pt-BR', 'es-ES': 'es-ES', 'es-419': 'es-MX' };
 
 /** Texto que la app muestra para una frase (clave en rioplatense) en un idioma. */
 function T(lang: TestLang, es: string, params: Record<string, string | number> = {}) {
@@ -56,11 +57,16 @@ function assert(cond: unknown, label: string, detail = '') {
 const SPANISH_CHARS = /[áéíóúñ¿¡]/i;
 // Bordes de palabra que entienden letras como ß, ö o ñ (\b solo conoce a-z).
 const SPANISH_WORDS = /(?<!\p{L})(de|del|la|las|el|los|y|con|para|tu|tus|mis|una|que|en|sin|por|viaje|viajes|ítems?|acá|más|valijas)(?!\p{L})/iu;
+// Español que no existe en portugués (ñ, ¿, ¡ y palabras como "una", "con", "más").
+// ("Valija" con mayúscula es la marca: solo cuenta "valija" en minúscula.)
+const PT_SPANISH_WORDS = /[ñ¿¡]|(?<!\p{L})(y|el|los|las|del|una|con|tus|mis|más|acá|viajes?|ítems?)(?!\p{L})/iu;
+const PT_VALIJA = /(?<!\p{L})valijas?(?!\p{L})/u;
+const PT_SPANISH = { test: (l: string) => PT_SPANISH_WORDS.test(l) || PT_VALIJA.test(l) };
 // Voseo y rioplatense que no deberían aparecer en los españoles con tú.
 const VOSEO = /(?<!\p{L})(acá|vos|tenés|podés|querés|tocá|elegí|armá|sumá|tildá|probá|desbloqueá|creá|guardá|pegá|pegalo|mantené|contanos|recibí|seguí|arrancá|borrá|pausá|repetí|ponele|viajás|alquilás|llevás|sumás|empacás|olvidás|mojás|laburo|valijas?|remeras?|camperas?|buzos?|pollera|ojotas|championes|heladera)(?!\p{L})/u;
 // Las etiquetas del selector de idioma están cada una en su idioma a propósito.
 const LANG_LABELS = LANGS.map((l) => l.label);
-const USER_TEXT = ['Calcetines de la suerte', 'Glückssocken'];
+const USER_TEXT = ['Calcetines de la suerte', 'Glückssocken', 'Meias da sorte'];
 
 let shotN = 0;
 async function checkScreen(page: Page, lang: TestLang, label: string) {
@@ -76,8 +82,10 @@ async function checkScreen(page: Page, lang: TestLang, label: string) {
     .filter((l) => l && !USER_TEXT.some((u) => l.includes(u)))
     .map((l) => LANG_LABELS.reduce((acc, ll) => acc.replace(ll, ''), l).replace('▾', '').trim())
     .filter(Boolean);
-  if (lang === 'de') {
-    const spanish = lines.filter((l) => SPANISH_CHARS.test(l) || SPANISH_WORDS.test(l));
+  if (lang === 'de' || lang === 'pt') {
+    // El portugués comparte tildes y palabras cortas con el español: ahí
+    // solo cuentan las marcas que el portugués no tiene.
+    const spanish = lines.filter((l) => (lang === 'de' ? SPANISH_CHARS.test(l) || SPANISH_WORDS.test(l) : PT_SPANISH.test(l)));
     assert(spanish.length === 0, `[${lang}] [${label}] sin texto en español`, spanish.slice(0, 4).join(' | '));
     assert(missing.length === 0, `[${lang}] [${label}] sin frases sin traducir`, missing.slice(0, 4).join(' | '));
   } else {
@@ -139,7 +147,7 @@ try {
   }
   browser = await chromium.launch(process.env.QA_CHROMIUM_PATH ? { executablePath: process.env.QA_CHROMIUM_PATH } : undefined);
 
-  for (const lang of ['de', 'es-ES', 'es-419'] as TestLang[]) {
+  for (const lang of ['de', 'pt', 'es-ES', 'es-419'] as TestLang[]) {
     // --- Primera vez y formulario
     {
       const { ctx, page } = await freshPage(browser, lang);
@@ -192,7 +200,7 @@ try {
       await checkScreen(page, lang, 'después de editar');
 
       // Ítem propio y plantilla
-      await page.fill(`input[placeholder="${T(lang, 'Agregar ítem…')}"]`, lang === 'de' ? 'Glückssocken' : 'Calcetines de la suerte');
+      await page.fill(`input[placeholder="${T(lang, 'Agregar ítem…')}"]`, { de: 'Glückssocken', pt: 'Meias da sorte', 'es-ES': 'Calcetines de la suerte', 'es-419': 'Calcetines de la suerte' }[lang]);
       await click(page, T(lang, 'Agregar'));
       await click(page, T(lang, 'Guardar ítems como plantilla'));
       await page.waitForSelector(`text=${T(lang, 'Elegí qué entra y ponele un nombre.')}`);
@@ -245,6 +253,8 @@ try {
     ['es-CL', 'es-419'],
     ['de-DE', 'de'],
     ['de-AT', 'de'],
+    ['pt-BR', 'pt-BR'],
+    ['pt-PT', 'pt-BR'],
     ['fr-FR', 'en'],
     ['en-US', 'en'],
   ];
@@ -263,8 +273,8 @@ try {
     const ctx = await browser.newContext({ locale: 'es-UY', viewport: { width: 390, height: 844 } });
     const page = await ctx.newPage();
     await page.goto(`${BASE}/viajes`);
-    const codes: Lang[] = ['de', 'es-ES', 'es-419', 'en', 'es'];
-    const htmlOf: Record<Lang, string> = { de: 'de', 'es-ES': 'es-ES', 'es-419': 'es-419', en: 'en', es: 'es-AR' };
+    const codes: Lang[] = ['de', 'pt', 'es-ES', 'es-419', 'en', 'es'];
+    const htmlOf: Record<Lang, string> = { de: 'de', pt: 'pt-BR', 'es-ES': 'es-ES', 'es-419': 'es-419', en: 'en', es: 'es-AR' };
     for (const code of codes) {
       await page.selectOption('select', code);
       await page.waitForLoadState('load');
@@ -290,5 +300,5 @@ try {
 
 const failed = results.filter((r) => !r.pass);
 for (const r of results) console.log(`${r.pass ? '✓' : '✗'} ${r.label}${r.pass || !r.detail ? '' : ` — ${r.detail}`}`);
-console.log(`\n=== RESULTADOS (alemán y españoles con tú): ${results.length - failed.length}/${results.length} OK ===`);
+console.log(`\n=== RESULTADOS (alemán, portugués y españoles con tú): ${results.length - failed.length}/${results.length} OK ===`);
 if (failed.length) process.exitCode = 1;
