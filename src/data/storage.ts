@@ -17,7 +17,7 @@ import { Preferences } from '@capacitor/preferences';
  * sincrónica para no tener que volver asíncrona toda la app. En la web no
  * cambia nada: sigue siendo solo localStorage.
  */
-export const PERSISTED_KEYS = ['valija:trips', 'valija:templates', 'valija:isPro', 'valija:lastTripId'] as const;
+export const PERSISTED_KEYS = ['valija:trips', 'valija:templates', 'valija:isPro', 'valija:lastTripId', 'valija:review'] as const;
 
 const isNative = () => Capacitor.isNativePlatform();
 

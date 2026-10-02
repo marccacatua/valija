@@ -31,6 +31,47 @@ junto con el número de versión en `package.json` (visible en el pie de
     se salga del ancho: 160/160.
   - Español sin cambios: 180/180.
 
+## v1.13.0
+
+Probada en el iPhone (build de Xcode) junto con la compra de Pro:
+compra en sandbox, reinstalar + restaurar, migración de viajes desde la
+v1.0, vibración, modo avión y el cartel de calificación (ex rama
+`calificacion`).
+
+- **Pedido de calificación en el App Store** (`src/features/review.ts`),
+  con el cartel oficial de estrellas de Apple (plugin
+  `@capacitor-community/in-app-review`).
+  - Se pide en un momento feliz: cuando alguien completa su **segundo**
+    viaje al 100 % ("¡Valija lista!"). Después, como mucho una vez cada
+    120 días. Apple además lo limita a 3 veces por año y decide si lo
+    muestra.
+  - Sin cartel propio de "¿te gusta?": Apple no permite filtrar quién va a
+    calificar (guideline 5.6.1).
+  - Cada viaje cuenta una sola vez. Abrir un viaje que ya estaba completo
+    no cuenta. En la web no hace nada.
+  - El estado se guarda en `valija:review` (también en Preferences).
+- Proyecto iOS sincronizado con el plugin nuevo (`Package.swift`).
+- QA: reglas de cuándo pedir la calificación en el combinatorio; en
+  Playwright, que se registre al completar y que no cuente dos veces.
+  246/246.
+
+## v1.12.2
+
+- **Fix: al borrar el último viaje, la versión y los links de
+  Privacidad/Soporte pasaban por encima del cartel "Todavía no armaste
+  ninguna valija"** durante medio segundo. El pie animaba desde su
+  posición vieja (debajo de la tarjeta borrada) mientras el cartel ya
+  ocupaba ese lugar. El paso de lista a vacío (y de vuelta) ahora se
+  acomoda sin animar.
+
+## v1.12.1
+
+- **Fix: el botón "Armar mi valija" tapaba las opciones con el teclado
+  abierto.** En el iPhone, al escribir el nombre del viaje y scrollear,
+  el botón sticky de abajo quedaba flotando a mitad de pantalla (iOS no
+  achica el WebView cuando aparece el teclado). Ahora se esconde mientras
+  se escribe el nombre, y la tecla del teclado dice "OK" y lo cierra.
+
 ## v1.12.0
 
 **Lista en árbol** (probada y aprobada por el usuario, ex rama

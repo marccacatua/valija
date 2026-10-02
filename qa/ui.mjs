@@ -2546,6 +2546,28 @@ try {
     await ctx.close();
   }
 
+  // --- 66. Pedido de calificación: se registra al completar un viaje ---
+  {
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Carry-on'] });
+    const readReview = () => page.evaluate(() => JSON.parse(localStorage.getItem('valija:review') ?? 'null'));
+    assert((await readReview()) === null, 'Antes de completar un viaje no se registra nada para la calificación');
+    const ticks = page.locator('button[aria-label^="Tildar todo "]');
+    while ((await ticks.count()) > 0) {
+      await ticks.first().click();
+      await page.waitForTimeout(40);
+    }
+    await page.waitForSelector('text=¡Valija lista! Buen viaje.');
+    const st = await readReview();
+    assert(st && st.packedTripIds.length === 1, 'Al completar el viaje queda registrado (1 viaje completo)', JSON.stringify(st));
+    assert(st && st.lastAskedAt === null, 'En la web nunca se pide la calificación (no hay App Store)', JSON.stringify(st));
+    await page.reload();
+    await page.waitForSelector('text=Tu valija para');
+    const st2 = await readReview();
+    assert(st2.packedTripIds.length === 1, 'Abrir un viaje ya completo no lo vuelve a contar', JSON.stringify(st2));
+    await ctx.close();
+  }
+
   // --- 60. "Lavar ropa" automático en viajes de 10 días o más ---
   {
     const { ctx, page } = await freshPage(browser);

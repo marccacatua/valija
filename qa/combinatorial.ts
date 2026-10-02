@@ -3,6 +3,7 @@ import { distributeItems, fitToBags, spaceSummary } from '../src/data/distribute
 import { ITEM_LITERS, isSeparateItem, itemLiters, wornItemIds } from '../src/data/volume';
 import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
 import { mergeTripForm } from '../src/data/mergeTrip';
+import { ASK_EVERY_DAYS, registerPackedTrip, shouldAskForReview } from '../src/features/review';
 import { buildItems } from '../src/data/buildItems';
 import type { AlojKey, ClimaKey, DestKey, MaletaKey, MotivoKey, TransporteKey, TripFormState, TurismoKey } from '../src/types';
 
@@ -982,6 +983,27 @@ for (const motivo of MOTIVO)
           fail(label, `Editar sin cambios modificó la lista (+${same.added} −${same.removed} ~${same.requantified})`);
       }
     }
+}
+
+// ============================================================
+// Bloque dedicado: cuándo pedir la calificación del App Store.
+// ============================================================
+{
+  const label = { name: 'QA-review' } as TripFormState;
+  const now = new Date('2026-10-01T12:00:00Z');
+  const daysAgo = (d: number) => new Date(now.getTime() - d * 86_400_000).toISOString();
+  let st = { packedTripIds: [] as string[], lastAskedAt: null as string | null };
+  if (shouldAskForReview(st, now)) fail(label, 'Review: se pidió sin ningún viaje completo');
+  st = registerPackedTrip(st, 'a');
+  if (shouldAskForReview(st, now)) fail(label, 'Review: se pidió con 1 solo viaje completo');
+  st = registerPackedTrip(st, 'a');
+  if (st.packedTripIds.length !== 1) fail(label, 'Review: el mismo viaje contó dos veces');
+  if (shouldAskForReview(st, now)) fail(label, 'Review: completar el mismo viaje dos veces no debería contar como 2');
+  st = registerPackedTrip(st, 'b');
+  if (!shouldAskForReview(st, now)) fail(label, 'Review: con 2 viajes completos y sin pedidos previos debería pedirse');
+  if (shouldAskForReview({ ...st, lastAskedAt: daysAgo(10) }, now)) fail(label, 'Review: se volvió a pedir a los 10 días');
+  if (shouldAskForReview({ ...st, lastAskedAt: daysAgo(ASK_EVERY_DAYS - 1) }, now)) fail(label, 'Review: se volvió a pedir antes del plazo');
+  if (!shouldAskForReview({ ...st, lastAskedAt: daysAgo(ASK_EVERY_DAYS) }, now)) fail(label, 'Review: pasado el plazo debería poder pedirse de nuevo');
 }
 
 // ============================================================
