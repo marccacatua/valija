@@ -31,13 +31,18 @@ automática al aprobarse.
 - [ ] Info.plist: `ITSAppUsesNonExemptEncryption = NO`
 - [x] UE: declaración de comerciante (DSA) enviada con documentos (2026-10-01)
 
-## 2. Versión en inglés (rama `i18n-en`)
+## 2. Idiomas (v1.14.0, en main)
 
-- [ ] Probar la preview: valija-git-i18n-en-marccacatua.vercel.app/?lang=en
-- [ ] Revisar el tono de las traducciones (`src/i18n/en.ts`, `src/i18n/enItems.ts`)
-- [ ] Merge a main (después de que se publique la v1.13.0)
-- [ ] Info.plist: idioma base español + idiomas (es, en)
-- [ ] Ficha de la tienda, capturas y nombre del IAP en inglés
+6 idiomas: rioplatense, España, Latinoamérica con tú, inglés, alemán y
+portugués. Build 1.14.0 (4) subida el 2026-10-01 (la (2) tenía el código
+viejo: no usarla).
+
+- [x] Traducciones, selector de idioma y precio en moneda local
+- [x] iOS declara en/es/de/pt-BR; sin pregunta de cifrado
+- [ ] Crear la versión 1.14.0 en App Store Connect y cargar las fichas
+      (textos: https://claude.ai/artifact/D6oj17CX34ceUfzoqVZTE1)
+- [ ] Elegir la build 4 y enviar a revisión (sin tocar Valija Pro)
+- [ ] Borrar la rama `i18n-en` en GitHub (ya está en main)
 
 ## 3. Cantidades y espacio en las valijas
 
@@ -52,6 +57,8 @@ lista en árbol.
 - [ ] "Importar copia" desde Archivos, con validación
 
 ## 5. Más adelante
+
+- [ ] Android (Google Play), con los 6 idiomas desde el inicio
 
 - [ ] Validar el texto del backup web
 - [ ] `useTrips` sincronizado entre instancias
