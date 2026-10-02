@@ -6,17 +6,26 @@
  *    texto literal (no se podría verificar).
  * 2. Junta todos los nombres de ítems y tareas que la app puede generar,
  *    recorriendo todas las combinaciones relevantes del formulario.
- * 3. Falla si alguna frase o ítem no tiene traducción al inglés, o si hay
- *    traducciones que ya no se usan. También chequea que los {parámetros}
- *    coincidan entre español e inglés.
+ * 3. Inglés y alemán (diccionarios completos): falla si alguna frase o
+ *    ítem no tiene traducción, si hay traducciones que ya no se usan o si
+ *    los {parámetros} no coinciden.
+ * 4. Español "con tú" (Latinoamérica) y de España (diccionarios parciales):
+ *    falla si tienen claves que no existen, si los {parámetros} no
+ *    coinciden, o si el texto que efectivamente se va a mostrar (lo
+ *    traducido, o el rioplatense cuando no hay traducción) todavía tiene
+ *    voseo o palabras rioplatenses ("tenés", "acá", "remera", "valija"…).
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { buildRawItems } from '../src/data/buildItems';
 import { buildBoatChecklist, buildHomeChecklist } from '../src/data/homeTasks';
 import { DEFAULT_FORM } from '../src/data/trip';
+import { DE } from '../src/i18n/de';
+import { DE_ITEMS } from '../src/i18n/deItems';
 import { EN } from '../src/i18n/en';
 import { EN_ITEMS } from '../src/i18n/enItems';
+import { ES_ES, ES_ES_ITEMS } from '../src/i18n/esES';
+import { ES_TU, ES_TU_ITEMS } from '../src/i18n/esTu';
 import type { TripFormState } from '../src/types';
 
 const errors: string[] = [];
@@ -89,17 +98,55 @@ for (const flags of [false, true]) {
   for (const task of buildBoatChecklist(f)) itemKeys.add(task.label);
 }
 
-// --- 3. Comparación
+// --- 3. Diccionarios completos (inglés y alemán)
 const params = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(',');
-for (const k of uiKeys) {
-  if (!(k in EN)) errors.push(`Falta traducir (interfaz): ${JSON.stringify(k)}`);
-  else if (params(k) !== params(EN[k])) errors.push(`Parámetros distintos: ${JSON.stringify(k)} → ${JSON.stringify(EN[k])}`);
+for (const [name, ui, items] of [['inglés', EN, EN_ITEMS], ['alemán', DE, DE_ITEMS]] as const) {
+  for (const k of uiKeys) {
+    if (!(k in ui)) errors.push(`Falta traducir al ${name} (interfaz): ${JSON.stringify(k)}`);
+    else if (params(k) !== params(ui[k])) errors.push(`Parámetros distintos (${name}): ${JSON.stringify(k)} → ${JSON.stringify(ui[k])}`);
+  }
+  for (const k of itemKeys) if (!(k in items)) errors.push(`Falta traducir al ${name} (ítem): ${JSON.stringify(k)}`);
+  for (const k of Object.keys(ui)) if (!uiKeys.has(k)) errors.push(`Traducción sin uso (${name}, interfaz): ${JSON.stringify(k)}`);
+  for (const k of Object.keys(items)) if (!itemKeys.has(k)) errors.push(`Traducción sin uso (${name}, ítem): ${JSON.stringify(k)}`);
+  for (const [k, v] of [...Object.entries(ui), ...Object.entries(items)]) {
+    if (/[áéíóúñ¿¡]/i.test(v)) errors.push(`La traducción al ${name} parece estar en español: ${JSON.stringify(k)} → ${JSON.stringify(v)}`);
+  }
 }
-for (const k of itemKeys) if (!(k in EN_ITEMS)) errors.push(`Falta traducir (ítem): ${JSON.stringify(k)}`);
-for (const k of Object.keys(EN)) if (!uiKeys.has(k)) errors.push(`Traducción sin uso (interfaz): ${JSON.stringify(k)}`);
-for (const k of Object.keys(EN_ITEMS)) if (!itemKeys.has(k)) errors.push(`Traducción sin uso (ítem): ${JSON.stringify(k)}`);
-for (const [k, v] of [...Object.entries(EN), ...Object.entries(EN_ITEMS)]) {
-  if (/[áéíóúñ¿¡]/i.test(v)) errors.push(`La traducción parece estar en español: ${JSON.stringify(k)} → ${JSON.stringify(v)}`);
+
+// --- 4. Españoles "con tú" (parciales)
+// Voseo: formas puntuales que usa la app + la terminación -ás/-és/-ís de
+// presente con vos ("tenés", "llevás"), salvo palabras que terminan así
+// sin ser voseo.
+const VOSEO = /\b(acá|vos|tocá|elegí|armá|sumá|tildá|probá|desbloqueá|creá|guardá|pegá|pegalo|mantené|contanos|recibí|seguí|arrancá|borrá|pausá|repetí|ponele|laburo|pronto)\b/i;
+const VOSEO_ENDING = /\b[a-záéíóúñ]+[áéí]s\b/gi;
+const NOT_VOSEO = new Set(['más', 'jamás', 'atrás', 'detrás', 'además', 'después', 'inglés', 'francés', 'país', 'portabebés', 'esquís', 'jerséis', 'quizás']);
+// Futuro con tú ("lavarás", "perderás"): termina igual pero no es voseo.
+const FUTURE = /[aei]rás$/i;
+const RIOPLATENSE = /\b(valijas?|remeras?|camperas?|buzos?|pollera|ojotas|championes|heladera|finde|depto|micro|chico)\b/;
+// Además, en España no se dice así:
+const LATAM_ONLY = /\b(celular|lentes|auto|carpa|computadora|notebook|billetera|pasajes?|boleto|empacad[oa]|empacas|agregar|agrega|agregamos|agregó)\b/i;
+const effective = (k: string, dicts: Record<string, string>[]) => {
+  for (const d of dicts) if (k in d) return d[k];
+  return k;
+};
+for (const [name, ui, items, extra] of [
+  ['español con tú', [ES_TU], [ES_TU_ITEMS], null],
+  ['español de España', [ES_ES, ES_TU], [ES_ES_ITEMS, ES_TU_ITEMS], LATAM_ONLY],
+] as const) {
+  for (const d of ui) for (const k of Object.keys(d)) {
+    if (!uiKeys.has(k)) errors.push(`Traducción sin uso (${name}, interfaz): ${JSON.stringify(k)}`);
+    else if (params(k) !== params(d[k])) errors.push(`Parámetros distintos (${name}): ${JSON.stringify(k)} → ${JSON.stringify(d[k])}`);
+  }
+  for (const d of items) for (const k of Object.keys(d)) if (!itemKeys.has(k)) errors.push(`Traducción sin uso (${name}, ítem): ${JSON.stringify(k)}`);
+  const shown = [
+    ...[...uiKeys].map((k) => [k, effective(k, [...ui])] as const),
+    ...[...itemKeys].map((k) => [k, effective(k, [...items])] as const),
+  ];
+  for (const [k, v] of shown) {
+    const endings = [...v.matchAll(VOSEO_ENDING)].map((m) => m[0]).filter((w) => !NOT_VOSEO.has(w.toLowerCase()) && !FUTURE.test(w));
+    const bad = v.match(VOSEO)?.[0] ?? endings[0] ?? v.match(RIOPLATENSE)?.[0] ?? (extra ? v.match(extra)?.[0] : undefined);
+    if (bad) errors.push(`Queda "${bad}" en ${name}: ${JSON.stringify(k)} → ${JSON.stringify(v)}`);
+  }
 }
 
 console.log(`Frases de interfaz: ${uiKeys.size} · Ítems y tareas: ${itemKeys.size}`);
@@ -107,5 +154,5 @@ if (errors.length) {
   console.log(`\n${errors.length} problemas:\n` + errors.join('\n'));
   process.exitCode = 1;
 } else {
-  console.log('OK: todo tiene traducción al inglés.');
+  console.log('OK: inglés y alemán completos; los dos españoles "con tú" sin voseo ni palabras rioplatenses.');
 }

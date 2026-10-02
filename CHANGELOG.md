@@ -4,32 +4,53 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
-## Sin publicar — rama `i18n-en` (versión en inglés, a prueba)
+## v1.14.0
 
-- **La app entera en inglés.** Usa el idioma del dispositivo: español si
-  el teléfono está en español, inglés en cualquier otro caso. Hay un link
-  "English" / "Español" en el pie de "Mis viajes" para cambiarlo a mano,
-  y `?lang=en` en la URL para probar.
-- **Cómo funciona:** el texto en español es la clave (`t('Mis viajes')`),
-  y el inglés vive en `src/i18n/en.ts` (226 frases) y
-  `src/i18n/enItems.ts` (174 ítems y tareas). Los ítems se siguen
-  guardando con su nombre en español y se traducen recién al mostrarse,
-  así que los viajes ya guardados se ven en inglés sin migrar nada. Los
-  ítems que escribió el usuario se muestran tal cual.
-- Frases completas en vez de pedazos pegados ("Next up: toiletries"),
-  plurales correctos en los dos idiomas, fechas con formato del idioma,
-  precio "USD 0.99", y privacidad y soporte traducidos completos.
+**Valija en 5 idiomas** (ex rama `i18n-en`). El idioma sale del teléfono:
+
+| Teléfono en… | La app se ve en… |
+|---|---|
+| Español de Uruguay o Argentina (o español sin país) | Rioplatense, como hasta ahora |
+| Español de España | Español de España ("Haz tu maleta", "móvil", "bañador") |
+| Español de cualquier otro país | Español "con tú" de Latinoamérica ("Arma tu maleta", "celular") |
+| Alemán | Alemán (con "du") |
+| Cualquier otro idioma | Inglés |
+
+- **Selector de idioma** en el pie de "Mis viajes" (reemplaza al link
+  "English / Español"), por si alguien prefiere otro. Queda guardado.
+- **Cómo funciona:** el rioplatense es la clave (`t('Mis viajes')`).
+  Inglés (`en.ts`, `enItems.ts`) y alemán (`de.ts`, `deItems.ts`) son
+  diccionarios completos: 255 frases y 175 ítems cada uno. Los dos
+  españoles con tú son parciales y solo tienen lo que cambia
+  (`esTu.ts`, y `esES.ts` encima de ese). Los ítems se siguen guardando
+  en rioplatense y se traducen al mostrarse: los viajes ya guardados se
+  ven en el idioma nuevo sin migrar nada.
+- En el iPhone el idioma y el país se leen con `@capacitor/device`
+  (plugin nuevo), porque el navegador interno no siempre informa el país
+  y el país decide qué español se muestra. La app arranca recién cuando
+  el idioma está decidido (`main.tsx` → `bootstrap.tsx`).
+- **Precio de Pro en la moneda de cada país**, tal como lo da el App
+  Store ("0,99 €" en Alemania o España). Sin conexión se muestra el de
+  referencia en USD.
+- Privacidad y soporte completos en los 5 idiomas.
+- iOS: la app declara inglés, español y alemán (`CFBundleLocalizations`,
+  `en/es/de.lproj`), así la tienda muestra los idiomas. Además
+  `ITSAppUsesNonExemptEncryption = NO`: Apple ya no pregunta por el
+  cifrado en cada build.
+- Fechas y litros con el formato de cada idioma ("9,6 L" / "9.6 L").
 - **QA nuevo:**
-  - `npm run qa:i18n`: verifica que cada frase y cada ítem que la app
-    puede generar tenga traducción, que no sobren traducciones y que los
-    `{parámetros}` coincidan.
-  - `npm run qa:en`: recorre 46 pantallas y estados en inglés (formulario,
-    8 tipos de viaje en vista detallada y rápida, paywall, límite gratis,
-    plantillas, deshacer, borrar, backup, distribución, privacidad,
-    soporte, texto para compartir, cambio de idioma). En cada una chequea
-    que no haya texto en español, que no falten traducciones y que nada
-    se salga del ancho: 160/160.
-  - Español sin cambios: 180/180.
+  - `npm run qa:i18n`: inglés y alemán completos (sin faltantes, sin
+    sobrantes, `{parámetros}` iguales), y que los españoles con tú no
+    tengan voseo ni palabras rioplatenses ("tenés", "acá", "remera",
+    "valija"…) en ninguna frase ni ítem que se pueda mostrar.
+  - `npm run qa:langs`: recorre en alemán, España y Latinoamérica
+    bienvenida, formulario, viajes de playa con bebé y mascota, esquí,
+    navegar, buceo, camping y trabajo, reparto, editar opciones,
+    plantillas, viaje completo, paywall, límite gratis, "Mis viajes",
+    privacidad y soporte; prueba la detección (es-UY, es-AR, es-ES,
+    es-MX, es-419, es-CL, de-DE, de-AT, fr-FR, en-US) y el selector.
+    149/149.
+  - Inglés 182/182 y rioplatense 246/246.
 
 ## v1.13.0
 

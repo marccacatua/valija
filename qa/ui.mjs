@@ -1074,10 +1074,13 @@ try {
     );
 
     await page.goto(`${BASE}/privacidad`);
+    // la app arranca recién cuando sabe el idioma (ver main.tsx): esperar
+    await page.waitForSelector('text=Política de privacidad', { timeout: 5000 }).catch(() => {});
     const hasPrivacyTitle = await page.locator('text=Política de privacidad').count();
     assert(hasPrivacyTitle > 0, 'La URL directa /privacidad muestra la política', `count=${hasPrivacyTitle}`);
 
     await page.goto(`${BASE}/soporte`);
+    await page.waitForSelector('h2:has-text("¿Cómo empiezo?")', { timeout: 5000 }).catch(() => {});
     const hasSupportTitle = await page.locator('h2', { hasText: '¿Cómo empiezo?' }).count();
     assert(hasSupportTitle > 0, 'La URL directa /soporte muestra la página de ayuda', `count=${hasSupportTitle}`);
     await ctx.close();

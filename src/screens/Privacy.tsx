@@ -5,6 +5,8 @@ import { lang } from '../i18n';
 
 export function Privacy() {
   if (lang === 'en') return <PrivacyEn />;
+  if (lang === 'de') return <PrivacyDe />;
+  if (lang === 'es-ES' || lang === 'es-419') return <PrivacyTu />;
   return (
     <LegalPage title="Política de privacidad">
       <p>
@@ -129,6 +131,136 @@ function PrivacyEn() {
       </p>
 
       <div className={styles.updated}>Last updated: September 2026.</div>
+    </LegalPage>
+  );
+}
+
+// Español "con tú" (España y Latinoamérica): mismo texto que el rioplatense,
+// sin voseo y con palabras que se entienden en todos lados ("teléfono",
+// "correo").
+function PrivacyTu() {
+  return (
+    <LegalPage title="Política de privacidad">
+      <p>
+        Valija está pensada para que hagas tu checklist de viaje sin tener que crear una cuenta ni entregar ningún
+        dato. Esta página explica, en palabras sencillas, qué información toca la app y qué no.
+      </p>
+
+      <h2>Qué datos recogemos</h2>
+      <p>Ninguno. Valija no tiene servidor propio: no hay un lugar donde tus datos "viajen" ni se guarden fuera de tu teléfono.</p>
+
+      <h2>Dónde vive tu información</h2>
+      <p>
+        Todo lo que introduces — tus viajes, los ítems que añades a mano, tus plantillas — se guarda únicamente en el
+        almacenamiento local de tu propio dispositivo (el mismo mecanismo que usa cualquier sitio web para recordar
+        tus preferencias). Nunca sale de tu teléfono salvo que tú decidas compartirlo a propósito (por ejemplo, con
+        el botón "Compartir checklist", o al usar "Llevar mis datos a otro acceso").
+      </p>
+
+      <h2>Qué NO hacemos</h2>
+      <ul>
+        <li>No pedimos ni guardamos tu nombre, correo ni ningún dato de contacto.</li>
+        <li>No usamos analítica que identifique a personas ni rastree tu actividad.</li>
+        <li>No mostramos publicidad de terceros.</li>
+        <li>No vendemos ni compartimos información con nadie — no tenemos información que compartir.</li>
+        <li>No accedemos a tu cámara, contactos, ubicación ni a ningún otro permiso del teléfono.</li>
+      </ul>
+
+      <h2>Conexiones a internet</h2>
+      <p>
+        Para crear y guardar tus viajes, Valija no se conecta a internet: todo (incluida la tipografía) viene dentro
+        de la app.
+      </p>
+
+      <h2>Compra dentro de la app</h2>
+      <p>
+        Si desbloqueas Valija Pro, esa compra la procesa Apple a través del App Store — nosotros nunca vemos ni
+        guardamos tu información de pago. Para confirmar la compra y poder restaurarla, la app usa RevenueCat, un
+        servicio que recibe de Apple el comprobante de compra asociado a un identificador anónimo (no tu nombre, tu
+        correo ni tus viajes).
+      </p>
+
+      <h2>Borrar tus datos</h2>
+      <p>
+        Puedes borrar un viaje concreto o todos tus viajes en cualquier momento desde "Mis viajes" dentro de la app.
+        Si además quieres borrar cualquier rastro local, basta con borrar los datos del sitio/app desde los ajustes
+        de tu navegador o teléfono.
+      </p>
+
+      <h2>Cambios en esta política</h2>
+      <p>
+        Si en el futuro añadimos algo que sí recoja datos (por ejemplo, analítica anónima de uso para mejorar la
+        app), esta página se actualizará antes de que eso ocurra, con la fecha del cambio.
+      </p>
+
+      <h2>Contacto</h2>
+      <p>
+        ¿Dudas sobre esto? Escríbenos a <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+
+      <div className={styles.updated}>Última actualización: octubre de 2026.</div>
+    </LegalPage>
+  );
+}
+
+function PrivacyDe() {
+  return (
+    <LegalPage title="Datenschutzerklärung">
+      <p>
+        Mit Valija erstellst du deine Packliste, ohne ein Konto anzulegen oder irgendwelche Daten preiszugeben. Diese
+        Seite erklärt in einfachen Worten, mit welchen Informationen die App arbeitet und mit welchen nicht.
+      </p>
+
+      <h2>Welche Daten wir erheben</h2>
+      <p>Keine. Valija hat keinen eigenen Server: Deine Daten werden nirgendwohin „übertragen“ und nirgends außerhalb deines Telefons gespeichert.</p>
+
+      <h2>Wo deine Informationen gespeichert sind</h2>
+      <p>
+        Alles, was du eingibst — deine Reisen, selbst hinzugefügte Artikel, deine Vorlagen —, wird ausschließlich im
+        lokalen Speicher deines eigenen Geräts abgelegt (derselbe Mechanismus, mit dem sich jede Website deine
+        Einstellungen merkt). Es verlässt dein Telefon nur, wenn du es bewusst teilst (zum Beispiel mit der
+        Schaltfläche „Checkliste teilen“ oder mit „Daten zwischen Safari und Home-Bildschirm übertragen“).
+      </p>
+
+      <h2>Was wir NICHT tun</h2>
+      <ul>
+        <li>Wir fragen weder nach deinem Namen noch nach deiner E-Mail-Adresse oder anderen Kontaktdaten und speichern sie nicht.</li>
+        <li>Wir verwenden keine Analyse-Tools, die Personen identifizieren oder deine Aktivität verfolgen.</li>
+        <li>Wir zeigen keine Werbung von Dritten.</li>
+        <li>Wir verkaufen oder teilen keine Informationen — wir haben gar keine, die wir teilen könnten.</li>
+        <li>Wir greifen nicht auf Kamera, Kontakte, Standort oder andere Berechtigungen deines Telefons zu.</li>
+      </ul>
+
+      <h2>Internetverbindungen</h2>
+      <p>Zum Erstellen und Speichern deiner Reisen verbindet sich Valija nicht mit dem Internet: Alles (auch die Schriftart) ist in der App enthalten.</p>
+
+      <h2>In-App-Kauf</h2>
+      <p>
+        Wenn du Valija Pro freischaltest, wickelt Apple den Kauf über den App Store ab — wir sehen oder speichern
+        deine Zahlungsdaten zu keinem Zeitpunkt. Um den Kauf zu bestätigen und wiederherstellen zu können, nutzt die
+        App RevenueCat, einen Dienst, der von Apple den Kaufbeleg erhält, verknüpft mit einer anonymen Kennung (nicht
+        mit deinem Namen, deiner E-Mail-Adresse oder deinen Reisen).
+      </p>
+
+      <h2>Deine Daten löschen</h2>
+      <p>
+        Du kannst jederzeit eine einzelne Reise oder alle deine Reisen unter „Meine Reisen“ in der App löschen. Wenn
+        du zusätzlich alle lokalen Spuren entfernen möchtest, lösche einfach die Website- bzw. App-Daten in den
+        Einstellungen deines Browsers oder Telefons.
+      </p>
+
+      <h2>Änderungen dieser Erklärung</h2>
+      <p>
+        Sollten wir künftig etwas hinzufügen, das doch Daten erhebt (zum Beispiel anonyme Nutzungsstatistiken zur
+        Verbesserung der App), wird diese Seite vorher aktualisiert, mit dem Datum der Änderung.
+      </p>
+
+      <h2>Kontakt</h2>
+      <p>
+        Fragen dazu? Schreib uns an <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+
+      <div className={styles.updated}>Zuletzt aktualisiert: Oktober 2026.</div>
     </LegalPage>
   );
 }

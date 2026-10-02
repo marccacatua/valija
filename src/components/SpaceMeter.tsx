@@ -1,6 +1,9 @@
 import { MALETA_OPTIONS, labelFor } from '../data/catalog';
 import type { FitPlan, SpaceSummary } from '../data/distribute';
-import { fmtLiters, t, tn } from '../i18n';
+import { fmtLiters, lang, t, tn } from '../i18n';
+
+// En alemán los sustantivos van siempre con mayúscula ("deinem Handgepäck").
+const bagName = (label: string) => (lang === 'de' ? label : label.toLowerCase());
 import styles from './SpaceMeter.module.css';
 
 interface SpaceMeterProps {
@@ -22,7 +25,7 @@ export function SpaceMeter({ summary, fitPlan, onFit, onChangeBags }: SpaceMeter
   const { perBag, usedL, capacityL, pct, overflow } = summary;
   const single = perBag.length === 1;
   const title = single
-    ? t('Espacio en tu {bag}', { bag: labelFor(MALETA_OPTIONS, perBag[0].bag).toLowerCase() })
+    ? t('Espacio en tu {bag}', { bag: bagName(labelFor(MALETA_OPTIONS, perBag[0].bag)) })
     : t('Espacio en tus valijas');
   const level = overflow || pct > 100 ? 'over' : pct >= 85 ? 'tight' : 'ok';
 

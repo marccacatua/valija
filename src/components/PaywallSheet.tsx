@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { PRO_PRICE_LABEL, usePurchase } from '../features/purchase';
+import { useEffect, useState } from 'react';
+import { PRO_PRICE_LABEL, loadProPrice, usePurchase } from '../features/purchase';
 import { Button } from './Button';
 import { UnlockIcon } from './icons';
 import { t } from '../i18n';
@@ -30,6 +30,18 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
   const { purchasePro, restorePurchases } = usePurchase();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [price, setPrice] = useState(PRO_PRICE_LABEL);
+
+  // En la app nativa, el precio real en la moneda de cada país.
+  useEffect(() => {
+    let alive = true;
+    void loadProPrice().then((p) => {
+      if (alive && p) setPrice(p);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   const handlePurchase = async () => {
     setBusy(true);
@@ -83,7 +95,7 @@ export function PaywallSheet({ onClose, onUnlocked }: PaywallSheetProps) {
           ))}
         </ul>
         <Button onClick={handlePurchase} disabled={busy}>
-          {t('Desbloquear — {price} (pago único)', { price: PRO_PRICE_LABEL })}
+          {t('Desbloquear — {price} (pago único)', { price })}
         </Button>
         <button type="button" className={styles.restoreBtn} onClick={handleRestore} disabled={busy}>
           {t('Ya compré antes — restaurar')}

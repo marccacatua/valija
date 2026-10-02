@@ -12,7 +12,7 @@ import { prefersReducedMotion } from '../features/motion';
 import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
 import { useTrips } from '../hooks/useTrips';
-import { lang, switchLang, t, tn } from '../i18n';
+import { LANGS, lang, switchLang, t, tn, type Lang } from '../i18n';
 import styles from './Trips.module.css';
 
 // Antes de sacarlo de verdad, un fade + deslizamiento corto — sin esto,
@@ -265,10 +265,24 @@ export function Trips() {
               <Link to="/privacidad">{t('Privacidad')}</Link>
               <Link to="/soporte">{t('Soporte')}</Link>
               {/* Cambio de idioma manual: por defecto se usa el del
-                  dispositivo, esto es solo para quien quiera el otro. */}
-              <button type="button" className={styles.langSwitch} onClick={() => switchLang(lang === 'es' ? 'en' : 'es')}>
-                {lang === 'es' ? 'English' : 'Español'}
-              </button>
+                  dispositivo, esto es solo para quien quiera otro. Se ve
+                  como un link; encima va un <select> nativo transparente
+                  (el de iOS es una rueda cómoda), con 16px para que
+                  Safari no haga zoom al tocarlo. */}
+              <label className={styles.langSwitch}>
+                <span aria-hidden="true">{LANGS.find((l) => l.code === lang)?.label} ▾</span>
+                <select
+                  aria-label="Idioma · Language · Sprache"
+                  value={lang}
+                  onChange={(e) => switchLang(e.target.value as Lang)}
+                >
+                  {LANGS.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
           </div>
           <div style={{ height: 20 }} />

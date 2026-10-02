@@ -1,7 +1,7 @@
 {
   "name": "valija",
   "private": true,
-  "version": "1.13.0",
+  "version": "1.14.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,13 +10,15 @@
     "preview": "vite preview",
     "qa:logic": "tsx qa/combinatorial.ts",
     "qa:ui": "npm run build && node qa/ui.mjs",
-    "qa": "npm run qa:logic && npm run qa:i18n && npm run qa:ui && node qa/ui-en.mjs",
+    "qa": "npm run qa:logic && npm run qa:i18n && npm run qa:ui && node qa/ui-en.mjs && tsx qa/ui-langs.ts",
     "qa:i18n": "tsx qa/i18n-check.ts",
-    "qa:en": "npm run build && node qa/ui-en.mjs"
+    "qa:en": "npm run build && node qa/ui-en.mjs",
+    "qa:langs": "npm run build && tsx qa/ui-langs.ts"
   },
   "dependencies": {
     "@capacitor-community/in-app-review": "^8.0.0",
     "@capacitor/core": "^8.5.2",
+    "@capacitor/device": "^8.0.3",
     "@capacitor/haptics": "^8.0.2",
     "@capacitor/ios": "^8.5.2",
     "@capacitor/preferences": "^8.0.1",

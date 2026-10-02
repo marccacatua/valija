@@ -27,6 +27,22 @@ function loadPurchases() {
 }
 
 /**
+ * Precio de Pro como lo muestra el App Store de la persona ("0,99 €" en
+ * Alemania o España, "US$0.99"…). Solo en la app nativa; si falla (sin
+ * internet), null y el paywall muestra el precio de referencia en USD.
+ */
+export async function loadProPrice(): Promise<string | null> {
+  if (!Capacitor.isNativePlatform()) return null;
+  try {
+    const { Purchases } = await loadPurchases();
+    const { products } = await Purchases.getProducts({ productIdentifiers: [PRODUCT_ID] });
+    return products[0]?.priceString ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Se llama una vez al abrir la app nativa (ver main.tsx), sin bloquear
  * la primera pantalla. Le pregunta a RevenueCat si la compra de Pro sigue
  * vigente y actualiza el flag local:

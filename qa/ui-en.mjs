@@ -46,11 +46,11 @@ function assert(cond, label, detail = '') {
 // "Valija"/"Valu" son la marca y la mascota: quedan igual en inglés.
 const SPANISH_CHARS = /[áéíóúñ¿¡]/i;
 const SPANISH_WORDS = /\b(de|del|la|las|el|los|y|con|para|tu|tus|mis|una|que|en|sin|por|viaje|viajes|ítems?|acá|más|valijas)\b/i;
-// Texto que escribe el usuario en las pruebas (no es de la app), y el link
-// "Español" del pie, que está en español a propósito (es para cambiar de
-// idioma).
+// Texto que escribe el usuario en las pruebas (no es de la app), y las
+// opciones del selector de idioma del pie, que están cada una en su idioma
+// a propósito (es para cambiar de idioma).
 const USER_TEXT = ['Lucky socks', 'Beach kit', 'Lisbon'];
-const ALLOWED_LINES = ['Español'];
+const ALLOWED_LINES = ['Español (Uruguay y Argentina)', 'Español (España)', 'Español (Latinoamérica)', 'Deutsch'];
 
 let shotN = 0;
 async function checkScreen(page, label) {
@@ -352,14 +352,14 @@ try {
     const { ctx, page } = await freshPage(browser);
     await page.goto(`${BASE}/viajes`);
     await page.waitForSelector('text=My trips');
-    await click(page, 'Español');
+    await page.selectOption('select', 'es');
     await page.waitForSelector('text=Mis viajes');
-    assert(true, 'El link "Español" pasa la app a español');
+    assert(true, 'El selector de idioma pasa la app a español');
     await page.goto(`${BASE}/viajes`);
     assert((await page.locator('text=Mis viajes').count()) === 1, 'La elección de idioma queda guardada');
-    await click(page, 'English');
+    await page.selectOption('select', 'en');
     await page.waitForSelector('text=My trips');
-    assert(true, 'El link "English" vuelve a inglés');
+    assert(true, 'El selector de idioma vuelve a inglés');
     await ctx.close();
   }
 } catch (err) {

@@ -4,6 +4,8 @@ import { lang } from '../i18n';
 
 export function Support() {
   if (lang === 'en') return <SupportEn />;
+  if (lang === 'de') return <SupportDe />;
+  if (lang === 'es-ES' || lang === 'es-419') return <SupportTu />;
   return (
     <LegalPage title="Soporte">
       <p>¿Necesitás ayuda con Valija? Acá van las dudas más comunes.</p>
@@ -76,6 +78,84 @@ function SupportEn() {
       <h2>Contact</h2>
       <p>
         If your question isn't here, write to us at <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+    </LegalPage>
+  );
+}
+
+function SupportTu() {
+  return (
+    <LegalPage title="Soporte">
+      <p>¿Necesitas ayuda con Valija? Aquí están las dudas más comunes.</p>
+
+      <h2>¿Cómo empiezo?</h2>
+      <p>
+        Toca "Nuevo viaje", responde unas pocas preguntas sobre el viaje (destino, clima, cuántos días) y la checklist
+        se arma sola. Puedes marcar los ítems a medida que vas guardándolos en la maleta.
+      </p>
+
+      <h2>Abrí la app en Safari e instalada, y no veo lo mismo en las dos</h2>
+      <p>
+        Es una particularidad de iOS: la versión que abres en Safari y la que instalaste en la pantalla de inicio
+        guardan la información por separado, como si fueran dos dispositivos distintos. Para pasar tus datos de una a
+        la otra, ve a "Mis viajes" y toca "Llevar mis datos a otro acceso" — copias tus datos en un lado y los pegas
+        en el otro, sin perder nada.
+      </p>
+
+      <h2>¿Cómo desbloqueo Valija Pro?</h2>
+      <p>
+        Desde cualquier viaje, si tocas una función Pro (añadir ítems propios, plantillas o repetir un viaje) te
+        aparecerá la opción de desbloquearla con un pago único, sin suscripción.
+      </p>
+
+      <h2>Borré un viaje por error, ¿puedo recuperarlo?</h2>
+      <p>Por ahora no — borrar un viaje es definitivo, por eso la app siempre pide confirmación antes de hacerlo.</p>
+
+      <h2>¿Puedo usar Valija sin conexión a internet?</h2>
+      <p>Sí. Una vez que la abres por primera vez, puedes seguir usándola sin conexión para consultar o marcar tus viajes.</p>
+
+      <h2>Contacto</h2>
+      <p>
+        Si tu duda no está aquí, escríbenos a <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
+      </p>
+    </LegalPage>
+  );
+}
+
+function SupportDe() {
+  return (
+    <LegalPage title="Hilfe">
+      <p>Brauchst du Hilfe mit Valija? Hier findest du die häufigsten Fragen.</p>
+
+      <h2>Wie fange ich an?</h2>
+      <p>
+        Tippe auf „Neue Reise“, beantworte ein paar kurze Fragen zur Reise (Ziel, Wetter, wie viele Tage) und die
+        Checkliste erstellt sich von selbst. Beim Packen kannst du die Artikel abhaken.
+      </p>
+
+      <h2>Ich habe die App in Safari und vom Home-Bildschirm geöffnet und sehe nicht dasselbe</h2>
+      <p>
+        Das ist eine Besonderheit von iOS: Die Version in Safari und die auf dem Home-Bildschirm speichern ihre Daten
+        getrennt, als wären es zwei verschiedene Geräte. Um deine Daten zu übertragen, geh zu „Meine Reisen“ und tippe
+        auf „Daten zwischen Safari und Home-Bildschirm übertragen“ — du kopierst die Daten auf der einen Seite und
+        fügst sie auf der anderen ein, ohne etwas zu verlieren.
+      </p>
+
+      <h2>Wie schalte ich Valija Pro frei?</h2>
+      <p>
+        Wenn du in einer Reise auf eine Pro-Funktion tippst (eigene Artikel, Vorlagen oder eine Reise wiederholen),
+        bekommst du die Möglichkeit, sie mit einer Einmalzahlung freizuschalten — ohne Abo.
+      </p>
+
+      <h2>Ich habe versehentlich eine Reise gelöscht. Kann ich sie zurückholen?</h2>
+      <p>Leider nicht — das Löschen einer Reise ist endgültig. Deshalb fragt die App immer vorher nach.</p>
+
+      <h2>Kann ich Valija offline nutzen?</h2>
+      <p>Ja. Nachdem du sie einmal geöffnet hast, kannst du deine Reisen auch ohne Internet ansehen und abhaken.</p>
+
+      <h2>Kontakt</h2>
+      <p>
+        Wenn deine Frage hier nicht dabei ist, schreib uns an <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
       </p>
     </LegalPage>
   );

@@ -23,6 +23,7 @@
 /* Begin PBXFileReference section */
 		C0FFEE0100000000000000A3 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		C0FFEE0100000000000000A4 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		C0FFEE0100000000000000A5 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -130,6 +131,7 @@
 			knownRegions = (
 				en,
 				es,
+				de,
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
@@ -181,6 +183,7 @@
 			children = (
 				C0FFEE0100000000000000A3 /* en */,
 				C0FFEE0100000000000000A4 /* es */,
+				C0FFEE0100000000000000A5 /* de */,
 			);
 			name = InfoPlist.strings;
 			sourceTree = "<group>";
