@@ -806,11 +806,21 @@ try {
     // finalizar "Viaje B" (el de arriba) y confirmar que baja al final
     await page.click('[aria-label="Marcar Viaje B como finalizado"]');
     await page.waitForTimeout(100);
+    // "Finalizados" arranca plegado: B se va del grupo "Próximos"
+    const namesCollapsed = await page.locator('[class*="tripName"]').allTextContents();
+    const groupHeaders = await page.locator('[class*="groupTitle"]').allTextContents();
+    assert(
+      JSON.stringify(namesCollapsed) === '["Viaje A"]' && JSON.stringify(groupHeaders) === '["Próximos","Finalizados"]',
+      'Finalizar "Viaje B" lo manda al grupo "Finalizados", que arranca plegado',
+      `orden=${JSON.stringify(namesCollapsed)} grupos=${JSON.stringify(groupHeaders)}`,
+    );
+    await page.click('[aria-label="Desplegar Finalizados"]');
+    await page.waitForTimeout(100);
     const namesAfterFinish = await page.locator('[class*="tripName"]').allTextContents();
     const finishedLabelCount = await page.locator('text=Viaje finalizado').count();
     assert(
       namesAfterFinish[0] === 'Viaje A' && namesAfterFinish[1] === 'Viaje B' && finishedLabelCount === 1,
-      'Finalizar "Viaje B" lo manda al final de la lista y muestra la etiqueta',
+      'Al desplegar "Finalizados" aparece "Viaje B" al final con la etiqueta',
       `orden=${JSON.stringify(namesAfterFinish)} etiqueta=${finishedLabelCount}`,
     );
 
@@ -823,13 +833,16 @@ try {
     // revertir: vuelve a subir a su posición original
     await page.goto(`${BASE}/viajes`);
     await page.waitForSelector('text=Mis viajes');
+    const stillOpen = await page.locator('[aria-label="Plegar Finalizados"]').count();
+    assert(stillOpen === 1, '"Mis viajes" recuerda que el grupo "Finalizados" quedó desplegado', `count=${stillOpen}`);
     await page.click('[aria-label="Reactivar Viaje B"]');
     await page.waitForTimeout(100);
     const namesAfterRevert = await page.locator('[class*="tripName"]').allTextContents();
+    const headersAfterRevert = await page.locator('[class*="groupTitle"]').count();
     assert(
-      namesAfterRevert[0] === 'Viaje B' && namesAfterRevert[1] === 'Viaje A',
-      'Reactivar un viaje finalizado lo devuelve a su posición (más nuevo primero)',
-      `orden=${JSON.stringify(namesAfterRevert)}`,
+      namesAfterRevert[0] === 'Viaje B' && namesAfterRevert[1] === 'Viaje A' && headersAfterRevert === 0,
+      'Reactivar un viaje finalizado lo devuelve a su posición (más nuevo primero) y sin grupos',
+      `orden=${JSON.stringify(namesAfterRevert)} grupos=${headersAfterRevert}`,
     );
     await ctx.close();
   }
@@ -2636,6 +2649,115 @@ try {
     assert(aparte === 1, 'El cochecito y la butaca van en "Va aparte"', `count=${aparte}`);
     const cochecitoAparte = await page.locator('text=No entra en ninguna valija').locator('xpath=..').locator('text=Cochecito o mochila portabebé').count();
     assert(cochecitoAparte === 1, 'El cochecito figura en "Va aparte", no dentro de una valija', `count=${cochecitoAparte}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 60) Plantillas de viaje: se guardan desde la checklist (con
+  // deshacer), aparecen en "Mis viajes" en su propio grupo, y "Usar"
+  // arma un viaje nuevo al instante con los ítems propios incluidos
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const input = page.locator('input[placeholder="Agregar ítem…"]').first();
+    await input.fill('Mameluco EPP');
+    await input.press('Enter');
+    await page.waitForTimeout(100);
+
+    // guardar y deshacer: no queda ninguna plantilla
+    await page.click('text=Guardar como plantilla de viaje');
+    await page.waitForSelector('[aria-label="Nombre de la plantilla"]');
+    await assertNoTinyInputs(page, 'guardar plantilla de viaje');
+    const ownItemsRow = await page.locator('text=Tu ítem propio').count();
+    assert(ownItemsRow === 1, 'El sheet ofrece incluir el ítem propio', `count=${ownItemsRow}`);
+    await page.locator('[aria-label="Nombre de la plantilla"]').fill('Trabajo BsAs');
+    await page.click('button:has-text("Guardar plantilla")');
+    await page.waitForSelector('text=Plantilla "Trabajo BsAs" guardada en Mis viajes');
+    await page.click('button:has-text("Deshacer")');
+    await page.waitForTimeout(100);
+    const afterUndo = await page.evaluate(() => JSON.parse(localStorage.getItem('valija:tripTemplates') ?? '[]').length);
+    assert(afterUndo === 0, 'Deshacer saca la plantilla de viaje recién guardada', `count=${afterUndo}`);
+
+    // guardar de verdad
+    await page.click('text=Guardar como plantilla de viaje');
+    await page.locator('[aria-label="Nombre de la plantilla"]').fill('Trabajo BsAs');
+    await page.click('button:has-text("Guardar plantilla")');
+    await page.waitForSelector('text=Plantilla "Trabajo BsAs" guardada en Mis viajes');
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    const groups = await page.locator('[class*="groupTitle"]').allTextContents();
+    assert(
+      JSON.stringify(groups) === '["Próximos","Plantillas de viaje"]',
+      '"Mis viajes" muestra los grupos Próximos y Plantillas de viaje',
+      `grupos=${JSON.stringify(groups)}`,
+    );
+    const tplCards = await page.locator('[class*="templateCard"]').count();
+    assert(tplCards === 1, 'La plantilla aparece como tarjeta propia', `count=${tplCards}`);
+
+    await page.click('[aria-label="Usar Trabajo BsAs"]');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    await page.waitForTimeout(100);
+    const packed = await progressNumLocator(page).textContent();
+    const hasMameluco = await page.locator('button', { hasText: 'Mameluco EPP' }).count();
+    const heroName = await page.locator('text=Trabajo BsAs').count();
+    assert(
+      packed.trim() === '0' && hasMameluco === 1 && heroName > 0,
+      '"Usar" arma un viaje nuevo con el nombre de la plantilla y el ítem propio, sin nada tildado',
+      `packed=${packed} mameluco=${hasMameluco} nombre=${heroName}`,
+    );
+
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    const trips = await page.locator('[class*="tripCard"]').count();
+    assert(trips === 2, 'Usar la plantilla suma un viaje (la plantilla queda para la próxima)', `count=${trips}`);
+
+    // plegar el grupo de plantillas y que se recuerde
+    await page.click('[aria-label="Plegar Plantillas de viaje"]');
+    await page.reload();
+    await page.waitForSelector('text=Mis viajes');
+    const tplHidden = await page.locator('[class*="templateCard"]').count();
+    assert(tplHidden === 0, 'El grupo de plantillas plegado se recuerda al volver', `count=${tplHidden}`);
+    await page.click('[aria-label="Desplegar Plantillas de viaje"]');
+
+    await page.locator('[class*="templateCard"] [aria-label="Borrar Trabajo BsAs"]').click();
+    await page.click('button:has-text("Sí, borrar")');
+    await page.waitForTimeout(100);
+    const tplAfterDelete = await page.locator('[class*="templateCard"]').count();
+    const tripsAfterDelete = await page.locator('[class*="tripCard"]').count();
+    assert(
+      tplAfterDelete === 0 && tripsAfterDelete === 2,
+      'Borrar la plantilla no toca los viajes armados con ella',
+      `plantillas=${tplAfterDelete} viajes=${tripsAfterDelete}`,
+    );
+    await ctx.close();
+  }
+  {
+    // Versión gratis en el tope de viajes: "Usar" lleva al aviso del límite
+    const { ctx, page } = await freshPage(browser, { pro: true });
+    for (let i = 0; i < 3; i++) await generateTrip(page, { maletas: ['Bodega'] });
+    await page.click('text=Guardar como plantilla de viaje');
+    await page.locator('[aria-label="Nombre de la plantilla"]').fill('Finde');
+    await page.click('button:has-text("Guardar plantilla")');
+    await page.waitForTimeout(100);
+    await page.evaluate(() => localStorage.removeItem('valija:isPro'));
+    await page.goto(`${BASE}/viajes`);
+    await page.waitForSelector('text=Mis viajes');
+    await page.click('[aria-label="Usar Finde"]');
+    await page.waitForTimeout(200);
+    const limit = await page.locator('text=/Llegaste al límite de 3 viajes gratis/').count();
+    const trips = await page.evaluate(() => JSON.parse(localStorage.getItem('valija:trips') ?? '[]').length);
+    assert(limit === 1 && trips === 3, 'Sin Pro y con 3 viajes, "Usar" una plantilla muestra el límite y no crea un 4º viaje', `limite=${limit} viajes=${trips}`);
+    await ctx.close();
+  }
+  {
+    // Sin Pro, la checklist no ofrece guardar plantilla de viaje
+    const { ctx, page } = await freshPage(browser);
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const btn = await page.locator('text=Guardar como plantilla de viaje').count();
+    assert(btn === 0, 'Versión gratis: no aparece "Guardar como plantilla de viaje"', `count=${btn}`);
     await ctx.close();
   }
 

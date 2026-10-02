@@ -102,6 +102,28 @@ export interface Trip {
   finishedAt?: string;
 }
 
+/** Plantilla de VIAJE (ej. "Trabajo BsAs"): a diferencia de ItemTemplate,
+ * que es un grupo de ítems para sumar a cualquier viaje, esta guarda el
+ * viaje entero para repetirlo de un toque desde "Mis viajes". Guarda las
+ * opciones del formulario y no la lista armada: así, si la app mejora
+ * las listas, la plantilla las aprovecha. Encima de eso, lo que la
+ * persona cambió a mano (ver data/tripTemplate.ts). */
+export interface TripTemplate {
+  id: string;
+  name: string;
+  createdAt: string;
+  form: TripFormState;
+  /** Ítems agregados a mano, con su cantidad. */
+  customItems: { cat: CategoryKey; name: string; qty: number }[];
+  /** Tareas de casa / del barco agregadas a mano. */
+  customHomeTasks: string[];
+  customBoatTasks: string[];
+  /** Cantidades cambiadas a mano en ítems generados (nombre → cantidad). */
+  qtyChanges: Record<string, number>;
+  /** Ítems generados que la persona había borrado. */
+  removedItems: string[];
+}
+
 /** Plantilla personal de ítems (ej. "Kit yacimiento"), privada del
  * usuario — nunca alimenta buildItems(), solo se puede aplicar a mano. */
 export interface ItemTemplate {

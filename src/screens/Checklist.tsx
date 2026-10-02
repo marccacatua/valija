@@ -15,6 +15,8 @@ import { SpaceMeter } from '../components/SpaceMeter';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { UndoSnackbar } from '../components/UndoSnackbar';
+import { SaveTripTemplateSheet } from '../components/SaveTripTemplateSheet';
+import { useTripTemplates } from '../hooks/useTripTemplates';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
 import { onTripFullyPacked } from '../features/review';
@@ -54,12 +56,13 @@ export function Checklist() {
   } = useTrips();
   const location = useLocation();
   const { templates, saveTemplate, removeTemplate } = useTemplates();
+  const { saveTripTemplate, removeTripTemplate } = useTripTemplates();
   const [, setLastTripId] = useLastTripId();
   const canAddCustomItems = useFeatureFlag('customItems');
   const canUseTemplates = useFeatureFlag('tripTemplates');
   const canExport = useFeatureFlag('exportChecklist');
   const canClone = useFeatureFlag('cloneTrip');
-  const [sheet, setSheet] = useState<'save' | 'apply' | null>(null);
+  const [sheet, setSheet] = useState<'save' | 'apply' | 'saveTrip' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
   // Vista en árbol: cada categoría (y la lista de casa/barco) se pliega o
   // despliega con −/+. Se recuerda por viaje (solo en este dispositivo:
@@ -102,6 +105,7 @@ export function Checklist() {
     | { kind: 'boatTask'; data: HomeTask; index: number }
     | { kind: 'qty'; data: Record<string, number>; removed: number }
     | { kind: 'trip'; data: Trip; added: number; removed: number }
+    | { kind: 'tripTemplate'; id: string; name: string }
     | null
   >(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -216,6 +220,12 @@ export function Checklist() {
     setSheet(null);
   };
 
+  const handleSaveTripTemplate = (name: string, withCustom: boolean, withChanges: boolean) => {
+    const template = saveTripTemplate(trip, name, withCustom, withChanges);
+    setSheet(null);
+    if (template) armUndo({ kind: 'tripTemplate', id: template.id, name: template.name });
+  };
+
   const startEditingName = () => {
     setNameDraft(trip.form.name);
     setEditingName(true);
@@ -273,6 +283,7 @@ export function Checklist() {
     else if (pendingUndo?.kind === 'boatTask') restoreBoatTask(trip.id, pendingUndo.data, pendingUndo.index);
     else if (pendingUndo?.kind === 'qty') setItemQtys(trip.id, pendingUndo.data);
     else if (pendingUndo?.kind === 'trip') replaceTrip(pendingUndo.data);
+    else if (pendingUndo?.kind === 'tripTemplate') removeTripTemplate(pendingUndo.id);
     setPendingUndo(null);
   };
 
@@ -628,6 +639,11 @@ export function Checklist() {
             {t('Aplicar una plantilla')}
           </Button>
         )}
+        {canUseTemplates && (
+          <Button variant="inverted" onClick={() => setSheet('saveTrip')}>
+            {t('Guardar como plantilla de viaje')}
+          </Button>
+        )}
         {canClone && (
           <Button variant="inverted" onClick={handleClone}>
             {t('Repetir este viaje')}
@@ -668,7 +684,9 @@ export function Checklist() {
       {pendingUndo && (
         <UndoSnackbar
           message={
-            pendingUndo.kind === 'trip'
+            pendingUndo.kind === 'tripTemplate'
+              ? t('Plantilla "{name}" guardada en Mis viajes', { name: pendingUndo.name })
+              : pendingUndo.kind === 'trip'
               ? t('Viaje actualizado: +{added} / −{removed} ítems', { added: pendingUndo.added, removed: pendingUndo.removed })
               : pendingUndo.kind === 'qty'
               ? tn(pendingUndo.removed, 'Llevás {n} prenda menos: vas a lavar en el viaje', 'Llevás {n} prendas menos: vas a lavar en el viaje')
@@ -688,6 +706,9 @@ export function Checklist() {
           onSave={handleSaveTemplate}
           onCancel={() => setSheet(null)}
         />
+      )}
+      {sheet === 'saveTrip' && (
+        <SaveTripTemplateSheet trip={trip} onSave={handleSaveTripTemplate} onCancel={() => setSheet(null)} />
       )}
       {sheet === 'apply' && (
         <ApplyTemplateSheet

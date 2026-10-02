@@ -7,11 +7,15 @@ import { BottomNav } from '../components/BottomNav';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Mascot } from '../components/Mascot';
 import { ProgressRing } from '../components/ProgressRing';
-import { progressPct, tripListMeta, tripTitle } from '../data/trip';
+import { progressPct, tripListMeta, tripMetaLine, tripTitle } from '../data/trip';
+import { FREE_TRIP_LIMIT, useIsPro } from '../features/flags';
 import { prefersReducedMotion } from '../features/motion';
+import { tripFromTemplate } from '../data/tripTemplate';
 import { useFlipReorder } from '../hooks/useFlipReorder';
 import { useLastTripId } from '../hooks/useLastTripId';
+import { useTripTemplates } from '../hooks/useTripTemplates';
 import { useTrips } from '../hooks/useTrips';
+import type { Trip, TripTemplate } from '../types';
 import { LANGS, lang, switchLang, t, tn, type Lang } from '../i18n';
 import styles from './Trips.module.css';
 
@@ -29,6 +33,22 @@ const DELETE_EXIT_MS = 220;
 // sigue reflowando en seco).
 const TRAILING_FLIP_ID = '__trailing__';
 
+type GroupKey = 'proximos' | 'plantillas' | 'finalizados';
+
+// Qué grupos de "Mis viajes" están plegados — se recuerda entre visitas.
+// Finalizados arranca plegado: los viajes viejos dejan de ocupar la lista.
+const COLLAPSED_KEY = 'valija:misViajesPlegados';
+const DEFAULT_COLLAPSED: GroupKey[] = ['finalizados'];
+
+function readCollapsed(): Set<GroupKey> {
+  try {
+    const raw = window.localStorage.getItem(COLLAPSED_KEY);
+    return new Set(raw ? (JSON.parse(raw) as GroupKey[]) : DEFAULT_COLLAPSED);
+  } catch {
+    return new Set(DEFAULT_COLLAPSED);
+  }
+}
+
 interface PendingConfirm {
   title: string;
   message: string;
@@ -38,7 +58,10 @@ interface PendingConfirm {
 
 export function Trips() {
   const navigate = useNavigate();
-  const { trips, removeTrip, removeAllTrips, toggleTripFinished } = useTrips();
+  const { trips, removeTrip, removeAllTrips, toggleTripFinished, addBuiltTrip } = useTrips();
+  const { tripTemplates, removeTripTemplate } = useTripTemplates();
+  const [isPro] = useIsPro();
+  const [collapsed, setCollapsed] = useState<Set<GroupKey>>(readCollapsed);
   const [, setLastTripId] = useLastTripId();
   const [confirm, setConfirm] = useState<PendingConfirm | null>(null);
   const [showBackup, setShowBackup] = useState(false);
@@ -80,6 +103,42 @@ export function Trips() {
     anim.finished.then(finish).catch(finish);
   };
 
+  const toggleGroup = (key: GroupKey) => {
+    const next = new Set(collapsed);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setCollapsed(next);
+    try {
+      window.localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...next]));
+    } catch {
+      // sin storage, se pliega igual (solo que no se recuerda)
+    }
+  };
+
+  // "Usar" una plantilla = un viaje nuevo al instante. Respeta el tope de
+  // la versión gratis: si ya está en el límite, va al formulario, que
+  // muestra el aviso para pasarse a Pro.
+  const startFromTemplate = (tpl: TripTemplate) => {
+    if (!isPro && trips.length >= FREE_TRIP_LIMIT) {
+      navigate('/nuevo');
+      return;
+    }
+    const trip = tripFromTemplate(tpl);
+    addBuiltTrip(trip);
+    openTrip(trip.id);
+  };
+
+  const deleteTemplate = (tpl: TripTemplate) => {
+    setConfirm({
+      title: t('¿Borrar la plantilla "{name}"?', { name: tpl.name }),
+      message: t('Los viajes que ya armaste con ella no se tocan.'),
+      onConfirm: () => {
+        setConfirm(null);
+        removeTripTemplate(tpl.id);
+      },
+    });
+  };
+
   const deleteTrip = (id: string, name: string) => {
     setConfirm({
       title: t('¿Borrar "{name}"?', { name }),
@@ -96,7 +155,14 @@ export function Trips() {
   // nuevo primero, por cómo addTrip los antepone). Reactivar uno vuelve
   // a este mismo orden solo, porque finalizar nunca mueve nada en el
   // array real (`trips`) — únicamente marca `finishedAt`.
-  const sortedTrips = [...trips].sort((a, b) => Number(!!a.finishedAt) - Number(!!b.finishedAt));
+  const openTrips = trips.filter((tr) => !tr.finishedAt);
+  const finishedTrips = trips.filter((tr) => tr.finishedAt);
+  // Los encabezados de grupo solo aparecen si hay más de un grupo: con
+  // viajes en curso nada más, la lista se ve igual que siempre.
+  const groupCount = [openTrips, tripTemplates, finishedTrips].filter((g) => g.length > 0).length;
+  const showHeaders = groupCount > 1;
+  const isOpen = (key: GroupKey) => !showHeaders || !collapsed.has(key);
+  const isEmpty = trips.length === 0 && tripTemplates.length === 0;
 
   // Mismo FLIP que ya usan los ítems de la valija: anima el viaje que
   // sube/baja al finalizar o reactivar, y el reacomodo del resto cuando
@@ -105,12 +171,22 @@ export function Trips() {
   // al borrar un viaje esos elementos reflowan en seco a su lugar nuevo
   // mientras la última tarjeta todavía está viajando visualmente por
   // ese espacio, y se pisan un instante.
-  const flipIds = [...sortedTrips.map((t) => t.id), TRAILING_FLIP_ID];
+  const flipIds = [
+    ...(showHeaders && openTrips.length > 0 ? ['__g_proximos'] : []),
+    ...(isOpen('proximos') ? openTrips.map((tr) => tr.id) : []),
+    ...(showHeaders && tripTemplates.length > 0 ? ['__g_plantillas'] : []),
+    ...(isOpen('plantillas') ? tripTemplates.map((tpl) => tpl.id) : []),
+    ...(showHeaders && finishedTrips.length > 0 ? ['__g_finalizados'] : []),
+    ...(isOpen('finalizados') ? finishedTrips.map((tr) => tr.id) : []),
+    TRAILING_FLIP_ID,
+  ];
   // Al borrar el último viaje aparece el cartel de "Todavía no armaste
   // ninguna valija" (que no está en el FLIP): si el footer animara desde
   // su posición vieja, pasaría por encima del cartel. Ese cambio de
   // lista ↔ vacío se acomoda sin animar (ver layoutKey en useFlipReorder).
-  const registerFlipNode = useFlipReorder(flipIds, trips.length === 0 ? 'vacio' : 'lista');
+  // Plegar/desplegar un grupo también cambia el layoutKey: la lista se
+  // acomoda de una, sin que lo de abajo viaje por encima de lo nuevo.
+  const registerFlipNode = useFlipReorder(flipIds, isEmpty ? 'vacio' : `lista:${[...collapsed].sort().join(',')}`);
   const registerCard = (id: string) => (el: HTMLElement | null) => {
     registerFlipNode(id)(el);
     if (el) cardNodesRef.current.set(id, el);
@@ -137,6 +213,118 @@ export function Trips() {
     });
   };
 
+  const renderGroupHeader = (key: GroupKey, title: string, count: number) => {
+    const open = isOpen(key);
+    return (
+      <button
+        key={`__g_${key}`}
+        ref={registerFlipNode(`__g_${key}`)}
+        type="button"
+        className={styles.groupHeader}
+        onClick={() => toggleGroup(key)}
+        aria-expanded={open}
+        aria-label={open ? t('Plegar {title}', { title }) : t('Desplegar {title}', { title })}
+      >
+        <span className={styles.groupTitle}>{title}</span>
+        <span className={styles.groupCount}>{count}</span>
+        <span className={styles.foldIcon} aria-hidden="true">
+          {open ? '−' : '+'}
+        </span>
+      </button>
+    );
+  };
+
+  const renderTemplateCard = (tpl: TripTemplate) => (
+    <div key={tpl.id} ref={registerFlipNode(tpl.id)} className={styles.templateCard}>
+      <span className={styles.templateIcon} aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24">
+          <rect x="5" y="3" width="14" height="18" rx="3" fill="none" stroke="currentColor" strokeWidth="2.4" />
+          <path d="M9 9h6M9 13h6M9 17h3" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+        </svg>
+      </span>
+      <div className={styles.tripInfo}>
+        <div className={styles.tripName}>{tpl.name}</div>
+        <div className={styles.tripMeta}>{tripMetaLine(tpl.form)}</div>
+      </div>
+      <button type="button" className={styles.useBtn} onClick={() => startFromTemplate(tpl)} aria-label={t('Usar {name}', { name: tpl.name })}>
+        {t('Usar')}
+      </button>
+      <button
+        type="button"
+        className={styles.deleteBtn}
+        onClick={() => deleteTemplate(tpl)}
+        aria-label={t('Borrar {item}', { item: tpl.name })}
+      >
+        ×
+      </button>
+    </div>
+  );
+
+  const renderTripCard = (trip: Trip) => {
+    const pct = progressPct(trip.items);
+    const done = pct === 100;
+    const finished = Boolean(trip.finishedAt);
+    const color = done ? 'var(--teal)' : 'var(--coral)';
+    const exiting = exitingIds.has(trip.id);
+    return (
+      <button
+        key={trip.id}
+        ref={registerCard(trip.id)}
+        type="button"
+        className={`${styles.tripCard} ${finished ? styles.tripCardFinished : ''}`}
+        style={exiting ? { pointerEvents: 'none' } : undefined}
+        onClick={() => openTrip(trip.id)}
+      >
+        <ProgressRing pct={pct} color={finished ? 'var(--muted-3)' : color} />
+        <div className={styles.tripInfo}>
+          <div className={styles.tripName}>{tripTitle(trip.form)}</div>
+          <div className={styles.tripMeta}>{tripListMeta(trip)}</div>
+          <div className={styles.tripState} style={{ color: finished ? 'var(--muted)' : color }}>
+            {finished
+              ? t('Viaje finalizado')
+              : done
+                ? t('Empacado completo')
+                : t('{done} de {total} empacado', { done: trip.items.filter((i) => i.done).length, total: trip.items.length })}
+          </div>
+        </div>
+        <span
+          role="button"
+          className={`${styles.finishBtn} ${finished ? styles.finishBtnActive : ''}`}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleTripFinished(trip.id);
+          }}
+          aria-label={finished ? t('Reactivar {name}', { name: tripTitle(trip.form) }) : t('Marcar {name} como finalizado', { name: tripTitle(trip.form) })}
+        >
+          <svg width="14" height="11" viewBox="0 0 14 11">
+            <path
+              d="M1 5.5L5 9.5L13 1.5"
+              stroke="currentColor"
+              strokeWidth="2.4"
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </span>
+        <span
+          role="button"
+          className={styles.deleteBtn}
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteTrip(trip.id, tripTitle(trip.form));
+          }}
+          aria-label={t('Borrar {item}', { item: tripTitle(trip.form) })}
+        >
+          ×
+        </span>
+        <svg width="9" height="16" viewBox="0 0 9 16" style={{ flex: 'none' }}>
+          <path d="M2 2l5 6-5 6" stroke="var(--muted-3)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+    );
+  };
+
   return (
     <div className={styles.screen}>
       <div className={styles.header}>
@@ -152,77 +340,21 @@ export function Trips() {
       </div>
 
       <div className={styles.body}>
-        {trips.length === 0 ? (
+        {isEmpty ? (
           <div className={styles.emptyState}>
             <Mascot size={64} />
             <div className={styles.emptyTitle}>{t('Todavía no armaste ninguna valija')}</div>
             <div className={styles.emptyDesc}>{t('Creá tu primer viaje y va a aparecer acá, listo para repetir.')}</div>
           </div>
         ) : (
-          sortedTrips.map((trip) => {
-            const pct = progressPct(trip.items);
-            const done = pct === 100;
-            const finished = Boolean(trip.finishedAt);
-            const color = done ? 'var(--teal)' : 'var(--coral)';
-            const exiting = exitingIds.has(trip.id);
-            return (
-              <button
-                key={trip.id}
-                ref={registerCard(trip.id)}
-                type="button"
-                className={`${styles.tripCard} ${finished ? styles.tripCardFinished : ''}`}
-                style={exiting ? { pointerEvents: 'none' } : undefined}
-                onClick={() => openTrip(trip.id)}
-              >
-                <ProgressRing pct={pct} color={finished ? 'var(--muted-3)' : color} />
-                <div className={styles.tripInfo}>
-                  <div className={styles.tripName}>{tripTitle(trip.form)}</div>
-                  <div className={styles.tripMeta}>{tripListMeta(trip)}</div>
-                  <div className={styles.tripState} style={{ color: finished ? 'var(--muted)' : color }}>
-                    {finished
-                      ? t('Viaje finalizado')
-                      : done
-                        ? t('Empacado completo')
-                        : t('{done} de {total} empacado', { done: trip.items.filter((i) => i.done).length, total: trip.items.length })}
-                  </div>
-                </div>
-                <span
-                  role="button"
-                  className={`${styles.finishBtn} ${finished ? styles.finishBtnActive : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleTripFinished(trip.id);
-                  }}
-                  aria-label={finished ? t('Reactivar {name}', { name: tripTitle(trip.form) }) : t('Marcar {name} como finalizado', { name: tripTitle(trip.form) })}
-                >
-                  <svg width="14" height="11" viewBox="0 0 14 11">
-                    <path
-                      d="M1 5.5L5 9.5L13 1.5"
-                      stroke="currentColor"
-                      strokeWidth="2.4"
-                      fill="none"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-                <span
-                  role="button"
-                  className={styles.deleteBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteTrip(trip.id, tripTitle(trip.form));
-                  }}
-                  aria-label={t('Borrar {item}', { item: tripTitle(trip.form) })}
-                >
-                  ×
-                </span>
-                <svg width="9" height="16" viewBox="0 0 9 16" style={{ flex: 'none' }}>
-                  <path d="M2 2l5 6-5 6" stroke="var(--muted-3)" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </button>
-            );
-          })
+          <>
+            {showHeaders && openTrips.length > 0 && renderGroupHeader('proximos', t('Próximos'), openTrips.length)}
+            {isOpen('proximos') && openTrips.map(renderTripCard)}
+            {showHeaders && tripTemplates.length > 0 && renderGroupHeader('plantillas', t('Plantillas de viaje'), tripTemplates.length)}
+            {isOpen('plantillas') && tripTemplates.map(renderTemplateCard)}
+            {showHeaders && finishedTrips.length > 0 && renderGroupHeader('finalizados', t('Finalizados'), finishedTrips.length)}
+            {isOpen('finalizados') && finishedTrips.map(renderTripCard)}
+          </>
         )}
 
         {/* Todo este bloque se registra como una sola unidad en el FLIP

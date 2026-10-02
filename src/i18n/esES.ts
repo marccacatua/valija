@@ -55,6 +55,7 @@ export const ES_ES: Record<string, string> = {
   "se suma {n} ítem": "se añade {n} ítem",
   "se suman {n} ítems": "se añaden {n} ítems",
   "Barra de progreso en vivo y viajes guardados para repetir.": "Barra de progreso en directo y viajes guardados para repetir.",
+  "Trabajo en Buenos Aires": "Trabajo en Barcelona",
 };
 
 /** Ítems y tareas propios de España (encima de ES_TU_ITEMS). */

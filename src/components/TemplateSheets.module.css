@@ -212,3 +212,11 @@
   cursor: pointer;
   flex: none;
 }
+
+/* Línea chica debajo del nombre (resumen de qué incluye). */
+.detail {
+  display: block;
+  margin-top: 2px;
+  font: 700 12.5px/1.35 'Nunito', sans-serif;
+  color: var(--muted);
+}

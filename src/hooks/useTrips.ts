@@ -344,6 +344,15 @@ export function useTrips() {
     [trips, setTrips],
   );
 
+  /** Suma un viaje ya armado (ej. el que sale de una plantilla de viaje,
+   * ver data/tripTemplate.ts) al principio de la lista. */
+  const addBuiltTrip = useCallback(
+    (trip: Trip) => {
+      setTrips((prev) => [trip, ...prev]);
+    },
+    [setTrips],
+  );
+
   const getTrip = useCallback((id: string | undefined) => trips.find((t) => t.id === id), [trips]);
 
   return {
@@ -373,6 +382,7 @@ export function useTrips() {
     removeAllTrips,
     toggleTripFinished,
     cloneTrip,
+    addBuiltTrip,
     getTrip,
   };
 }

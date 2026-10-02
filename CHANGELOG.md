@@ -4,6 +4,32 @@ Historial de versiones de Valija. Se actualiza en cada tanda de cambios,
 junto con el número de versión en `package.json` (visible en el pie de
 "Mis viajes"). Ver `BACKLOG.md` para lo que todavía no se hizo.
 
+## v1.15.0
+
+**"Mis viajes" ordenado en grupos + plantillas de viaje** (rama
+`mis-viajes-plantillas`).
+
+- **Grupos en "Mis viajes":** Próximos, Plantillas de viaje y
+  Finalizados. Cada grupo se pliega con −/+, igual que las categorías de
+  la valija, y la app recuerda cómo lo dejaste. **Finalizados arranca
+  plegado**, así los viajes viejos dejan de ocupar la lista. Si hay un
+  solo grupo (por ejemplo, solo viajes en curso), no se muestran
+  encabezados y la lista se ve como antes.
+- **Plantillas de viaje (Pro):** desde la valija, "Guardar como
+  plantilla de viaje". Se elige el nombre (ej. "Trabajo BsAs") y si
+  incluir tus ítems propios y los cambios que le hiciste a la lista
+  (cantidades e ítems sacados). Al guardar aparece "Deshacer".
+- En "Mis viajes" cada plantilla tiene **"Usar"**: arma un viaje nuevo
+  al instante, sin nada tildado, y lo abre. La lista se vuelve a generar
+  con la versión actual de la app y encima se aplican tus cambios. La ×
+  borra la plantilla sin tocar los viajes que ya armaste con ella.
+- Respeta el tope de 3 viajes de la versión gratis: si se llegó al
+  límite, "Usar" muestra el aviso para pasarse a Pro.
+- Las plantillas de viaje se guardan en el almacenamiento durable del
+  iPhone y viajan en la copia de datos (Safari ↔ pantalla de inicio).
+- Textos nuevos traducidos a los 6 idiomas. QA: 259/259 (es),
+  182/182 (en), 209/209 (de, pt, es-ES, es-419).
+
 ## v1.14.0
 
 **Valija en 6 idiomas** (ex rama `i18n-en`). El idioma sale del teléfono:

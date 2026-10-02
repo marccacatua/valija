@@ -1,10 +1,11 @@
-import type { ItemTemplate, Trip } from '../types';
+import type { ItemTemplate, Trip, TripTemplate } from '../types';
 import { persistItem } from './storage';
 import { t } from '../i18n';
 
 const TRIPS_KEY = 'valija:trips';
 const TEMPLATES_KEY = 'valija:templates';
 const IS_PRO_KEY = 'valija:isPro';
+const TRIP_TEMPLATES_KEY = 'valija:tripTemplates';
 
 /**
  * iOS le da a la web abierta en Safari y a la misma web instalada como
@@ -20,6 +21,8 @@ interface BackupPayload {
   exportedAt: string;
   trips: Trip[];
   templates: ItemTemplate[];
+  /** Desde las plantillas de viaje; los backups viejos no lo tienen. */
+  tripTemplates?: TripTemplate[];
   isPro: boolean;
 }
 
@@ -38,6 +41,7 @@ export function exportBackup(): string {
     exportedAt: new Date().toISOString(),
     trips: readJSON<Trip[]>(TRIPS_KEY, []),
     templates: readJSON<ItemTemplate[]>(TEMPLATES_KEY, []),
+    tripTemplates: readJSON<TripTemplate[]>(TRIP_TEMPLATES_KEY, []),
     isPro: readJSON<boolean>(IS_PRO_KEY, false),
   };
   return JSON.stringify(payload);
@@ -74,9 +78,14 @@ export function importBackup(raw: string): ImportResult {
   const newTemplates = (payload.templates ?? []).filter((t) => !currentTemplateIds.has(t.id));
   persistItem(TEMPLATES_KEY, JSON.stringify([...currentTemplates, ...newTemplates]));
 
+  const currentTripTemplates = readJSON<TripTemplate[]>(TRIP_TEMPLATES_KEY, []);
+  const currentTripTemplateIds = new Set(currentTripTemplates.map((t) => t.id));
+  const newTripTemplates = (Array.isArray(payload.tripTemplates) ? payload.tripTemplates : []).filter((t) => !currentTripTemplateIds.has(t.id));
+  persistItem(TRIP_TEMPLATES_KEY, JSON.stringify([...currentTripTemplates, ...newTripTemplates]));
+
   const wasAlreadyPro = readJSON<boolean>(IS_PRO_KEY, false);
   const unlockedPro = !wasAlreadyPro && Boolean(payload.isPro);
   if (payload.isPro) persistItem(IS_PRO_KEY, 'true');
 
-  return { addedTrips: newTrips.length, addedTemplates: newTemplates.length, unlockedPro };
+  return { addedTrips: newTrips.length, addedTemplates: newTemplates.length + newTripTemplates.length, unlockedPro };
 }
