@@ -44,6 +44,16 @@ viejo: no usarla).
 - [ ] Elegir la build 4 y enviar a revisión (sin tocar Valija Pro)
 - [ ] Borrar la rama `i18n-en` en GitHub (ya está en main)
 
+## 2b. Próximas mejoras (pedidas el 2026-10-02)
+
+Detalle y propuestas en BACKLOG.md. Mockups:
+https://claude.ai/artifact/KCa46s4M7L5QcPD338FNtP
+
+- [ ] "Mis viajes" agrupado: Próximos / Plantillas de viaje / Finalizados
+- [ ] Plantillas de viaje ("Viaje trabajo BsAs", con "Usar" de un toque)
+- [ ] "Lo tengo que comprar": carrito por ítem + lista para compartir
+- [ ] Transporte: barco/ferry y moto
+
 ## 3. Cantidades y espacio en las valijas
 
 Todo resuelto y en main (v1.9.0 a v1.12.0): lavar ropa, esquí sin

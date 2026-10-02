@@ -1,5 +1,55 @@
 # Backlog
 
+## 🧳 Mejoras pedidas (2026-10-02): propuestas
+
+Criterio de siempre: que la app siga siendo sencilla y rápida. Nada de
+pantallas nuevas si se puede resolver dentro de las que ya existen.
+
+### 1. Transporte: barco/ferry y moto
+- Dos opciones más en "Transporte" (selección múltiple, como hoy).
+- **Barco/ferry** (cruzar a Colonia, Buquebus, ferry entre islas): suma
+  "Pastillas para el mareo", "Abrigo para la cubierta" y
+  "Pasajes / boarding pass" si no estaba. No confundir con "Navegar"
+  (turismo), que es salir a navegar como actividad.
+- **Moto:** suma "Casco", "Campera de moto", "Guantes de moto",
+  "Rompeviento impermeable", "Libreta de conducir" y
+  "Seguro de la moto"; avisa (como el de esquí con calor) que en moto
+  conviene una mochila o alforjas y no una valija de bodega.
+- Esfuerzo: chico. Catálogo + reglas en buildItems + 6 idiomas + QA.
+
+### 2. "Lo tengo que comprar" (lista de compras del viaje)
+- En cada ítem, un botón de carrito 🛒 al lado del +/−. Tocarlo marca el
+  ítem "para comprar" (se ve con una etiqueta) sin tildarlo.
+- Arriba de la checklist aparece un botón "🛒 Para comprar · 3" que abre
+  una hoja con esos ítems: se pueden tildar como comprados y compartir la
+  lista (WhatsApp, Notas) para ir al súper.
+- Al tildar el ítem en la valija, sale solo de la lista de compras.
+- Datos: `toBuy?: boolean` en PackingItem (sin migración).
+- Esfuerzo: medio. Decisión pendiente: gratis o Pro (sugerencia: gratis,
+  es útil y hace que vuelvan a la app).
+
+### 3. "Mis viajes" más ordenado
+- Tres grupos en la misma pantalla, plegables como la lista en árbol:
+  "Próximos" (abierto), "Plantillas de viaje" y "Finalizados" (plegado,
+  con contador). Se recuerda qué está plegado.
+- Sin pantallas nuevas: es la misma lista, agrupada.
+- Esfuerzo: chico.
+
+### 4. Plantillas de viaje ("Viaje trabajo BsAs")
+- Desde un viaje: "Guardar como plantilla de viaje". Guarda las opciones
+  del formulario (destino, clima, días, valijas…), los ítems propios y
+  las cantidades ajustadas, con un nombre.
+- En "Mis viajes", grupo "Plantillas de viaje": cada una con un botón
+  "Usar" que crea el viaje nuevo de un toque, sin pasar por el formulario
+  (se puede editar después con "Editar opciones").
+- Diferencia con "Repetir este viaje": la plantilla no depende de que el
+  viaje viejo siga guardado, y está a un toque desde "Mis viajes".
+- Las plantillas de hoy pasan a llamarse "plantillas de ítems" (siguen
+  igual). Pro, como las plantillas actuales.
+- Esfuerzo: medio.
+
+Orden sugerido: 3 → 4 (van juntas, misma pantalla) → 2 → 1.
+
 ## 📊 Analíticas de uso (propuesta, 2026-09-27)
 
 Pedido del usuario: saber qué es lo que más usan los clientes.
