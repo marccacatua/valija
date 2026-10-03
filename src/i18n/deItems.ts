@@ -176,4 +176,9 @@ export const DE_ITEMS: Record<string, string> = {
   "Traje de neopreno grueso (7mm) o semiseco": "Dicker Neoprenanzug (7 mm) oder Halbtrocken",
   "Paraguas plegable": "Taschenschirm",
   "Confirmar que el pasaje incluye la valija de bodega": "Prüfen, ob das Ticket Aufgabegepäck enthält",
+  "Seguro de la moto": "Motorradversicherung",
+  "Abrigo para la cubierta": "Warme Schicht für das Deck",
+  "Campera de moto": "Motorradjacke",
+  "Guantes de moto": "Motorradhandschuhe",
+  "Casco de moto": "Motorradhelm",
 };

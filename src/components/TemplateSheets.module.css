@@ -220,3 +220,8 @@
   font: 700 12.5px/1.35 'Nunito', sans-serif;
   color: var(--muted);
 }
+
+.nameDone {
+  color: var(--muted-2);
+  text-decoration: line-through;
+}

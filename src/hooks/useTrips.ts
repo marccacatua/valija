@@ -180,6 +180,31 @@ export function useTrips() {
     [updateTrip],
   );
 
+  /** Marca/desmarca un ítem como "lo tengo que comprar". Al desmarcarlo
+   * también se olvida si ya estaba comprado. */
+  const toggleToBuy = useCallback(
+    (tripId: string, itemId: string) => {
+      hapticTap();
+      updateTrip(tripId, (t) => ({
+        ...t,
+        items: t.items.map((i) => (i.id === itemId ? { ...i, toBuy: !i.toBuy, bought: false } : i)),
+      }));
+    },
+    [updateTrip],
+  );
+
+  /** Tilda/destilda un ítem como comprado en la lista de compras. */
+  const toggleBought = useCallback(
+    (tripId: string, itemId: string) => {
+      hapticTap();
+      updateTrip(tripId, (t) => ({
+        ...t,
+        items: t.items.map((i) => (i.id === itemId ? { ...i, bought: !i.bought } : i)),
+      }));
+    },
+    [updateTrip],
+  );
+
   /** Cambia el nombre de un viaje ya creado. Vacío es válido: vuelve a
    * mostrar el título automático (destino + días), igual que al armarlo. */
   const renameTrip = useCallback(
@@ -334,7 +359,8 @@ export function useTrips() {
         id: crypto.randomUUID(),
         createdAt: new Date().toISOString(),
         form: original.form,
-        items: original.items.map((item) => ({ ...item, done: false })),
+        // lo que había que comprar la vez pasada ya se compró
+        items: original.items.map((item) => ({ ...item, done: false, toBuy: false, bought: false })),
         homeChecklist: original.homeChecklist.map((task) => ({ ...task, done: false })),
         boatChecklist: original.boatChecklist.map((task) => ({ ...task, done: false })),
       };
@@ -363,6 +389,8 @@ export function useTrips() {
     bumpItem,
     setItemQtys,
     setItemsDone,
+    toggleToBuy,
+    toggleBought,
     renameTrip,
     updateMaletas,
     editTrip,

@@ -380,6 +380,17 @@ export function TripForm() {
                 />
               ))}
             </div>
+            {/* Mismo patrón que el aviso de esquí con calor: sugiere, no
+                cambia nada solo. Con auto en el mismo viaje la valija
+                puede ir en el baúl, así que ahí no se avisa. */}
+            {form.transporte.includes('moto') && !form.transporte.includes('auto') && form.maletas.includes('bodega') && (
+              <div className={styles.climaWarning}>
+                <span>{t('En moto conviene una mochila o alforjas: la valija de bodega no viaja bien.')}</span>
+                <button type="button" className={styles.climaFix} onClick={() => set('maletas', ['mochila'])}>
+                  {t('Cambiar a Mochila')}
+                </button>
+              </div>
+            )}
           </div>
 
           <div>

@@ -25,7 +25,7 @@ const CLIMA: ClimaKey[] = ['calor', 'templado', 'frio', 'lluvia'];
 const MOTIVO: MotivoKey[] = ['placer', 'trabajo'];
 const TURISMO: TurismoKey[] = ['relax', 'aventura', 'cultura', 'fiesta'];
 const ALOJ: AlojKey[] = ['hotel', 'depto', 'hostel', 'amigos', 'camping'];
-const TRANSPORTE: TransporteKey[] = ['avion', 'auto', 'bus', 'tren'];
+const TRANSPORTE: TransporteKey[] = ['avion', 'barco', 'tren', 'bus', 'auto', 'moto'];
 const DIAS = [1, 2, 3, 4, 5, 6, 7, 8, 10, 14, 20, 30];
 const VESTIDOS = [false, true];
 const LAVA_ROPA = [false, true];
@@ -865,8 +865,8 @@ for (const motivo of MOTIVO)
 // ============================================================
 {
   const TRANSPORTE_SETS: TransporteKey[][] = [];
-  const all: TransporteKey[] = ['avion', 'auto', 'bus', 'tren'];
-  for (let mask = 1; mask < 16; mask++) TRANSPORTE_SETS.push(all.filter((_, i) => mask & (1 << i)));
+  const all: TransporteKey[] = ['avion', 'barco', 'tren', 'bus', 'auto', 'moto'];
+  for (let mask = 1; mask < 1 << all.length; mask++) TRANSPORTE_SETS.push(all.filter((_, i) => mask & (1 << i)));
   for (const transportes of TRANSPORTE_SETS)
     for (const maletas of [['carry'], ['bodega', 'mochila']] as MaletaKey[][])
       for (const flag of [false, true]) {
@@ -1016,7 +1016,7 @@ for (const motivo of MOTIVO)
   for (const turismo of ['relax', 'aventura', 'cultura', 'fiesta', 'ski', 'navegar', 'buceo'] as TurismoKey[])
     for (const clima of CLIMA)
       for (const flag of [false, true])
-        for (const transporte of ['avion', 'auto', 'bus'] as TransporteKey[])
+        for (const transporte of ['avion', 'auto', 'bus', 'barco', 'moto'] as TransporteKey[])
           for (const aloj of ['hotel', 'hostel', 'camping'] as AlojKey[]) {
             const form: TripFormState = {
               name: 'QA-litros', dest: ['playa', 'montana', 'ciudad'], clima: [clima], motivo: 'placer', turismo: [turismo], aloj, transporte: [transporte],

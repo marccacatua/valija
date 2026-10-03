@@ -67,7 +67,7 @@ const opts = {
   motivo: ['placer', 'trabajo'],
   turismo: ['relax', 'aventura', 'cultura', 'fiesta', 'ski', 'navegar', 'buceo'],
   aloj: ['hotel', 'depto', 'hostel', 'amigos', 'camping'],
-  transporte: ['avion', 'auto', 'bus', 'tren'],
+  transporte: ['avion', 'barco', 'tren', 'bus', 'auto', 'moto'],
   maletas: [['carry'], ['bodega'], ['mochila'], ['carry', 'bodega'], ['bodega', 'mochila']],
   dias: [1, 7],
 } as const;

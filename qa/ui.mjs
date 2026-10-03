@@ -344,7 +344,7 @@ try {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
     await page.click('text=Ver mis viajes');
-    await page.waitForSelector('text=Mis viajes');
+    await page.waitForURL(/\/viajes$/);
 
     // crear un 2do viaje para probar borrado individual sin vaciar la lista
     await page.click('text=Nuevo viaje');
@@ -353,7 +353,7 @@ try {
     await page.click('button:has-text("Armar mi valija")');
     await page.waitForURL(/\/viaje\//);
     await page.click('text=Ver mis viajes');
-    await page.waitForSelector('text=Mis viajes');
+    await page.waitForURL(/\/viajes$/);
     // .count() no reintenta como waitForSelector — sin esto, a veces corre
     // antes de que la 2da tarjeta termine de montarse (flaky).
     await page.waitForFunction(() => document.querySelectorAll('[aria-label^="Borrar "]').length >= 2);
@@ -388,7 +388,7 @@ try {
     const { ctx, page } = await freshPage(browser);
     await generateTrip(page, { maletas: ['Bodega'] });
     await page.click('text=Ver mis viajes');
-    await page.waitForSelector('text=Mis viajes');
+    await page.waitForURL(/\/viajes$/);
     // esperar el botón puntual (no solo el título de la pantalla) evita una
     // carrera con el render: .count() no reintenta como waitForSelector
     await page.waitForSelector('text=Nuevo viaje');
@@ -564,7 +564,7 @@ try {
 
     // persiste en la lista de viajes
     await page.click('text=Ver mis viajes');
-    await page.waitForSelector('text=Mis viajes');
+    await page.waitForURL(/\/viajes$/);
     const listHasName = await page.locator('text=Viaje de prueba QA').count();
     assert(listHasName === 1, 'El nombre nuevo se ve también en "Mis viajes"', `count=${listHasName}`);
 
@@ -1014,7 +1014,7 @@ try {
     });
     await generateTrip(page, { maletas: ['Bodega'] });
     await page.click('text=Ver mis viajes');
-    await page.waitForSelector('text=Mis viajes');
+    await page.waitForURL(/\/viajes$/);
     await page.click('text=Llevar mis datos a otro acceso');
     await page.waitForSelector('text=Copiar mis datos');
     await page.click('text=Copiar mis datos');
@@ -2482,7 +2482,7 @@ try {
     await page.waitForURL(/\/viaje\//);
     await page.waitForSelector('text=Tu valija para');
     const chips = (await page.locator('[class*="chips"]').first().textContent()) ?? '';
-    assert(chips.includes('Avión + Auto + Tren'), 'Los chips registran todos los transportes', `chips=${chips}`);
+    assert(chips.includes('Avión + Tren + Auto'), 'Los chips registran todos los transportes, en el orden de la lista', `chips=${chips}`);
     for (const n of ['Seguro de viaje', 'Seguro del auto y VTV', 'Confirmar que el pasaje incluye la valija de bodega']) {
       assert((await page.locator('button', { hasText: n }).count()) === 1, `Avión + auto con bodega incluye "${n}"`);
     }
@@ -2758,6 +2758,106 @@ try {
     await generateTrip(page, { maletas: ['Bodega'] });
     const btn = await page.locator('text=Guardar como plantilla de viaje').count();
     assert(btn === 0, 'Versión gratis: no aparece "Guardar como plantilla de viaje"', `count=${btn}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 61) "Lo tengo que comprar": el carrito marca el ítem sin tildarlo,
+  // aparece la barra "Para comprar", la hoja tilda lo comprado y al
+  // empacar el ítem sale solo de la lista. Gratis (sin Pro).
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await page.addInitScript(() => {
+      // @ts-ignore
+      window.navigator.share = undefined;
+      Object.defineProperty(window.navigator, 'clipboard', {
+        value: {
+          writeText: (text) => {
+            // @ts-ignore
+            window.__copiedText = text;
+            return Promise.resolve();
+          },
+        },
+        configurable: true,
+      });
+    });
+    await generateTrip(page, { maletas: ['Bodega'] });
+    const barBefore = await page.locator('[class*="shoppingBar"]').count();
+    assert(barBefore === 0, 'Sin nada para comprar no aparece la barra "Para comprar"', `count=${barBefore}`);
+
+    await page.click('[aria-label="Tengo que comprar Protector solar"]');
+    await page.click('[aria-label="Tengo que comprar Cinturón"]');
+    await page.waitForTimeout(100);
+    const packed = await progressNumLocator(page).textContent();
+    const tags = await page.locator('[class*="toBuyTag"]').count();
+    const count = await page.locator('[class*="shoppingBarCount"]').textContent();
+    assert(
+      packed.trim() === '0' && tags === 2 && count.trim() === '2',
+      'El carrito marca 2 ítems "Comprar" sin tildarlos y la barra muestra 2',
+      `packed=${packed} tags=${tags} barra=${count}`,
+    );
+
+    await page.click('[class*="shoppingBar"]');
+    await page.waitForSelector('text=Para comprar · ');
+    await page.locator('[role="dialog"] button', { hasText: 'Cinturón' }).click();
+    await page.waitForTimeout(100);
+    const countAfterBuy = await page.locator('[class*="shoppingBarCount"]').textContent();
+    const boughtTag = await page.locator('[class*="toBuyTag"]', { hasText: 'Comprado' }).count();
+    assert(countAfterBuy.trim() === '1' && boughtTag === 1, 'Tildar en la hoja lo marca "Comprado" y baja el contador', `barra=${countAfterBuy} comprado=${boughtTag}`);
+
+    await page.click('button:has-text("Compartir lista")');
+    await page.waitForSelector('text=Copiado ✓');
+    // @ts-ignore
+    const clip = await page.evaluate(() => window.__copiedText ?? '');
+    assert(clip.startsWith('Para comprar · ') && clip.includes('Protector solar') && !clip.includes('Cinturón'), 'La lista compartida tiene solo lo que falta comprar', `texto=${JSON.stringify(clip)}`);
+    await page.locator('[role="dialog"] button', { hasText: /^Cerrar$/ }).click();
+
+    // empacar el protector: sale de la lista (y la barra, al quedar solo lo comprado)
+    await page.locator('button', { hasText: 'Protector solar' }).first().click();
+    await page.locator('button', { hasText: 'Cinturón' }).first().click();
+    await page.waitForTimeout(100);
+    const barAfterPack = await page.locator('[class*="shoppingBar"]').count();
+    assert(barAfterPack === 0, 'Al empacar lo que había para comprar, la barra desaparece sola', `count=${barAfterPack}`);
+
+    // se guarda (sobrevive a recargar)
+    await page.locator('button', { hasText: 'Cinturón' }).first().click();
+    await page.reload();
+    await page.waitForSelector('text=Tu valija para');
+    const barAfterReload = await page.locator('button[class*="shoppingBar"]').count();
+    assert(barAfterReload === 1, 'Destildar un ítem marcado para comprar lo devuelve a la lista (y se guarda)', `count=${barAfterReload}`);
+    await ctx.close();
+  }
+
+  // ============================================================
+  // 62) Transporte: orden nuevo, barco/ferry y moto suman lo suyo, y la
+  // moto avisa sobre la valija de bodega
+  // ============================================================
+  {
+    const { ctx, page } = await freshPage(browser);
+    await goToNewTripForm(page);
+    const TRANSPORT = ['Avión', 'Barco / ferry', 'Tren', 'Micro', 'Auto', 'Moto'];
+    const order = (await page.locator('button').allTextContents()).map((x) => x.trim()).filter((x) => TRANSPORT.includes(x));
+    assert(
+      JSON.stringify(order) === '["Avión","Barco / ferry","Tren","Micro","Auto","Moto"]',
+      'Transporte en orden: Avión, Barco / ferry, Tren, Micro, Auto, Moto',
+      `orden=${JSON.stringify(order)}`,
+    );
+    await page.click('button:has-text("Bodega")');
+    await page.click('button:has-text("Moto")');
+    const warn = await page.locator('text=En moto conviene una mochila o alforjas').count();
+    assert(warn === 1, 'Moto + bodega muestra el aviso de equipaje', `count=${warn}`);
+    await page.click('button:has-text("Cambiar a Mochila")');
+    const warnAfter = await page.locator('text=En moto conviene una mochila o alforjas').count();
+    assert(warnAfter === 0, '"Cambiar a Mochila" deja solo la mochila y saca el aviso', `count=${warnAfter}`);
+    await page.click('button:has-text("Barco / ferry")');
+    await page.click('button:has-text("Armar mi valija")');
+    await page.waitForURL(/\/viaje\//);
+    await page.waitForSelector('text=Tu valija para');
+    const want = ['Casco de moto', 'Campera de moto', 'Guantes de moto', 'Seguro de la moto', 'Pastillas para el mareo', 'Abrigo para la cubierta'];
+    const missing = [];
+    for (const name of want) if ((await page.locator('button', { hasText: name }).count()) === 0) missing.push(name);
+    assert(missing.length === 0, 'Barco/ferry y moto suman sus ítems a la lista', `faltan=${JSON.stringify(missing)}`);
     await ctx.close();
   }
 

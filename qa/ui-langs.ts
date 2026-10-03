@@ -56,10 +56,10 @@ function assert(cond: unknown, label: string, detail = '') {
 // Español que no debería aparecer en alemán (mismo criterio que en inglés).
 const SPANISH_CHARS = /[áéíóúñ¿¡]/i;
 // Bordes de palabra que entienden letras como ß, ö o ñ (\b solo conoce a-z).
-const SPANISH_WORDS = /(?<!\p{L})(de|del|la|las|el|los|y|con|para|tu|tus|mis|una|que|en|sin|por|viaje|viajes|ítems?|acá|más|valijas)(?!\p{L})/iu;
+const SPANISH_WORDS = /(?<![\p{L}\p{N}])(de|del|la|las|el|los|y|con|para|tu|tus|mis|una|que|en|sin|por|viaje|viajes|ítems?|acá|más|valijas)(?![\p{L}\p{N}])/iu;
 // Español que no existe en portugués (ñ, ¿, ¡ y palabras como "una", "con", "más").
 // ("Valija" con mayúscula es la marca: solo cuenta "valija" en minúscula.)
-const PT_SPANISH_WORDS = /[ñ¿¡]|(?<!\p{L})(y|el|los|las|del|una|con|tus|mis|más|acá|viajes?|ítems?)(?!\p{L})/iu;
+const PT_SPANISH_WORDS = /[ñ¿¡]|(?<![\p{L}\p{N}])(y|el|los|las|del|una|con|tus|mis|más|acá|viajes?|ítems?)(?![\p{L}\p{N}])/iu;
 const PT_VALIJA = /(?<!\p{L})valijas?(?!\p{L})/u;
 const PT_SPANISH = { test: (l: string) => PT_SPANISH_WORDS.test(l) || PT_VALIJA.test(l) };
 // Voseo y rioplatense que no deberían aparecer en los españoles con tú.

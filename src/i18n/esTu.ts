@@ -94,6 +94,8 @@ export const ES_TU: Record<string, string> = {
   "se sacan {n}": "se quitan {n}",
   "Destildar todo {title}": "Desmarcar todo {title}",
   "Tildar todo {title}": "Marcar todo {title}",
+  "En moto conviene una mochila o alforjas: la valija de bodega no viaja bien.": "En moto conviene una mochila o alforjas: la maleta de bodega no viaja bien.",
+  "Tildá lo que vas comprando. Cuando lo pongas en la valija, sale solo de esta lista.": "Marca lo que vas comprando. Cuando lo pongas en la maleta, sale solo de esta lista.",
 };
 
 /** Ítems y tareas que cambian en el español "con tú" de Latinoamérica. */
@@ -139,4 +141,5 @@ export const ES_TU_ITEMS: Record<string, string> = {
   "Campera abrigada": "Chaqueta abrigadora",
   "Campera liviana para correr": "Chaqueta ligera para correr",
   "Confirmar que el pasaje incluye la valija de bodega": "Confirmar que el boleto incluye equipaje en bodega",
+  "Campera de moto": "Chaqueta de moto",
 };

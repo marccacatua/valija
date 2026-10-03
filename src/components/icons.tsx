@@ -134,3 +134,20 @@ export const EditIcon = (
     />
   </svg>
 );
+
+// Carrito de "Lo tengo que comprar" — SVG y no emoji 🛒, por lo mismo que
+// LockIcon: el WebView nativo no siempre renderiza bien los emoji.
+export const CartIcon = (
+  <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M3 4h2.2l2.1 10.2a1.5 1.5 0 0 0 1.5 1.2h8.1a1.5 1.5 0 0 0 1.5-1.1L20 8H6.2"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <circle cx="9.5" cy="19.5" r="1.6" fill="currentColor" />
+    <circle cx="16.5" cy="19.5" r="1.6" fill="currentColor" />
+  </svg>
+);

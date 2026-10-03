@@ -58,10 +58,13 @@ export const ALOJ_OPTIONS: CatalogOption<AlojKey>[] = [
 ];
 
 export const TRANSPORTE_OPTIONS: CatalogOption<TransporteKey>[] = [
+  // De lo más lejano a lo más cercano: avión, barco, tren, micro, auto, moto.
   { key: 'avion', label: t('Avión') },
-  { key: 'auto', label: t('Auto') },
-  { key: 'bus', label: t('Micro') },
+  { key: 'barco', label: t('Barco / ferry') },
   { key: 'tren', label: t('Tren') },
+  { key: 'bus', label: t('Micro') },
+  { key: 'auto', label: t('Auto') },
+  { key: 'moto', label: t('Moto') },
 ];
 
 export const MALETA_OPTIONS: CatalogOption<MaletaKey>[] = [
@@ -117,5 +120,7 @@ export function labelFor<K extends string>(options: CatalogOption<K>[], key: K):
 }
 
 export function labelForMany<K extends string>(options: CatalogOption<K>[], keys: K[]): string {
-  return keys.map((k) => labelFor(options, k)).join(' + ');
+  // En el orden del catálogo, no en el que se fueron tocando.
+  const pos = (k: K) => options.findIndex((o) => o.key === k);
+  return [...keys].sort((a, b) => pos(a) - pos(b)).map((k) => labelFor(options, k)).join(' + ');
 }

@@ -50,6 +50,26 @@ pantallas nuevas si se puede resolver dentro de las que ya existen.
 
 Orden sugerido: 3 → 4 (van juntas, misma pantalla) → 2 → 1.
 
+### 5. Más de un hijo (pedido 2026-10-03, para ver más adelante)
+Hoy "Niño chico" es un sí/no: suma una sola tanda de cosas de bebé, con
+cantidades pensadas para un niño. Con dos o más hijos no alcanza.
+
+Opciones para charlar (de la más simple a la más completa):
+- **A. Contador de niños** (recomendada para empezar): "Niño chico" pasa a
+  tener −/+ (1, 2, 3…). Lo que es por niño se multiplica (mudas, pijamas,
+  pañales, mamadera, traje de baño, butaca); lo compartido queda una vez
+  (termómetro, botiquín, cochecito según el caso). Cambio chico en el
+  formulario y en las reglas.
+- **B. Edades por niño:** cada niño con su franja (bebé 0–2 / chico 3–6 /
+  más grande 7+). Un bebé suma pañales; uno de 5 no, pero sí juegos y
+  ropa de recambio. Más preciso, un poco más de formulario.
+- **C. Una sublista por hijo** ("Bebé · Martina", "Bebé · Tomás"), cada
+  una con su progreso. La más completa, pero alarga mucho la checklist.
+- En el reparto: cada niño suma volumen; con 2 o más conviene sugerir una
+  valija más (mismo aviso de espacio de hoy).
+- Datos: `bebe: boolean` → `ninos: number` (y en B, `edades`), migrando
+  `true` como 1 al leer, igual que las otras migraciones de useTrips.
+
 ## 📊 Analíticas de uso (propuesta, 2026-09-27)
 
 Pedido del usuario: saber qué es lo que más usan los clientes.

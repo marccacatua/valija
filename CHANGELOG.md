@@ -6,8 +6,8 @@ junto con el número de versión en `package.json` (visible en el pie de
 
 ## v1.15.0
 
-**"Mis viajes" ordenado en grupos + plantillas de viaje** (rama
-`mis-viajes-plantillas`).
+**"Mis viajes" en grupos, plantillas de viaje, "Lo tengo que comprar" y
+barco/moto** (rama `mis-viajes-plantillas`).
 
 - **Grupos en "Mis viajes":** Próximos, Plantillas de viaje y
   Finalizados. Cada grupo se pliega con −/+, igual que las categorías de
@@ -27,8 +27,33 @@ junto con el número de versión en `package.json` (visible en el pie de
   límite, "Usar" muestra el aviso para pasarse a Pro.
 - Las plantillas de viaje se guardan en el almacenamiento durable del
   iPhone y viajan en la copia de datos (Safari ↔ pantalla de inicio).
-- Textos nuevos traducidos a los 6 idiomas. QA: 259/259 (es),
-  182/182 (en), 209/209 (de, pt, es-ES, es-419).
+- **"Lo tengo que comprar" (gratis):** cada ítem tiene un carrito. Al
+  tocarlo, el ítem queda marcado "Comprar" sin tildarse y arriba aparece
+  la barra amarilla "Para comprar · N". La barra abre la lista del
+  viaje: se tilda lo que se va comprando y se comparte por WhatsApp o
+  Notas (solo lo que falta). Al empacar el ítem sale solo de la lista.
+  Editar las opciones del viaje no borra lo marcado para comprar;
+  "Repetir este viaje" arranca sin nada para comprar.
+- **Transporte: barco/ferry y moto**, en un orden nuevo: Avión,
+  Barco / ferry, Tren, Micro, Auto, Moto.
+  - Barco / ferry (cruzar, no "Navegar") suma "Pastillas para el mareo"
+    y "Abrigo para la cubierta". Si además se navega, no repite lo que ya
+    trae Náutica.
+  - Moto suma casco, campera, guantes y seguro de la moto, y el
+    rompeviento impermeable. El casco va aparte en el reparto y la
+    campera cuenta como puesta.
+  - Con moto y valija de bodega (sin auto) aparece el aviso "En moto
+    conviene una mochila o alforjas" con el botón "Cambiar a Mochila".
+- Los resúmenes con varias opciones (transporte, destino, clima…) se
+  muestran en el orden de la lista y no en el orden en que se tocaron.
+- Arreglo interno: el orden de la ropa dentro de la lista ya no depende
+  de dónde se agregó cada prenda (con las prendas de barco y moto se
+  desordenaba).
+- Textos nuevos traducidos a los 6 idiomas. QA: lógica (1,1 millones de
+  combinaciones, 0 errores), 269/269 (es), 182/182 (en), 209/209 (de, pt,
+  es-ES, es-419).
+- Set de pruebas a mano para revisar antes de pasar a main (artifact
+  "Pruebas de Valija 1.15").
 
 ## v1.14.0
 

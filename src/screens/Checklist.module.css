@@ -405,8 +405,13 @@
 
 .itemName {
   flex: 1;
+  min-width: 0;
   font: 800 16px/1.25 'Nunito', sans-serif;
   color: var(--ink);
+  /* palabras largas ("acondicionador") se cortan con guion en vez de
+     empujar los botones de la derecha fuera de la tarjeta */
+  overflow-wrap: break-word;
+  hyphens: auto;
 }
 
 .itemNameDone {
@@ -472,4 +477,63 @@
   text-align: center;
   font: 800 16px/1.4 'Nunito', sans-serif;
   color: var(--muted);
+}
+
+/* "Lo tengo que comprar": carrito gris en cada ítem; marcado queda
+   amarillo y el nombre lleva la etiqueta "Comprar". */
+.cartBtn {
+  width: 26px;
+  height: 28px;
+  border-radius: 10px;
+  background: none;
+  color: var(--muted-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: none;
+}
+
+.cartBtnOn {
+  background: var(--mustard);
+  color: var(--ink);
+}
+
+.toBuyTag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 7px;
+  border-radius: 8px;
+  background: var(--tint-mustard);
+  color: var(--tip-text);
+  font: 900 11px/1 'Nunito', sans-serif;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
+.shoppingBar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 22px 0;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: var(--tint-mustard);
+  color: var(--tip-text);
+  font: 900 15px/1 'Nunito', sans-serif;
+  cursor: pointer;
+  text-align: left;
+}
+
+.shoppingBarLabel {
+  flex: 1;
+}
+
+.shoppingBarCount {
+  min-width: 24px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  background: var(--mustard);
+  color: var(--ink);
+  text-align: center;
 }

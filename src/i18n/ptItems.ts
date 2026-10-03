@@ -176,4 +176,9 @@ export const PT_ITEMS: Record<string, string> = {
   "Traje de neopreno grueso (7mm) o semiseco": "Roupa de neoprene grossa (7 mm) ou semisseca",
   "Paraguas plegable": "Guarda-chuva dobrável",
   "Confirmar que el pasaje incluye la valija de bodega": "Confirmar que a passagem inclui mala despachada",
+  "Seguro de la moto": "Seguro da moto",
+  "Abrigo para la cubierta": "Agasalho para o convés",
+  "Campera de moto": "Jaqueta de moto",
+  "Guantes de moto": "Luvas de moto",
+  "Casco de moto": "Capacete de moto",
 };

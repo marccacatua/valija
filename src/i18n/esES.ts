@@ -56,6 +56,8 @@ export const ES_ES: Record<string, string> = {
   "se suman {n} ítems": "se añaden {n} ítems",
   "Barra de progreso en vivo y viajes guardados para repetir.": "Barra de progreso en directo y viajes guardados para repetir.",
   "Trabajo en Buenos Aires": "Trabajo en Barcelona",
+  "En moto conviene una mochila o alforjas: la valija de bodega no viaja bien.": "En moto conviene una mochila o alforjas: la maleta facturada no viaja bien.",
+  "Tildá lo que vas comprando. Cuando lo pongas en la valija, sale solo de esta lista.": "Marca lo que vas comprando. Cuando lo metas en la maleta, sale solo de esta lista.",
 };
 
 /** Ítems y tareas propios de España (encima de ES_TU_ITEMS). */
@@ -109,4 +111,5 @@ export const ES_ES_ITEMS: Record<string, string> = {
   "Campera abrigada": "Abrigo",
   "Credencial y tarjeta corporativa": "Tarjeta identificativa y tarjeta de empresa",
   "Confirmar que el pasaje incluye la valija de bodega": "Comprobar que el billete incluye maleta facturada",
+  "Campera de moto": "Chaqueta de moto",
 };

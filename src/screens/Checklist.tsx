@@ -9,13 +9,14 @@ import { Button } from '../components/Button';
 import { BottomNav } from '../components/BottomNav';
 import { ChangeMaletasSheet } from '../components/ChangeMaletasSheet';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { BackArrowIcon, EditIcon, LockIcon } from '../components/icons';
+import { BackArrowIcon, CartIcon, EditIcon, LockIcon } from '../components/icons';
 import { Mascot } from '../components/Mascot';
 import { SpaceMeter } from '../components/SpaceMeter';
 import { PaywallSheet } from '../components/PaywallSheet';
 import { SaveTemplateSheet } from '../components/SaveTemplateSheet';
 import { UndoSnackbar } from '../components/UndoSnackbar';
 import { SaveTripTemplateSheet } from '../components/SaveTripTemplateSheet';
+import { ShoppingSheet } from '../components/ShoppingSheet';
 import { useTripTemplates } from '../hooks/useTripTemplates';
 import { templatePlaceholder } from '../data/trip';
 import { useFeatureFlag } from '../features/flags';
@@ -38,6 +39,8 @@ export function Checklist() {
     bumpItem,
     setItemsDone,
     setItemQtys,
+    toggleToBuy,
+    toggleBought,
     renameTrip,
     updateMaletas,
     toggleHomeTask,
@@ -62,7 +65,7 @@ export function Checklist() {
   const canUseTemplates = useFeatureFlag('tripTemplates');
   const canExport = useFeatureFlag('exportChecklist');
   const canClone = useFeatureFlag('cloneTrip');
-  const [sheet, setSheet] = useState<'save' | 'apply' | 'saveTrip' | null>(null);
+  const [sheet, setSheet] = useState<'save' | 'apply' | 'saveTrip' | 'shopping' | null>(null);
   const [templateToDelete, setTemplateToDelete] = useState<ItemTemplate | null>(null);
   // Vista en árbol: cada categoría (y la lista de casa/barco) se pliega o
   // despliega con −/+. Se recuerda por viaje (solo en este dispositivo:
@@ -317,6 +320,8 @@ export function Checklist() {
   // Espacio en las valijas (ver data/volume.ts) y, si no entra, el plan
   // para bajar cantidades de prendas que se pueden lavar y repetir.
   const space = spaceSummary(items, trip.form.maletas);
+  // "Lo tengo que comprar": lo marcado que todavía no se empacó.
+  const toBuyItems = items.filter((i) => i.toBuy && !i.done);
   const fitPlan = space.overflow ? fitToBags(items, trip.form.maletas) : null;
   const handleFit = () => {
     if (!fitPlan?.fits) return;
@@ -422,8 +427,22 @@ export function Checklist() {
             onClick={() => handleToggleItem(item)}
           >
             <span className={`${styles.checkbox} ${item.done ? styles.checkboxDone : ''}`}>✓</span>
-            <span className={`${styles.itemName} ${item.done ? styles.itemNameDone : ''}`}>{itemLabel(item.name)}</span>
+            <span className={`${styles.itemName} ${item.done ? styles.itemNameDone : ''}`}>
+              {itemLabel(item.name)}
+              {item.toBuy && !item.done && <span className={styles.toBuyTag}>{item.bought ? t('Comprado') : t('Comprar')}</span>}
+            </span>
             <span className={styles.qtyControls} onClick={(e) => e.stopPropagation()}>
+              {!item.done && (
+                <button
+                  type="button"
+                  className={`${styles.cartBtn} ${item.toBuy ? styles.cartBtnOn : ''}`}
+                  onClick={() => toggleToBuy(trip.id, item.id)}
+                  aria-pressed={Boolean(item.toBuy)}
+                  aria-label={item.toBuy ? t('Sacar {item} de la lista de compras', { item: itemLabel(item.name) }) : t('Tengo que comprar {item}', { item: itemLabel(item.name) })}
+                >
+                  {CartIcon}
+                </button>
+              )}
               {!item.noQty && (
                 <>
                   <button
@@ -561,6 +580,16 @@ export function Checklist() {
           </div>
         </div>
       </div>
+
+      {/* Solo aparece si hay algo para comprar todavía sin empacar. */}
+      {toBuyItems.length > 0 && (
+        <button type="button" className={styles.shoppingBar} onClick={() => setSheet('shopping')}>
+          {CartIcon}
+          <span className={styles.shoppingBarLabel}>{t('Para comprar')}</span>
+          <span className={styles.shoppingBarCount}>{toBuyItems.filter((i) => !i.bought).length}</span>
+          <span aria-hidden="true">›</span>
+        </button>
+      )}
 
       <SpaceMeter
         summary={space}
@@ -705,6 +734,14 @@ export function Checklist() {
           placeholderExample={templatePlaceholder(trip.form)}
           onSave={handleSaveTemplate}
           onCancel={() => setSheet(null)}
+        />
+      )}
+      {sheet === 'shopping' && toBuyItems.length > 0 && (
+        <ShoppingSheet
+          title={tripTitle(trip.form)}
+          items={toBuyItems}
+          onToggleBought={(itemId) => toggleBought(trip.id, itemId)}
+          onClose={() => setSheet(null)}
         />
       )}
       {sheet === 'saveTrip' && (

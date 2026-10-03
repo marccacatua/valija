@@ -66,12 +66,13 @@ function mergeItems(current: PackingItem[], oldForm: TripFormState, newForm: Tri
     return existing;
   }
 
-  // Lo que no está en la lista nueva: se queda si es propio o si ya está
-  // tildado (va al final; la checklist lo agrupa igual por categoría).
+  // Lo que no está en la lista nueva: se queda si es propio, si ya está
+  // tildado o si está en la lista de compras (va al final; la checklist
+  // lo agrupa igual por categoría).
   let removed = 0;
   for (const item of current) {
     if (used.has(item.id)) continue;
-    if (item.isCustom || item.done) next.push(item);
+    if (item.isCustom || item.done || item.toBuy) next.push(item);
     else removed++;
   }
   return { items: next, added, removed, requantified };

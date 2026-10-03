@@ -30,6 +30,8 @@ export const ROPA_ORDER = [
   'Buzos',
   'Campera abrigada',
   'Rompeviento impermeable',
+  'Abrigo para la cubierta',
+  'Campera de moto',
   'Campera liviana para correr',
   'Saco o blazer',
   'Outfit para salir',
@@ -45,6 +47,7 @@ export const ROPA_ORDER = [
   'Bufanda',
   'Gorro y guantes',
   'Gorra o sombrero',
+  'Guantes de moto',
   // calzado (último)
   'Ojotas o sandalias',
   'Zapatillas de trekking',
@@ -141,7 +144,8 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   // "náutica" (evita duplicar algo que ya existe).
   // Con esquí no: la campera de nieve ya es impermeable y cortaviento.
   // Navegando hace falta siempre (en el barco no se usa la campera de nieve).
-  if (((hasClima('lluvia') || f.dest.includes('montana')) && !isSki) || isNavegar) add('ropa', 'Rompeviento impermeable');
+  // En moto también: aunque no llueva, el viento en la ruta se siente.
+  if (((hasClima('lluvia') || f.dest.includes('montana')) && !isSki) || isNavegar || hasTransporte('moto')) add('ropa', 'Rompeviento impermeable');
   if (f.dest.includes('playa') || hasClima('calor')) {
     add('ropa', 'Traje de baño', 2);
     add('ropa', 'Gorra o sombrero');
@@ -245,6 +249,7 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   add('docs', 'Tarjetas y efectivo');
   if (hasTransporte('avion')) add('docs', 'Seguro de viaje');
   if (hasTransporte('auto')) add('docs', 'Seguro del auto y VTV');
+  if (hasTransporte('moto')) add('docs', 'Seguro de la moto');
   if (f.motivo === 'trabajo') add('docs', 'Credencial y tarjeta corporativa');
   // Sin la tarjeta de certificación (PADI/SSI) no te dejan alquilar el
   // tubo de oxígeno ni sumarte a una salida — es tan de identificación
@@ -285,6 +290,20 @@ export function buildRawItems(f: TripFormState): RawItem[] {
   if (hasTransporte('auto') || hasTransporte('bus')) {
     addSingle('extras', 'Mate y termo');
     add('extras', 'Snacks para el camino');
+  }
+  // Barco / ferry es CRUZAR (Buquebus a Colonia, ferry entre islas), no
+  // salir a navegar: si además se navega, la categoría "Náutica" ya trae
+  // las pastillas y el abrigo en capas, así que no se repiten.
+  if (hasTransporte('barco') && !isNavegar) {
+    addSingle('extras', 'Pastillas para el mareo');
+    addSingle('ropa', 'Abrigo para la cubierta');
+  }
+  // En moto el equipo se lleva puesto: el casco va aparte (ver
+  // SEPARATE_ITEMS en volume.ts) y la campera cuenta como "puesta".
+  if (hasTransporte('moto')) {
+    addSingle('ropa', 'Campera de moto');
+    addSingle('ropa', 'Guantes de moto');
+    addSingle('extras', 'Casco de moto');
   }
   if (hasTurismo('aventura') || hasTurismo('cultura')) addSingle('extras', 'Riñonera o bolso cruzado');
   if (hasClima('lluvia')) addSingle('extras', 'Paraguas plegable');
@@ -438,9 +457,16 @@ export function buildRawItems(f: TripFormState): RawItem[] {
     const idx = ROPA_ORDER.indexOf(name);
     return idx === -1 ? ROPA_ORDER.length : idx;
   };
-  // Sort estable: solo reordena el bloque de "ropa" entre sí, todo lo
-  // demás mantiene el orden en que se agregó arriba.
-  out.sort((a, b) => (a.cat === 'ropa' && b.cat === 'ropa' ? ropaRank(a.name) - ropaRank(b.name) : 0));
+  // Solo se reordena la ropa entre sí, dentro de los mismos lugares que
+  // ocupa; todo lo demás queda en el orden en que se agregó arriba. (Un
+  // sort de la lista entera con un comparador que da 0 entre ropa y otra
+  // categoría no es un orden válido: con prendas agregadas más abajo,
+  // como las de barco o moto, dejaba la ropa desordenada.)
+  const ropaSlots = out.flatMap((it, i) => (it.cat === 'ropa' ? [i] : []));
+  const ropaSorted = ropaSlots.map((i) => out[i]).sort((a, b) => ropaRank(a.name) - ropaRank(b.name));
+  ropaSlots.forEach((slot, j) => {
+    out[slot] = ropaSorted[j];
+  });
 
   return out;
 }

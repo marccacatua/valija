@@ -32,6 +32,9 @@ export const ITEM_LITERS: Record<string, number> = {
   Buzos: 2,
   'Campera abrigada': 6,
   'Rompeviento impermeable': 1.5,
+  'Campera de moto': 5,
+  'Guantes de moto': 0.6,
+  'Abrigo para la cubierta': 2,
   'Campera liviana para correr': 1,
   'Saco o blazer': 3,
   'Outfit para salir': 1.2,
@@ -80,6 +83,7 @@ export const ITEM_LITERS: Record<string, number> = {
   'Seguro de viaje': 0.02,
   'Confirmar que el pasaje incluye la valija de bodega': 0,
   'Seguro del auto y VTV': 0.02,
+  'Seguro de la moto': 0.02,
   'Credencial y tarjeta corporativa': 0.02,
   'Certificación de buceo (tarjeta PADI/SSI) y bitácora': 0.2,
   // Electrónica
@@ -200,6 +204,7 @@ export const SEPARATE_ITEMS = [
   'Butaca para auto',
   'Transportadora',
   'Esquís y bastones (o tabla de snowboard)',
+  'Casco de moto',
 ];
 
 export function isSeparateItem(item: PackingItem): boolean {
@@ -220,6 +225,7 @@ const WORN_OUTERWEAR = [
   'Buzo o campera liviana',
   'Rompeviento impermeable',
   'Campera liviana para correr',
+  'Campera de moto',
 ];
 const WORN_SHOES = [
   'Botas de nieve para caminar',

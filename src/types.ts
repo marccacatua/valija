@@ -8,7 +8,7 @@ export type TurismoKey = 'relax' | 'aventura' | 'cultura' | 'fiesta' | 'ski' | '
 /** 'camping' es alojamiento (define cómo/dónde dormís), no destino — se
  * puede acampar en la playa, la montaña o el campo por igual. */
 export type AlojKey = 'hotel' | 'depto' | 'hostel' | 'amigos' | 'camping';
-export type TransporteKey = 'avion' | 'auto' | 'bus' | 'tren';
+export type TransporteKey = 'avion' | 'barco' | 'tren' | 'bus' | 'auto' | 'moto';
 export type MaletaKey = 'carry' | 'bodega' | 'mochila';
 
 export type CategoryKey = 'ropa' | 'higiene' | 'docs' | 'tech' | 'extras' | 'bebe' | 'mascota' | 'ski' | 'nautica' | 'buceo' | 'camping';
@@ -68,6 +68,10 @@ export interface PackingItem {
   isCustom?: boolean;
   /** true si no tiene sentido contarlo (se lleva o no): oculta el +/- en la checklist. */
   noQty?: boolean;
+  /** "Lo tengo que comprar": va a la lista de compras del viaje (no lo tilda). */
+  toBuy?: boolean;
+  /** Ya comprado (tildado en la lista de compras, todavía sin empacar). */
+  bought?: boolean;
 }
 
 /** Tarea de "antes de salir de casa" (apagar luces, cerrar llaves de
