@@ -142,4 +142,6 @@ export const ES_TU_ITEMS: Record<string, string> = {
   "Campera liviana para correr": "Chaqueta ligera para correr",
   "Confirmar que el pasaje incluye la valija de bodega": "Confirmar que el boleto incluye equipaje en bodega",
   "Campera de moto": "Chaqueta de moto",
+  "Avisar al banco si viajás al exterior (para que no te bloqueen la tarjeta)": "Avisar al banco si viajas al extranjero (para que no te bloqueen la tarjeta)",
+  "Dejar pagas las cuentas (luz, agua, internet, tarjetas)": "Dejar pagadas las cuentas (luz, agua, internet, tarjetas)",
 };

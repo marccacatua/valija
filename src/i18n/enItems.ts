@@ -181,4 +181,6 @@ export const EN_ITEMS: Record<string, string> = {
   "Campera de moto": "Motorbike jacket",
   "Guantes de moto": "Motorbike gloves",
   "Casco de moto": "Motorbike helmet",
+  "Avisar al banco si viajás al exterior (para que no te bloqueen la tarjeta)": "Tell your bank if you're going abroad (so your card doesn't get blocked)",
+  "Dejar pagas las cuentas (luz, agua, internet, tarjetas)": "Pay the bills ahead (electricity, water, internet, cards)",
 };

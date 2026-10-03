@@ -201,6 +201,9 @@ for (const dest of DEST_SUBSETS)
                     homeIds.add(task.id);
                     if (!task.label.trim()) fail(form, `Home checklist: label vacío (id=${task.id})`);
                   }
+                  const hasCuentas = homeChecklist.some((t) => t.label.startsWith('Dejar pagas las cuentas'));
+                  if (hasCuentas !== dias > 10) fail(form, `Home checklist: "cuentas" presente=${hasCuentas} pero dias=${dias} (se espera con más de 10)`);
+                  if (!homeChecklist.some((t) => t.label.startsWith('Avisar al banco'))) fail(form, 'Home checklist: falta "Avisar al banco"');
                   const hasHeladera = homeChecklist.some((t) => t.label.includes('heladera'));
                   if (hasHeladera !== dias >= 5) {
                     fail(form, `Home checklist: "heladera" presente=${hasHeladera} pero dias=${dias} (se espera solo con 5+)`);

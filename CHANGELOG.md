@@ -44,6 +44,10 @@ barco/moto** (rama `mis-viajes-plantillas`).
     campera cuenta como puesta.
   - Con moto y valija de bodega (sin auto) aparece el aviso "En moto
     conviene una mochila o alforjas" con el botón "Cambiar a Mochila".
+- **"¿Quedó todo pronto en casa?"** suma dos tareas: "Avisar al banco
+  si viajás al exterior (para que no te bloqueen la tarjeta)", siempre,
+  y "Dejar pagas las cuentas (luz, agua, internet, tarjetas)" en viajes
+  de más de 10 días.
 - Los resúmenes con varias opciones (transporte, destino, clima…) se
   muestran en el orden de la lista y no en el orden en que se tocaron.
 - Arreglo interno: el orden de la ropa dentro de la lista ya no depende

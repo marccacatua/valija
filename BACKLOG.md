@@ -50,6 +50,14 @@ pantallas nuevas si se puede resolver dentro de las que ya existen.
 
 Orden sugerido: 3 → 4 (van juntas, misma pantalla) → 2 → 1.
 
+### 4b. ¿Viaje al exterior? (idea, 2026-10-03)
+- Hoy "Avisar al banco" aparece siempre, con la frase "si viajás al
+  exterior", porque el formulario no pregunta si se sale del país.
+- Si más adelante se suma un chip "Viaje al exterior", podría manejar
+  esa tarea y también: pasaporte en vez de DNI, adaptador de enchufe
+  (hoy depende del avión), seguro de viaje, chip o roaming y cambio de
+  moneda. Hay que pensarlo para no alargar el formulario.
+
 ### 5. Más de un hijo (pedido 2026-10-03, para ver más adelante)
 Hoy "Niño chico" es un sí/no: suma una sola tanda de cosas de bebé, con
 cantidades pensadas para un niño. Con dos o más hijos no alcanza.

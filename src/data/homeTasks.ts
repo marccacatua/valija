@@ -20,11 +20,19 @@ const BASE_HOME_TASKS = [
   'Cerrar bien puertas y ventanas',
   'Cargar todos los dispositivos',
   'Configurar el asistente (Alexa/Google Home) en modo ausente',
+  // El formulario no pregunta si el viaje es al exterior (se puede salir
+  // del país en avión, micro o auto), así que va siempre y la frase dice
+  // cuándo corresponde.
+  'Avisar al banco si viajás al exterior (para que no te bloqueen la tarjeta)',
 ];
+
+/** "Más de 10 días": a la vuelta no tiene que haber ninguna cuenta vencida. */
+const DIAS_CUENTAS = 11;
 
 export function buildHomeChecklist(form: TripFormState): HomeTask[] {
   const labels = [...BASE_HOME_TASKS];
   if (form.dias >= 5) labels.splice(4, 0, 'Vaciar la heladera de comida perecedera');
+  if (form.dias >= DIAS_CUENTAS) labels.push('Dejar pagas las cuentas (luz, agua, internet, tarjetas)');
   return labels.map((label, i) => ({ id: `home-${i}`, label, done: false }));
 }
 

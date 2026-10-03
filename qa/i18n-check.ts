@@ -69,7 +69,7 @@ const opts = {
   aloj: ['hotel', 'depto', 'hostel', 'amigos', 'camping'],
   transporte: ['avion', 'barco', 'tren', 'bus', 'auto', 'moto'],
   maletas: [['carry'], ['bodega'], ['mochila'], ['carry', 'bodega'], ['bodega', 'mochila']],
-  dias: [1, 7],
+  dias: [1, 7, 14],
 } as const;
 for (const dest of opts.dest)
   for (const clima of opts.clima)
